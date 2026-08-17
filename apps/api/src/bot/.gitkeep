@@ -1,0 +1,4 @@
+# For Bot WhatsApp:
+# - baileys.ts         → Socket init, QR auth, reconnect logic
+# - message-handler.ts → Route pesan masuk ke core/state-machine
+# - sender.ts          → Utility kirim pesan & reminder ke lansia/relawan

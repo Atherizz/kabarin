@@ -1,0 +1,14 @@
+{
+  "name": "web",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "echo \"[web] Frontend workspace placeholder. Ready for frontend app setup.\"",
+    "build": "echo \"[web] Frontend build placeholder.\"",
+    "lint": "echo \"[web] Frontend lint placeholder.\""
+  },
+  "dependencies": {
+    "@kabarin/types": "workspace:*",
+    "@kabarin/auth": "workspace:*"
+  }
+}

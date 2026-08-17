@@ -1,0 +1,5 @@
+# For Domain Logic
+# - state-machine.ts   → Escalation Engine (Tier 1→2→3)
+# - scheduler.ts       → node-cron jobs (sapaan harian, timeout check)
+# - ai-triage.ts       → Groq API classifier
+# - risk-scoring.ts    → Weighted risk formula

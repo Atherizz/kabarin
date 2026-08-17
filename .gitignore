@@ -1,0 +1,20 @@
+node_modules
+dist
+.turbo
+*.local
+.env
+!.env.example
+bun.lock
+
+# Baileys session 
+apps/api/auth_session/
+
+# Drizzle migrations generated
+packages/db/migrations/*.sql
+
+# Docker
+docker-data/
+
+# OS
+.DS_Store
+Thumbs.db
