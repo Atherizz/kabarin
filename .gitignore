@@ -6,6 +6,8 @@ dist
 !.env.example
 bun.lock
 
+docs
+
 # Baileys session 
 apps/api/auth_session/
 

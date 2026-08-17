@@ -1,4 +1,6 @@
 import { pgTable, text, boolean, timestamp } from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { communityUnits } from "./community";
 
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
@@ -6,10 +8,24 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  role: text("role")
+    .$type<"admin" | "kader" | "relawan" | "keluarga">()
+    .notNull()
+    .default("kader"),
+  communityUnitId: text("community_unit_id").references(() => communityUnits.id, {
+    onDelete: "set null",
+  }),
+  phone: text("phone"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  role: text("role").$type<"admin" | "kader">().notNull().default("admin"),
 });
+
+export const userRelations = relations(user, ({ one }) => ({
+  communityUnit: one(communityUnits, {
+    fields: [user.communityUnitId],
+    references: [communityUnits.id],
+  }),
+}));
 
 export const session = pgTable("session", {
   id: text("id").primaryKey(),
