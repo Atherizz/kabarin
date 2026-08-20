@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "bun run --env-file ../../.env --watch src/index.ts",
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "dev:bun": "bun run --env-file ../../.env --watch src/index.ts",
     "start": "bun run --env-file ../../.env src/index.ts",
     "lint": "tsc --noEmit"
   },

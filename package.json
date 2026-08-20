@@ -9,14 +9,18 @@
     "build": "turbo build",
     "lint": "turbo lint",
     "check": "turbo check",
+    "dev:api": "bun run --cwd apps/api dev",
+    "deploy:api": "bun run --cwd apps/api deploy",
     "db:generate": "bun run --cwd packages/db generate",
     "db:migrate": "bun run --cwd packages/db migrate",
     "db:push": "bun run --cwd packages/db push",
     "db:studio": "bun run --cwd packages/db studio"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260820.1",
+    "@types/node": "^22.0.0",
     "turbo": "^2.1.0",
     "typescript": "^5.5.0",
-    "@types/node": "^22.0.0"
+    "wrangler": "^4.124.0"
   }
 }

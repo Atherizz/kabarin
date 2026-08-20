@@ -53,10 +53,30 @@ import { GetFamilyStatusEndpoint } from "./endpoints/family/get-status";
 const app = new Hono<AppEnv>();
 
 // Global middleware
-app.use("*", cors({
-  origin: process.env.TRUSTED_ORIGINS?.split(",") ?? ["http://localhost:5173"],
-  credentials: true,
-}));
+app.use("*", async (c, next) => {
+  const envOrigins = c.env?.TRUSTED_ORIGINS?.split(",") ?? process.env.TRUSTED_ORIGINS?.split(",");
+  const allowedOrigins = [
+    "http://localhost:5173",
+    "http://localhost:4321",
+    "http://localhost:8787",
+    "http://localhost:3000",
+    "https://kabarin.pages.dev",
+    "https://kabarin.atherizz.dev",
+    ...(envOrigins ?? []),
+  ];
+
+  return cors({
+    origin: (origin) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return origin || "*";
+      }
+      return null;
+    },
+    allowHeaders: ["Content-Type", "Authorization", "Cookie", "x-webhook-secret"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    credentials: true,
+  })(c, next);
+});
 app.use("*", injectServices);
 
 // Protect all /api/* except public endpoints
@@ -78,7 +98,6 @@ const openapi = fromHono(app, {
       version: "1.0.0",
       description: "Sistem pemantauan kesejahteraan lansia berbasis komunitas RT",
     },
-    servers: [{ url: "http://localhost:3000", description: "Local" }],
   },
 });
 
@@ -137,7 +156,7 @@ app.get("/docs", apiReference({
 
 app.onError(onError);
 
-const port = Number(process.env.PORT) || 3000;
+const port = Number(process.env.PORT) || 8787;
 console.log(`🚀 Kabarin API → http://localhost:${port}`);
 console.log(`📖 Docs        → http://localhost:${port}/docs`);
 

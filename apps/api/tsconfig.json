@@ -1,7 +1,15 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "types": ["bun-types", "node"]
+    "skipLibCheck": true,
+    "types": ["bun-types", "@cloudflare/workers-types"],
+    "paths": {
+      "@kabarin/types": ["../../packages/types/src/index.ts"],
+      "@kabarin/db": ["../../packages/db/src/index.ts"],
+      "@kabarin/db/*": ["../../packages/db/src/*"],
+      "@kabarin/auth": ["../../packages/auth/src/index.ts"],
+      "@kabarin/auth/*": ["../../packages/auth/src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "worker-configuration.d.ts"]
 }

@@ -8,6 +8,13 @@
     "isolatedModules": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@kabarin/types": ["./packages/types/src/index.ts"],
+      "@kabarin/db": ["./packages/db/src/index.ts"],
+      "@kabarin/db/*": ["./packages/db/src/*"],
+      "@kabarin/auth": ["./packages/auth/src/index.ts"],
+      "@kabarin/auth/*": ["./packages/auth/src/*"]
+    }
   }
 }

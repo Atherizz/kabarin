@@ -3,7 +3,7 @@ import { eq, and, elderly, elderlyFamily } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import crypto from "crypto";
+import { generateAccessToken } from "../../lib/token";
 
 export class CreateFamilyEndpoint extends ApiRoute {
   schema = {
@@ -73,7 +73,7 @@ export class CreateFamilyEndpoint extends ApiRoute {
 
     // 3. Generate unique 64-hex access token and insert
     const familyId = crypto.randomUUID();
-    const accessToken = crypto.randomBytes(32).toString("hex");
+    const accessToken = generateAccessToken();
 
     const [newFamily] = await db
       .insert(elderlyFamily)

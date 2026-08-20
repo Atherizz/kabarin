@@ -3,7 +3,7 @@ import { elderly, elderlyMedications, elderlyFamily, elderlyVolunteers } from "@
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import crypto from "crypto";
+import { generateAccessToken } from "../../lib/token";
 
 export class CreateElderlyEndpoint extends ApiRoute {
   schema = {
@@ -106,7 +106,7 @@ export class CreateElderlyEndpoint extends ApiRoute {
         phone: f.phone,
         relationship: f.relationship,
         isPrimaryContact: f.isPrimaryContact ?? false,
-        accessToken: crypto.randomBytes(32).toString("hex"),
+        accessToken: generateAccessToken(),
         notifyViaWhatsapp: f.notifyViaWhatsapp ?? true,
       }));
       createdFamily = await db.insert(elderlyFamily).values(familyRows).returning();
