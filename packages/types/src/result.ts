@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./zod-extended";
 
 // Discriminated union — prefer this over throw/try-catch in service layer
 export type Result<T, E = ServiceError> =

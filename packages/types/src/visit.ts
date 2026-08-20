@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./zod-extended";
 
 export const VisitTypeEnum = z.enum(["routine", "escalation"]);
 export const VisitStatusEnum = z.enum(["pending", "completed", "expired"]);

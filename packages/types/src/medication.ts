@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./zod-extended";
 
 export const TimeOfDayEnum = z.enum(["morning", "afternoon", "evening", "bedtime"]);
 export const TimingInstructionEnum = z.enum([
@@ -24,17 +24,31 @@ export const ElderlyMedicationSchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
-export const CreateMedicationInputSchema = z.object({
-  conditionName: z.string().min(1),
-  medicationName: z.string().min(1),
-  dosage: z.string().min(1),
-  frequency: z.string().min(1),
-  timeOfDay: TimeOfDayEnum.default("morning"),
-  timingInstruction: TimingInstructionEnum.default("after_meal"),
-  reminderTime: z.string().default("07:00"),
-  notes: z.string().optional(),
-  isActive: z.boolean().optional().default(true),
-});
+export const CreateMedicationInputSchema = z
+  .object({
+    conditionName: z.string().min(1),
+    medicationName: z.string().min(1),
+    dosage: z.string().min(1),
+    frequency: z.string().min(1),
+    timeOfDay: TimeOfDayEnum.default("morning"),
+    timingInstruction: TimingInstructionEnum.default("after_meal"),
+    reminderTime: z.string().default("07:00"),
+    notes: z.string().optional(),
+    isActive: z.boolean().optional().default(true),
+  })
+  .openapi({
+    example: {
+      conditionName: "Hipertensi",
+      medicationName: "Amlodipine 5mg",
+      dosage: "1 tablet",
+      frequency: "1x sehari",
+      timeOfDay: "morning",
+      timingInstruction: "after_meal",
+      reminderTime: "07:00",
+      notes: "Diminum rutin setiap pagi setelah sarapan",
+      isActive: true,
+    },
+  });
 
 export const SmartOcrMedicationResultSchema = z.object({
   conditionName: z.string(),

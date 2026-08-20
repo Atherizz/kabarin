@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "./zod-extended";
 
 export const ElderlyFamilySchema = z.object({
   id: z.string(),
@@ -14,13 +14,23 @@ export const ElderlyFamilySchema = z.object({
   updatedAt: z.string().datetime(),
 });
 
-export const CreateElderlyFamilyInputSchema = z.object({
-  name: z.string().min(1),
-  phone: z.string().min(8),
-  relationship: z.string().min(1),
-  isPrimaryContact: z.boolean().optional().default(false),
-  notifyViaWhatsapp: z.boolean().optional().default(true),
-});
+export const CreateElderlyFamilyInputSchema = z
+  .object({
+    name: z.string().min(1),
+    phone: z.string().min(8),
+    relationship: z.string().min(1),
+    isPrimaryContact: z.boolean().optional().default(false),
+    notifyViaWhatsapp: z.boolean().optional().default(true),
+  })
+  .openapi({
+    example: {
+      name: "Bambang Soepardi (Anak Pertama)",
+      phone: "081234567899",
+      relationship: "Anak Kandung",
+      isPrimaryContact: true,
+      notifyViaWhatsapp: true,
+    },
+  });
 
 export type ElderlyFamily = z.infer<typeof ElderlyFamilySchema>;
 export type CreateElderlyFamilyInput = z.infer<

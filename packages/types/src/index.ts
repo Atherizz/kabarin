@@ -1,4 +1,4 @@
-export { z } from "zod";
+export * from "./zod-extended";
 export * from "./result";
 export * from "./user";
 export * from "./community";
