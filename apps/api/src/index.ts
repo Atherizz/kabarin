@@ -15,6 +15,19 @@ import { SignOutEndpoint } from "./endpoints/auth/sign-out";
 import { GetSessionEndpoint } from "./endpoints/auth/get-session";
 import { MeEndpoint } from "./endpoints/auth/me";
 
+// Community endpoints
+import { RegisterCommunityEndpoint } from "./endpoints/community/register";
+import { GetMyCommunityEndpoint } from "./endpoints/community/me";
+import { UpdateMyCommunityEndpoint } from "./endpoints/community/update-me";
+
+// Elderly endpoints
+import { ListElderlyEndpoint } from "./endpoints/elderly/list";
+import { CreateElderlyEndpoint } from "./endpoints/elderly/create";
+import { GetElderlyEndpoint } from "./endpoints/elderly/get";
+import { UpdateElderlyEndpoint } from "./endpoints/elderly/update";
+import { DeleteElderlyEndpoint } from "./endpoints/elderly/delete";
+import { UpdateElderlyStatusEndpoint } from "./endpoints/elderly/update-status";
+
 const app = new Hono<AppEnv>();
 
 // Global middleware
@@ -24,9 +37,10 @@ app.use("*", cors({
 }));
 app.use("*", injectServices);
 
-// Protect all /api/* except /api/auth/* (handled and authenticated by Better Auth internally)
+// Protect all /api/* except /api/auth/* and POST /api/community/register (public self-register)
 app.use("/api/*", async (c, next) => {
   if (c.req.path.startsWith("/api/auth/")) return next();
+  if (c.req.path === "/api/community/register" && c.req.method === "POST") return next();
   return requireAuth(c, next);
 });
 
@@ -50,6 +64,19 @@ openapi.post("/api/auth/sign-up/email", asRoute(SignUpEndpoint));
 openapi.post("/api/auth/sign-in/email", asRoute(SignInEndpoint));
 openapi.post("/api/auth/sign-out", asRoute(SignOutEndpoint));
 openapi.get("/api/auth/get-session", asRoute(GetSessionEndpoint));
+
+// Community endpoints
+openapi.post("/api/community/register", asRoute(RegisterCommunityEndpoint));
+openapi.get("/api/community/me", asRoute(GetMyCommunityEndpoint));
+openapi.put("/api/community/me", asRoute(UpdateMyCommunityEndpoint));
+
+// Elderly endpoints
+openapi.get("/api/elderly", asRoute(ListElderlyEndpoint));
+openapi.post("/api/elderly", asRoute(CreateElderlyEndpoint));
+openapi.get("/api/elderly/:id", asRoute(GetElderlyEndpoint));
+openapi.put("/api/elderly/:id", asRoute(UpdateElderlyEndpoint));
+openapi.delete("/api/elderly/:id", asRoute(DeleteElderlyEndpoint));
+openapi.patch("/api/elderly/:id/status", asRoute(UpdateElderlyStatusEndpoint));
 
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));
