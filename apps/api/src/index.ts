@@ -28,6 +28,15 @@ import { UpdateElderlyEndpoint } from "./endpoints/elderly/update";
 import { DeleteElderlyEndpoint } from "./endpoints/elderly/delete";
 import { UpdateElderlyStatusEndpoint } from "./endpoints/elderly/update-status";
 
+// Volunteer endpoints
+import { ListVolunteersEndpoint } from "./endpoints/volunteers/list";
+import { CreateVolunteerEndpoint } from "./endpoints/volunteers/create";
+import { GetVolunteerEndpoint } from "./endpoints/volunteers/get";
+import { UpdateVolunteerEndpoint } from "./endpoints/volunteers/update";
+import { AssignVolunteerEndpoint } from "./endpoints/volunteers/assign";
+import { UnassignVolunteerEndpoint } from "./endpoints/volunteers/unassign";
+import { ListVolunteersByElderlyEndpoint } from "./endpoints/volunteers/list-by-elderly";
+
 const app = new Hono<AppEnv>();
 
 // Global middleware
@@ -77,6 +86,15 @@ openapi.get("/api/elderly/:id", asRoute(GetElderlyEndpoint));
 openapi.put("/api/elderly/:id", asRoute(UpdateElderlyEndpoint));
 openapi.delete("/api/elderly/:id", asRoute(DeleteElderlyEndpoint));
 openapi.patch("/api/elderly/:id/status", asRoute(UpdateElderlyStatusEndpoint));
+openapi.get("/api/elderly/:id/volunteers", asRoute(ListVolunteersByElderlyEndpoint));
+
+// Volunteer endpoints
+openapi.get("/api/volunteers", asRoute(ListVolunteersEndpoint));
+openapi.post("/api/volunteers", asRoute(CreateVolunteerEndpoint));
+openapi.get("/api/volunteers/:id", asRoute(GetVolunteerEndpoint));
+openapi.put("/api/volunteers/:id", asRoute(UpdateVolunteerEndpoint));
+openapi.post("/api/volunteers/:id/assign", asRoute(AssignVolunteerEndpoint));
+openapi.delete("/api/volunteers/:id/assign/:elderlyId", asRoute(UnassignVolunteerEndpoint));
 
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));
