@@ -37,6 +37,19 @@ import { AssignVolunteerEndpoint } from "./endpoints/volunteers/assign";
 import { UnassignVolunteerEndpoint } from "./endpoints/volunteers/unassign";
 import { ListVolunteersByElderlyEndpoint } from "./endpoints/volunteers/list-by-elderly";
 
+// Medication endpoints
+import { ListMedicationsEndpoint } from "./endpoints/medications/list";
+import { CreateMedicationEndpoint } from "./endpoints/medications/create";
+import { UpdateMedicationEndpoint } from "./endpoints/medications/update";
+import { DeleteMedicationEndpoint } from "./endpoints/medications/delete";
+
+// Family endpoints
+import { ListFamilyEndpoint } from "./endpoints/family/list";
+import { CreateFamilyEndpoint } from "./endpoints/family/create";
+import { UpdateFamilyEndpoint } from "./endpoints/family/update";
+import { DeleteFamilyEndpoint } from "./endpoints/family/delete";
+import { GetFamilyStatusEndpoint } from "./endpoints/family/get-status";
+
 const app = new Hono<AppEnv>();
 
 // Global middleware
@@ -46,10 +59,11 @@ app.use("*", cors({
 }));
 app.use("*", injectServices);
 
-// Protect all /api/* except /api/auth/* and POST /api/community/register (public self-register)
+// Protect all /api/* except public endpoints
 app.use("/api/*", async (c, next) => {
   if (c.req.path.startsWith("/api/auth/")) return next();
   if (c.req.path === "/api/community/register" && c.req.method === "POST") return next();
+  if (c.req.path.startsWith("/api/family/status/")) return next();
   return requireAuth(c, next);
 });
 
@@ -95,6 +109,19 @@ openapi.get("/api/volunteers/:id", asRoute(GetVolunteerEndpoint));
 openapi.put("/api/volunteers/:id", asRoute(UpdateVolunteerEndpoint));
 openapi.post("/api/volunteers/:id/assign", asRoute(AssignVolunteerEndpoint));
 openapi.delete("/api/volunteers/:id/assign/:elderlyId", asRoute(UnassignVolunteerEndpoint));
+
+// Medication endpoints
+openapi.get("/api/elderly/:id/medications", asRoute(ListMedicationsEndpoint));
+openapi.post("/api/elderly/:id/medications", asRoute(CreateMedicationEndpoint));
+openapi.put("/api/elderly/:id/medications/:medId", asRoute(UpdateMedicationEndpoint));
+openapi.delete("/api/elderly/:id/medications/:medId", asRoute(DeleteMedicationEndpoint));
+
+// Family endpoints
+openapi.get("/api/elderly/:id/family", asRoute(ListFamilyEndpoint));
+openapi.post("/api/elderly/:id/family", asRoute(CreateFamilyEndpoint));
+openapi.put("/api/elderly/:id/family/:familyId", asRoute(UpdateFamilyEndpoint));
+openapi.delete("/api/elderly/:id/family/:familyId", asRoute(DeleteFamilyEndpoint));
+openapi.get("/api/family/status/:token", asRoute(GetFamilyStatusEndpoint));
 
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));

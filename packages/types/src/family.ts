@@ -32,7 +32,67 @@ export const CreateElderlyFamilyInputSchema = z
     },
   });
 
+export const UpdateElderlyFamilyInputSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    phone: z.string().min(8).optional(),
+    relationship: z.string().min(1).optional(),
+    isPrimaryContact: z.boolean().optional(),
+    notifyViaWhatsapp: z.boolean().optional(),
+  })
+  .openapi({
+    example: {
+      name: "Bambang Soepardi (Anak Pertama)",
+      phone: "081234567899",
+      relationship: "Anak Kandung",
+      isPrimaryContact: true,
+      notifyViaWhatsapp: true,
+    },
+  });
+
+export const FamilyPublicStatusSchema = z.object({
+  elderly: z.object({
+    name: z.string(),
+    age: z.number(),
+    currentStatus: z.enum(["green", "yellow", "red", "grey"]),
+    mobilityStatus: z.string(),
+    rt: z.string(),
+    rw: z.string(),
+    preferredCheckinTime: z.string(),
+    updatedAt: z.string().datetime(),
+  }),
+  familyMember: z.object({
+    name: z.string(),
+    relationship: z.string(),
+  }),
+  community: z.object({
+    name: z.string(),
+    healthFacilityName: z.string().nullable().optional(),
+    healthFacilityPhone: z.string().nullable().optional(),
+    ambulancePhone: z.string().nullable().optional(),
+  }),
+  medications: z.array(
+    z.object({
+      id: z.string(),
+      conditionName: z.string(),
+      medicationName: z.string(),
+      dosage: z.string(),
+      frequency: z.string(),
+      reminderTime: z.string(),
+      timingInstruction: z.string(),
+      isActive: z.boolean(),
+    })
+  ),
+  assignedVolunteer: z
+    .object({
+      name: z.string(),
+      phone: z.string(),
+    })
+    .nullable()
+    .optional(),
+});
+
 export type ElderlyFamily = z.infer<typeof ElderlyFamilySchema>;
-export type CreateElderlyFamilyInput = z.infer<
-  typeof CreateElderlyFamilyInputSchema
->;
+export type CreateElderlyFamilyInput = z.infer<typeof CreateElderlyFamilyInputSchema>;
+export type UpdateElderlyFamilyInput = z.infer<typeof UpdateElderlyFamilyInputSchema>;
+export type FamilyPublicStatus = z.infer<typeof FamilyPublicStatusSchema>;

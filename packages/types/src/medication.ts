@@ -50,6 +50,26 @@ export const CreateMedicationInputSchema = z
     },
   });
 
+export const UpdateMedicationInputSchema = z
+  .object({
+    conditionName: z.string().min(1).optional(),
+    medicationName: z.string().min(1).optional(),
+    dosage: z.string().min(1).optional(),
+    frequency: z.string().min(1).optional(),
+    timeOfDay: TimeOfDayEnum.optional(),
+    timingInstruction: TimingInstructionEnum.optional(),
+    reminderTime: z.string().optional(),
+    notes: z.string().nullable().optional(),
+    isActive: z.boolean().optional(),
+  })
+  .openapi({
+    example: {
+      reminderTime: "06:30",
+      notes: "Diganti jam 06.30 sesuai anjuran dokter puskesmas",
+      isActive: true,
+    },
+  });
+
 export const SmartOcrMedicationResultSchema = z.object({
   conditionName: z.string(),
   medications: z.array(
@@ -70,4 +90,5 @@ export type TimeOfDay = z.infer<typeof TimeOfDayEnum>;
 export type TimingInstruction = z.infer<typeof TimingInstructionEnum>;
 export type ElderlyMedication = z.infer<typeof ElderlyMedicationSchema>;
 export type CreateMedicationInput = z.infer<typeof CreateMedicationInputSchema>;
+export type UpdateMedicationInput = z.infer<typeof UpdateMedicationInputSchema>;
 export type SmartOcrMedicationResult = z.infer<typeof SmartOcrMedicationResultSchema>;
