@@ -8,10 +8,11 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  // Roles: cadre (Kader RT/Posyandu), volunteer (Relawan), family (Keluarga), admin (Super Admin — deferred, post-MVP)
   role: text("role")
-    .$type<"admin" | "kader" | "relawan" | "keluarga">()
+    .$type<"admin" | "cadre" | "volunteer" | "family">()
     .notNull()
-    .default("kader"),
+    .default("cadre"),
   communityUnitId: text("community_unit_id").references(() => communityUnits.id, {
     onDelete: "set null",
   }),

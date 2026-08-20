@@ -11,27 +11,46 @@ export const CommunityUnitSchema = z.object({
   subdistrictCode: z.string(),
   rw: z.string(),
   rt: z.string(),
-  puskesmasName: z.string().nullable().optional(),
-  puskesmasPhone: z.string().nullable().optional(),
-  bidanPhone: z.string().nullable().optional(),
+  healthFacilityName: z.string().nullable().optional(),
+  healthFacilityPhone: z.string().nullable().optional(),
+  communityHealthWorkerPhone: z.string().nullable().optional(),
   ambulancePhone: z.string().nullable().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
 
-export const CreateCommunityUnitSchema = z.object({
+// Self-register: kader signs up + creates their RT in one request
+export const RegisterCommunitySchema = z.object({
+  // Kader account
+  name: z.string().min(2, "Nama minimal 2 karakter"),
+  email: z.string().email("Format email tidak valid"),
+  password: z.string().min(8, "Password minimal 8 karakter"),
+  phone: z.string().optional(),
+  // Community unit (RT)
   province: z.string().min(1),
   city: z.string().min(1),
   district: z.string().min(1),
   subdistrict: z.string().min(1),
-  subdistrictCode: z.string().min(1),
-  rw: z.string().min(1),
-  rt: z.string().min(1),
-  puskesmasName: z.string().optional(),
-  puskesmasPhone: z.string().optional(),
-  bidanPhone: z.string().optional(),
+  subdistrictCode: z.string().min(1, "Kode kelurahan wajib diisi"),
+  rw: z.string().min(1).max(10),
+  rt: z.string().min(1).max(10),
+  // Optional health facility contacts (for Tier 3 referral card)
+  healthFacilityName: z.string().optional(),
+  healthFacilityPhone: z.string().optional(),
+  communityHealthWorkerPhone: z.string().optional(),
+  ambulancePhone: z.string().optional(),
+});
+
+// Update: only allow editing faskes contacts and community name
+export const UpdateCommunitySchema = z.object({
+  name: z.string().min(1).optional(),
+  healthFacilityName: z.string().optional(),
+  healthFacilityPhone: z.string().optional(),
+  communityHealthWorkerPhone: z.string().optional(),
   ambulancePhone: z.string().optional(),
 });
 
 export type CommunityUnit = z.infer<typeof CommunityUnitSchema>;
-export type CreateCommunityUnitInput = z.infer<typeof CreateCommunityUnitSchema>;
+export type RegisterCommunityInput = z.infer<typeof RegisterCommunitySchema>;
+export type UpdateCommunityInput = z.infer<typeof UpdateCommunitySchema>;
+

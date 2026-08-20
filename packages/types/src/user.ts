@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const UserRoleEnum = z.enum(["admin", "kader", "relawan", "keluarga"]);
+export const UserRoleEnum = z.enum(["admin", "cadre", "volunteer", "family"]);
 
 export const UserResponseSchema = z.object({
   id: z.string(),
@@ -18,7 +18,7 @@ export const SignUpSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   password: z.string().min(8),
-  role: UserRoleEnum.optional().default("kader"),
+  role: UserRoleEnum.optional().default("cadre"),
   phone: z.string().optional(),
   communityUnitId: z.string().optional(),
 });

@@ -60,8 +60,40 @@ export const CreateElderlyInputSchema = z.object({
   assignedVolunteerId: z.string().optional(),
 });
 
+export const UpdateElderlyInputSchema = z.object({
+  name: z.string().min(2).optional(),
+  phone: z.string().nullable().optional(),
+  age: z.number().min(50).max(120).optional(),
+  gender: z.enum(["male", "female"]).optional(),
+  address: z.string().min(3).optional(),
+  rt: z.string().min(1).optional(),
+  rw: z.string().min(1).optional(),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
+  mobilityStatus: MobilityStatusEnum.optional(),
+  monitoringMode: MonitoringModeEnum.optional(),
+  medicalHistory: z.string().nullable().optional(),
+  preferredCheckinTime: z.string().optional(),
+  notes: z.string().nullable().optional(),
+});
+
+export const UpdateElderlyStatusInputSchema = z.object({
+  status: CurrentStatusEnum,
+  notes: z.string().optional(),
+});
+
+export const ElderlyQuerySchema = z.object({
+  status: CurrentStatusEnum.optional(),
+  mobilityStatus: MobilityStatusEnum.optional(),
+  monitoringMode: MonitoringModeEnum.optional(),
+  search: z.string().optional(),
+});
+
 export type MobilityStatus = z.infer<typeof MobilityStatusEnum>;
 export type MonitoringMode = z.infer<typeof MonitoringModeEnum>;
 export type CurrentStatus = z.infer<typeof CurrentStatusEnum>;
 export type Elderly = z.infer<typeof ElderlySchema>;
 export type CreateElderlyInput = z.infer<typeof CreateElderlyInputSchema>;
+export type UpdateElderlyInput = z.infer<typeof UpdateElderlyInputSchema>;
+export type UpdateElderlyStatusInput = z.infer<typeof UpdateElderlyStatusInputSchema>;
+export type ElderlyQuery = z.infer<typeof ElderlyQuerySchema>;

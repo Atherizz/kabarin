@@ -31,12 +31,35 @@ export const CreateVolunteerInputSchema = z.object({
   userId: z.string().optional(),
 });
 
+export const UpdateVolunteerInputSchema = z.object({
+  name: z.string().min(2).optional(),
+  phone: z.string().min(8).optional(),
+  address: z.string().min(3).optional(),
+  rt: z.string().min(1).optional(),
+  rw: z.string().min(1).optional(),
+  latitude: z.number().nullable().optional(),
+  longitude: z.number().nullable().optional(),
+  maxCapacity: z.number().optional(),
+  isActive: z.boolean().optional(),
+});
+
 export const AssignVolunteerInputSchema = z.object({
   elderlyId: z.string().min(1),
   volunteerId: z.string().min(1),
   isPrimary: z.boolean().optional().default(true),
 });
 
+export const VolunteerAssignmentSchema = z.object({
+  id: z.string(),
+  elderlyId: z.string(),
+  volunteerId: z.string(),
+  isPrimary: z.boolean(),
+  assignedAt: z.string().datetime(),
+  volunteer: VolunteerSchema.optional(),
+});
+
 export type Volunteer = z.infer<typeof VolunteerSchema>;
 export type CreateVolunteerInput = z.infer<typeof CreateVolunteerInputSchema>;
+export type UpdateVolunteerInput = z.infer<typeof UpdateVolunteerInputSchema>;
 export type AssignVolunteerInput = z.infer<typeof AssignVolunteerInputSchema>;
+export type VolunteerAssignment = z.infer<typeof VolunteerAssignmentSchema>;

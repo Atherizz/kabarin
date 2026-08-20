@@ -30,6 +30,23 @@ export function createAuth(db: AppDatabase, config: AuthConfig) {
     }),
     emailAndPassword: { enabled: true },
     socialProviders: googleProvider,
+    user: {
+      additionalFields: {
+        role: {
+          type: "string",
+          required: false,
+          defaultValue: "cadre",
+        },
+        communityUnitId: {
+          type: "string",
+          required: false,
+        },
+        phone: {
+          type: "string",
+          required: false,
+        },
+      },
+    },
   });
 }
 
