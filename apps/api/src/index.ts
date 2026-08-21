@@ -29,6 +29,11 @@ import { GetElderlyEndpoint } from "./endpoints/elderly/get";
 import { UpdateElderlyEndpoint } from "./endpoints/elderly/update";
 import { DeleteElderlyEndpoint } from "./endpoints/elderly/delete";
 import { UpdateElderlyStatusEndpoint } from "./endpoints/elderly/update-status";
+import { VerifyElderlyEndpoint } from "./endpoints/elderly/verify";
+import {
+  GetEscalationChainEndpoint,
+  UpdateEscalationChainEndpoint,
+} from "./endpoints/elderly/escalation-chain";
 
 // Volunteer endpoints
 import { ListVolunteersEndpoint } from "./endpoints/volunteers/list";
@@ -49,6 +54,7 @@ import { DeleteMedicationEndpoint } from "./endpoints/medications/delete";
 // Family endpoints
 import { ListFamilyEndpoint } from "./endpoints/family/list";
 import { CreateFamilyEndpoint } from "./endpoints/family/create";
+import { CreateElderlyByFamilyEndpoint } from "./endpoints/family/create-elderly";
 import { UpdateFamilyEndpoint } from "./endpoints/family/update";
 import { DeleteFamilyEndpoint } from "./endpoints/family/delete";
 import { GetFamilyStatusEndpoint } from "./endpoints/family/get-status";
@@ -125,6 +131,9 @@ openapi.get("/api/elderly/:id", asRoute(GetElderlyEndpoint));
 openapi.put("/api/elderly/:id", asRoute(UpdateElderlyEndpoint));
 openapi.delete("/api/elderly/:id", asRoute(DeleteElderlyEndpoint));
 openapi.patch("/api/elderly/:id/status", asRoute(UpdateElderlyStatusEndpoint));
+openapi.patch("/api/elderly/:id/verify", asRoute(VerifyElderlyEndpoint));
+openapi.get("/api/elderly/:id/escalation-chain", asRoute(GetEscalationChainEndpoint));
+openapi.put("/api/elderly/:id/escalation-chain", asRoute(UpdateEscalationChainEndpoint));
 openapi.get("/api/elderly/:id/volunteers", asRoute(ListVolunteersByElderlyEndpoint));
 
 // Volunteer endpoints
@@ -143,6 +152,7 @@ openapi.put("/api/elderly/:id/medications/:medId", asRoute(UpdateMedicationEndpo
 openapi.delete("/api/elderly/:id/medications/:medId", asRoute(DeleteMedicationEndpoint));
 
 // Family endpoints
+openapi.post("/api/family/me/elderly", asRoute(CreateElderlyByFamilyEndpoint));
 openapi.get("/api/elderly/:id/family", asRoute(ListFamilyEndpoint));
 openapi.post("/api/elderly/:id/family", asRoute(CreateFamilyEndpoint));
 openapi.put("/api/elderly/:id/family/:familyId", asRoute(UpdateFamilyEndpoint));

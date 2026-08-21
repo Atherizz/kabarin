@@ -1,5 +1,5 @@
 import { z, CreateElderlyInputSchema, ElderlySchema } from "@kabarin/types";
-import { elderly, elderlyMedications, elderlyFamily, elderlyVolunteers } from "@kabarin/db";
+import { eq, and, elderly, elderlyMedications, elderlyFamily, elderlyVolunteers, volunteers } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
@@ -9,8 +9,11 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 export class CreateElderlyEndpoint extends ApiRoute {
   schema = {
     tags: ["Elderly"],
-    summary: "Register new elderly",
-    description: "Registers a new elderly individual in the cadre's RT. Can optionally include medication schedules, family contacts (with auto-generated status page tokens), and a primary volunteer assignment.",
+    summary: "Register new elderly (Cadre Top-Down)",
+    description:
+      "Registers a new elderly individual living in the cadre's RT (Surface 1: Dashboard Kader). " +
+      "Auto-inherits the cadre's RT territory, immediately sets status to verified, " +
+      "saves family contacts for automated WhatsApp updates, and assigns primary/secondary caregiving volunteers.",
     request: {
       body: {
         content: { "application/json": { schema: CreateElderlyInputSchema } },
@@ -41,18 +44,14 @@ export class CreateElderlyEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const session = assertRole(c, "cadre", "family", "admin");
-    const body = await c.req.json<typeof CreateElderlyInputSchema._type>();
-    const communityUnitId = body.communityUnitId ?? session.user.communityUnitId;
-
-    if (!communityUnitId) {
-      return c.json({ success: false, error: "Wilayah RT wajib disertakan untuk pendaftaran lansia" }, 403);
-    }
-
+    const session = assertRole(c, "cadre", "admin");
+    const communityUnitId = assertCommunity(session);
     const db = c.get("db");
+
+    const body = await c.req.json<typeof CreateElderlyInputSchema._type>();
     const elderlyId = crypto.randomUUID();
 
-    // 1. Insert elderly record
+    // 1. Insert elderly record (Cadre top-down registration is immediately verified)
     const [newElderly] = await db
       .insert(elderly)
       .values({
@@ -70,6 +69,7 @@ export class CreateElderlyEndpoint extends ApiRoute {
         mobilityStatus: body.mobilityStatus,
         monitoringMode: body.monitoringMode,
         currentStatus: "green",
+        verificationStatus: "verified",
         riskScore: 0,
         medicalHistory: body.medicalHistory ?? null,
         preferredCheckinTime: body.preferredCheckinTime,
@@ -103,6 +103,7 @@ export class CreateElderlyEndpoint extends ApiRoute {
       const familyRows = body.family.map((f) => ({
         id: crypto.randomUUID(),
         elderlyId,
+        userId: null,
         name: f.name,
         phone: f.phone,
         relationship: f.relationship,
@@ -113,13 +114,58 @@ export class CreateElderlyEndpoint extends ApiRoute {
       createdFamily = await db.insert(elderlyFamily).values(familyRows).returning();
     }
 
-    // 4. Assign volunteer if provided
-    if (body.assignedVolunteerId) {
+    // 4. Assign primary volunteer if provided
+    const primaryVolunteerId = body.primaryVolunteerId ?? body.assignedVolunteerId;
+    if (primaryVolunteerId) {
+      const vol = await db.query.volunteers.findFirst({
+        where: and(
+          eq(volunteers.id, primaryVolunteerId),
+          eq(volunteers.communityUnitId, communityUnitId)
+        ),
+      });
+
+      if (!vol) {
+        return c.json(
+          {
+            success: false,
+            error: `Relawan utama dengan ID '${primaryVolunteerId}' tidak ditemukan di RT ini`,
+          },
+          404
+        );
+      }
+
       await db.insert(elderlyVolunteers).values({
         id: crypto.randomUUID(),
         elderlyId,
-        volunteerId: body.assignedVolunteerId,
+        volunteerId: primaryVolunteerId,
         isPrimary: true,
+      });
+    }
+
+    // 5. Assign secondary volunteer if provided
+    if (body.secondaryVolunteerId && body.secondaryVolunteerId !== primaryVolunteerId) {
+      const secVol = await db.query.volunteers.findFirst({
+        where: and(
+          eq(volunteers.id, body.secondaryVolunteerId),
+          eq(volunteers.communityUnitId, communityUnitId)
+        ),
+      });
+
+      if (!secVol) {
+        return c.json(
+          {
+            success: false,
+            error: `Relawan cadangan dengan ID '${body.secondaryVolunteerId}' tidak ditemukan di RT ini`,
+          },
+          404
+        );
+      }
+
+      await db.insert(elderlyVolunteers).values({
+        id: crypto.randomUUID(),
+        elderlyId,
+        volunteerId: body.secondaryVolunteerId,
+        isPrimary: false,
       });
     }
 

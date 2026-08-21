@@ -33,11 +33,12 @@ export class ListElderlyEndpoint extends ApiRoute {
     const communityUnitId = assertCommunity(session);
     const db = c.get("db");
 
-    const { status, mobilityStatus, monitoringMode, search } = ElderlyQuerySchema.parse(c.req.query());
+    const { status, verificationStatus, mobilityStatus, monitoringMode, search } = ElderlyQuerySchema.parse(c.req.query());
 
     const conditions = [eq(elderly.communityUnitId, communityUnitId)];
 
     if (status) conditions.push(eq(elderly.currentStatus, status));
+    if (verificationStatus) conditions.push(eq(elderly.verificationStatus, verificationStatus));
     if (mobilityStatus) conditions.push(eq(elderly.mobilityStatus, mobilityStatus));
     if (monitoringMode) conditions.push(eq(elderly.monitoringMode, monitoringMode));
     if (search?.trim()) {

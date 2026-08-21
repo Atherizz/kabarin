@@ -19,17 +19,18 @@ export const SignUpSchema = z
     name: z.string().min(2),
     email: z.string().email(),
     password: z.string().min(8),
-    role: UserRoleEnum.optional().default("cadre"),
+    role: UserRoleEnum.optional().default("family"),
     phone: z.string().optional(),
     communityUnitId: z.string().optional(),
   })
   .openapi({
     example: {
-      name: "Ibu Endang Astuti",
-      email: "kader.jatimulyo@gmail.com",
-      password: "PasswordKader123!",
-      role: "cadre",
-      phone: "081233445566",
+      name: "Rian Hidayat (Anak Pemantau)",
+      email: "rian.hidayat@gmail.com",
+      password: "PasswordKeluarga123!",
+      role: "family",
+      phone: "081234567890",
+      communityUnitId: "3573051007-RW10-RT01",
     },
   });
 
@@ -41,8 +42,8 @@ export const SignInSchema = z
   })
   .openapi({
     example: {
-      email: "kader.jatimulyo@gmail.com",
-      password: "PasswordKader123!",
+      email: "rian.hidayat@gmail.com",
+      password: "PasswordKeluarga123!",
       rememberMe: true,
     },
   });
