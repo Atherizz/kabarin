@@ -41,9 +41,15 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
   {
     key: "family",
     title: "Family (Keluarga)",
-    description: "Endpoints accessible to Family Members for registering parents, managing contacts, and monitoring status.",
+    description: "Endpoints accessible to Family Members for registering parents, managing contacts, medications, and monitoring status.",
     tagFilter: (tag) =>
-      ["Auth & Session", "Family Portal", "Family Contacts", "Public Status (Zero-Login)"].includes(tag),
+      [
+        "Auth & Session",
+        "Family Portal",
+        "Family Contacts",
+        "Medication Schedules",
+        "Public Status (Zero-Login)",
+      ].includes(tag),
   },
   {
     key: "public",

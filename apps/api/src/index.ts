@@ -68,6 +68,11 @@ import { GetVisitEndpoint } from "./endpoints/visits/get";
 import { GetVisitFormEndpoint } from "./endpoints/visits/get-form";
 import { SubmitVisitFormEndpoint } from "./endpoints/visits/submit-form";
 
+// Escalation endpoints
+import { ListEscalationsEndpoint } from "./endpoints/escalations/list";
+import { GetEscalationEndpoint } from "./endpoints/escalations/get";
+import { ResolveEscalationEndpoint } from "./endpoints/escalations/resolve";
+
 const app = new Hono<AppEnv>();
 
 // Global middleware
@@ -177,6 +182,11 @@ openapi.post("/api/visits", asRoute(CreateVisitEndpoint));
 openapi.get("/api/visits/:id", asRoute(GetVisitEndpoint));
 openapi.get("/api/visits/form/:token", asRoute(GetVisitFormEndpoint));
 openapi.post("/api/visits/form/:token/submit", asRoute(SubmitVisitFormEndpoint));
+
+// Escalation endpoints
+openapi.get("/api/escalations", asRoute(ListEscalationsEndpoint));
+openapi.get("/api/escalations/:id", asRoute(GetEscalationEndpoint));
+openapi.patch("/api/escalations/:id/resolve", asRoute(ResolveEscalationEndpoint));
 
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));

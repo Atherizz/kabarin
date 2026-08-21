@@ -1,15 +1,17 @@
 import { z } from "@kabarin/types";
-import { eq, and, elderly, elderlyMedications } from "@kabarin/db";
+import { eq, and, elderlyMedications } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { assertRole } from "../../lib/auth-guard";
+import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
 
 export class DeleteMedicationEndpoint extends ApiRoute {
   schema = {
     tags: ["Medication Schedules"],
     summary: "Delete medication schedule",
-    description: "Permanently deletes a medication schedule from an elderly profile.",
+    description:
+      "Permanently deletes a medication schedule from an elderly profile (accessible by RT Cadre, registered Family, or Admin).",
     request: {
       params: z.object({
         id: z.string(),
@@ -29,7 +31,7 @@ export class DeleteMedicationEndpoint extends ApiRoute {
         },
       },
       "404": {
-        description: "Elderly or medication not found in this RT",
+        description: "Elderly or medication not found, or access denied",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -40,20 +42,13 @@ export class DeleteMedicationEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const session = assertRole(c, "cadre", "admin");
-    const communityUnitId = assertCommunity(session);
+    const session = assertRole(c, "cadre", "family", "admin");
     const db = c.get("db");
 
     const { id: elderlyId, medId } = c.req.param();
 
-    // 1. Verify elderly belongs to the cadre's RT
-    const elderlyRecord = await db.query.elderly.findFirst({
-      where: and(eq(elderly.id, elderlyId), eq(elderly.communityUnitId, communityUnitId)),
-    });
-
-    if (!elderlyRecord) {
-      return c.json({ success: false, error: "Data lansia tidak ditemukan di RT ini" }, 404);
-    }
+    // 1. Verify access to elderly (admin / cadre of same RT / registered family)
+    await assertElderlyAccess(db, session, elderlyId);
 
     // 2. Verify medication exists for this elderly
     const existingMed = await db.query.elderlyMedications.findFirst({

@@ -1,5 +1,5 @@
 import { z, SubmitVisitReportSchema } from "@kabarin/types";
-import { eq, volunteerVisits, elderly } from "@kabarin/db";
+import { eq, and, volunteerVisits, elderly, escalationLogs } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
@@ -106,7 +106,54 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
       .where(eq(volunteerVisits.id, visit.id))
       .returning();
 
-    // 3. Determine new traffic-light status for elderly
+    // 3. Auto-resolve or escalate linked escalation logs
+    if (body.reportedCondition === "good") {
+      await db
+        .update(escalationLogs)
+        .set({
+          status: "resolved",
+          resolvedAt: now,
+          resolvedBy: "volunteer_visit",
+          resolutionNotes: `Kunjungan lapangan selesai oleh relawan. Kondisi lansia aman & sehat (${body.reportedCause ?? "sudah dicek"}).`,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(escalationLogs.elderlyId, visit.elderly.id),
+            eq(escalationLogs.status, "open")
+          )
+        );
+    } else if (body.reportedCondition === "emergency") {
+      const activeEscalation = await db.query.escalationLogs.findFirst({
+        where: and(
+          eq(escalationLogs.elderlyId, visit.elderly.id),
+          eq(escalationLogs.status, "open")
+        ),
+      });
+
+      if (!activeEscalation) {
+        await db.insert(escalationLogs).values({
+          id: crypto.randomUUID(),
+          communityUnitId: visit.elderly.communityUnitId,
+          elderlyId: visit.elderly.id,
+          tier: 3,
+          triggerReason: "visit_emergency",
+          status: "open",
+          tierHistory: [
+            {
+              tier: 3,
+              action: "volunteer_emergency_report",
+              targetType: "volunteer",
+              targetId: visit.volunteerId ?? null,
+              note: body.volunteerNotes ?? "Kondisi darurat ditemukan saat kunjungan lapangan.",
+              timestamp: now.toISOString(),
+            },
+          ],
+        });
+      }
+    }
+
+    // 4. Determine new traffic-light status for elderly
     let newStatus: "green" | "yellow" | "red" = "green";
     if (body.reportedCondition === "unwell") {
       newStatus = "yellow";

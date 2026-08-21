@@ -55,9 +55,24 @@ export const CreateEscalationInputSchema = z.object({
   triggerReason: EscalationTriggerReasonEnum,
 });
 
-export const ResolveEscalationInputSchema = z.object({
-  escalationId: z.string().min(1),
-  resolutionNotes: z.string().optional(),
+export const ResolveEscalationBodySchema = z
+  .object({
+    resolutionNotes: z
+      .string()
+      .optional()
+      .describe("Notes explaining the on-site resolution or medical action taken"),
+  })
+  .openapi({
+    example: {
+      resolutionNotes:
+        "Lansia sudah diantar ke Puskesmas oleh keluarga, kondisi stabil dan sudah beristirahat di rumah.",
+    },
+  });
+
+export const EscalationListQuerySchema = z.object({
+  status: EscalationStatusEnum.optional(),
+  tier: z.coerce.number().min(1).max(3).optional(),
+  elderlyId: z.string().optional(),
 });
 
 export type EscalationStatus = z.infer<typeof EscalationStatusEnum>;
@@ -65,4 +80,5 @@ export type EscalationTriggerReason = z.infer<typeof EscalationTriggerReasonEnum
 export type TierHistoryItem = z.infer<typeof TierHistoryItemSchema>;
 export type EscalationLog = z.infer<typeof EscalationLogSchema>;
 export type CreateEscalationInput = z.infer<typeof CreateEscalationInputSchema>;
-export type ResolveEscalationInput = z.infer<typeof ResolveEscalationInputSchema>;
+export type ResolveEscalationBody = z.infer<typeof ResolveEscalationBodySchema>;
+export type EscalationListQuery = z.infer<typeof EscalationListQuerySchema>;
