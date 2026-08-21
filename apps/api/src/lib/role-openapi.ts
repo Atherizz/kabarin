@@ -23,13 +23,20 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
         "Volunteer Management",
         "Medication Schedules",
         "Family Contacts",
+        "Field Visits",
       ].includes(tag),
   },
   {
     key: "volunteer",
     title: "Volunteer (Relawan)",
     description: "Endpoints accessible to Caregiving Volunteers for viewing assigned elderly and logging visits.",
-    tagFilter: (tag) => ["Auth & Session", "Volunteer Portal"].includes(tag),
+    tagFilter: (tag) =>
+      [
+        "Auth & Session",
+        "Volunteer Portal",
+        "Field Visits",
+        "Public Field Reports (Zero-Login)",
+      ].includes(tag),
   },
   {
     key: "family",
@@ -41,8 +48,13 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
   {
     key: "public",
     title: "Public (Zero-Login)",
-    description: "Zero-login endpoints accessible without authentication for status monitoring and RT checks.",
-    tagFilter: (tag) => ["Community & Territory", "Public Status (Zero-Login)"].includes(tag),
+    description: "Zero-login endpoints accessible without authentication for status monitoring, field visit reports, and RT checks.",
+    tagFilter: (tag) =>
+      [
+        "Community & Territory",
+        "Public Status (Zero-Login)",
+        "Public Field Reports (Zero-Login)",
+      ].includes(tag),
   },
   {
     key: "all",

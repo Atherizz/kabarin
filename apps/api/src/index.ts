@@ -61,6 +61,13 @@ import { DeleteFamilyEndpoint } from "./endpoints/family/delete";
 import { GetFamilyStatusEndpoint } from "./endpoints/family/get-status";
 import { TriggerFamilySosEndpoint } from "./endpoints/family/trigger-sos";
 
+// Visit endpoints
+import { ListVisitsEndpoint } from "./endpoints/visits/list";
+import { CreateVisitEndpoint } from "./endpoints/visits/create";
+import { GetVisitEndpoint } from "./endpoints/visits/get";
+import { GetVisitFormEndpoint } from "./endpoints/visits/get-form";
+import { SubmitVisitFormEndpoint } from "./endpoints/visits/submit-form";
+
 const app = new Hono<AppEnv>();
 
 // Global middleware
@@ -96,6 +103,7 @@ app.use("/api/*", async (c, next) => {
   if (c.req.path === "/api/community/register" && c.req.method === "POST") return next();
   if (c.req.path === "/api/community/check" && c.req.method === "GET") return next();
   if (c.req.path.startsWith("/api/family/status/")) return next();
+  if (c.req.path.startsWith("/api/visits/form/")) return next();
   return requireAuth(c, next);
 });
 
@@ -162,6 +170,13 @@ openapi.put("/api/elderly/:id/family/:familyId", asRoute(UpdateFamilyEndpoint));
 openapi.delete("/api/elderly/:id/family/:familyId", asRoute(DeleteFamilyEndpoint));
 openapi.get("/api/family/status/:token", asRoute(GetFamilyStatusEndpoint));
 openapi.post("/api/family/status/:token/trigger", asRoute(TriggerFamilySosEndpoint));
+
+// Visit endpoints
+openapi.get("/api/visits", asRoute(ListVisitsEndpoint));
+openapi.post("/api/visits", asRoute(CreateVisitEndpoint));
+openapi.get("/api/visits/:id", asRoute(GetVisitEndpoint));
+openapi.get("/api/visits/form/:token", asRoute(GetVisitFormEndpoint));
+openapi.post("/api/visits/form/:token/submit", asRoute(SubmitVisitFormEndpoint));
 
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));
