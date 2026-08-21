@@ -80,7 +80,30 @@ export const UpdateCommunitySchema = z
     },
   });
 
+export const CheckCommunityQuerySchema = z
+  .object({
+    subdistrictCode: z.string().min(1, "Kode kelurahan wajib diisi"),
+    rw: z.string().min(1, "RW wajib diisi").max(10),
+    rt: z.string().min(1, "RT wajib diisi").max(10),
+  })
+  .openapi({
+    example: {
+      subdistrictCode: "3573051007",
+      rw: "10",
+      rt: "01",
+    },
+  });
+
+export const CheckCommunityResponseSchema = z.object({
+  available: z.boolean(),
+  code: z.string(),
+  message: z.string(),
+  existingCommunityName: z.string().nullable().optional(),
+});
+
 export type CommunityUnit = z.infer<typeof CommunityUnitSchema>;
 export type RegisterCommunityInput = z.infer<typeof RegisterCommunitySchema>;
 export type UpdateCommunityInput = z.infer<typeof UpdateCommunitySchema>;
+export type CheckCommunityQuery = z.infer<typeof CheckCommunityQuerySchema>;
+export type CheckCommunityResponse = z.infer<typeof CheckCommunityResponseSchema>;
 

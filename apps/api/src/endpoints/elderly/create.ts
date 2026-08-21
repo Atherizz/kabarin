@@ -4,6 +4,7 @@ import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { generateAccessToken } from "../../lib/token";
+import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class CreateElderlyEndpoint extends ApiRoute {
   schema = {
@@ -40,15 +41,15 @@ export class CreateElderlyEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const db = c.get("db");
-    const session = c.get("session")!;
-    const communityUnitId = session.user.communityUnitId;
+    const session = assertRole(c, "cadre", "family", "admin");
+    const body = await c.req.json<typeof CreateElderlyInputSchema._type>();
+    const communityUnitId = body.communityUnitId ?? session.user.communityUnitId;
 
     if (!communityUnitId) {
-      return c.json({ success: false, error: "Akun Anda belum terhubung ke wilayah RT" }, 403);
+      return c.json({ success: false, error: "Wilayah RT wajib disertakan untuk pendaftaran lansia" }, 403);
     }
 
-    const body = await c.req.json<typeof CreateElderlyInputSchema._type>();
+    const db = c.get("db");
     const elderlyId = crypto.randomUUID();
 
     // 1. Insert elderly record

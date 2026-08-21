@@ -3,6 +3,7 @@ import { eq, and, elderly, elderlyFamily } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class DeleteFamilyEndpoint extends ApiRoute {
   schema = {
@@ -39,19 +40,18 @@ export class DeleteFamilyEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
+    const session = assertRole(c, "cadre", "family", "admin");
     const db = c.get("db");
-    const session = c.get("session")!;
-    const communityUnitId = session.user.communityUnitId;
-
-    if (!communityUnitId) {
-      return c.json({ success: false, error: "Akun Anda belum terhubung ke wilayah RT" }, 403);
-    }
 
     const { id: elderlyId, familyId } = c.req.param();
+    const communityUnitId = session.user.communityUnitId;
 
-    // 1. Verify elderly belongs to the cadre's RT
+    // 1. Verify elderly belongs to the cadre's RT (if cadre)
     const elderlyRecord = await db.query.elderly.findFirst({
-      where: and(eq(elderly.id, elderlyId), eq(elderly.communityUnitId, communityUnitId)),
+      where: and(
+        eq(elderly.id, elderlyId),
+        communityUnitId ? eq(elderly.communityUnitId, communityUnitId) : undefined
+      ),
     });
 
     if (!elderlyRecord) {

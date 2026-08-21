@@ -4,6 +4,7 @@ import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { generateAccessToken } from "../../lib/token";
+import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class CreateFamilyEndpoint extends ApiRoute {
   schema = {
@@ -43,20 +44,19 @@ export class CreateFamilyEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
+    const session = assertRole(c, "cadre", "family", "admin");
     const db = c.get("db");
-    const session = c.get("session")!;
-    const communityUnitId = session.user.communityUnitId;
-
-    if (!communityUnitId) {
-      return c.json({ success: false, error: "Akun Anda belum terhubung ke wilayah RT" }, 403);
-    }
 
     const { id: elderlyId } = c.req.param();
     const body = await c.req.json<typeof CreateElderlyFamilyInputSchema._type>();
+    const communityUnitId = session.user.communityUnitId;
 
-    // 1. Verify elderly belongs to the cadre's RT
+    // 1. Verify elderly belongs to the cadre's RT (if cadre)
     const elderlyRecord = await db.query.elderly.findFirst({
-      where: and(eq(elderly.id, elderlyId), eq(elderly.communityUnitId, communityUnitId)),
+      where: and(
+        eq(elderly.id, elderlyId),
+        communityUnitId ? eq(elderly.communityUnitId, communityUnitId) : undefined
+      ),
     });
 
     if (!elderlyRecord) {

@@ -47,7 +47,22 @@ export const SignInSchema = z
     },
   });
 
+export const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Password saat ini wajib diisi"),
+    newPassword: z.string().min(8, "Password baru minimal 8 karakter"),
+    revokeOtherSessions: z.boolean().optional().default(true),
+  })
+  .openapi({
+    example: {
+      currentPassword: "PasswordLama123!",
+      newPassword: "PasswordBaruKader2026!",
+      revokeOtherSessions: true,
+    },
+  });
+
 export type UserRole = z.infer<typeof UserRoleEnum>;
 export type UserResponse = z.infer<typeof UserResponseSchema>;
 export type SignUpInput = z.infer<typeof SignUpSchema>;
 export type SignInInput = z.infer<typeof SignInSchema>;
+export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;

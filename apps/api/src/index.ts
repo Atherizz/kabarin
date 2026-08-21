@@ -13,10 +13,12 @@ import { SignUpEndpoint } from "./endpoints/auth/sign-up";
 import { SignInEndpoint } from "./endpoints/auth/sign-in";
 import { SignOutEndpoint } from "./endpoints/auth/sign-out";
 import { GetSessionEndpoint } from "./endpoints/auth/get-session";
+import { ChangePasswordEndpoint } from "./endpoints/auth/change-password";
 import { MeEndpoint } from "./endpoints/auth/me";
 
 // Community endpoints
 import { RegisterCommunityEndpoint } from "./endpoints/community/register";
+import { CheckCommunityEndpoint } from "./endpoints/community/check";
 import { GetMyCommunityEndpoint } from "./endpoints/community/me";
 import { UpdateMyCommunityEndpoint } from "./endpoints/community/update-me";
 
@@ -36,6 +38,7 @@ import { UpdateVolunteerEndpoint } from "./endpoints/volunteers/update";
 import { AssignVolunteerEndpoint } from "./endpoints/volunteers/assign";
 import { UnassignVolunteerEndpoint } from "./endpoints/volunteers/unassign";
 import { ListVolunteersByElderlyEndpoint } from "./endpoints/volunteers/list-by-elderly";
+import { GetVolunteerMeAssignmentsEndpoint } from "./endpoints/volunteers/me-assignments";
 
 // Medication endpoints
 import { ListMedicationsEndpoint } from "./endpoints/medications/list";
@@ -83,6 +86,7 @@ app.use("*", injectServices);
 app.use("/api/*", async (c, next) => {
   if (c.req.path.startsWith("/api/auth/")) return next();
   if (c.req.path === "/api/community/register" && c.req.method === "POST") return next();
+  if (c.req.path === "/api/community/check" && c.req.method === "GET") return next();
   if (c.req.path.startsWith("/api/family/status/")) return next();
   return requireAuth(c, next);
 });
@@ -106,9 +110,11 @@ openapi.post("/api/auth/sign-up/email", asRoute(SignUpEndpoint));
 openapi.post("/api/auth/sign-in/email", asRoute(SignInEndpoint));
 openapi.post("/api/auth/sign-out", asRoute(SignOutEndpoint));
 openapi.get("/api/auth/get-session", asRoute(GetSessionEndpoint));
+openapi.post("/api/auth/change-password", asRoute(ChangePasswordEndpoint));
 
 // Community endpoints
 openapi.post("/api/community/register", asRoute(RegisterCommunityEndpoint));
+openapi.get("/api/community/check", asRoute(CheckCommunityEndpoint));
 openapi.get("/api/community/me", asRoute(GetMyCommunityEndpoint));
 openapi.put("/api/community/me", asRoute(UpdateMyCommunityEndpoint));
 
@@ -124,6 +130,7 @@ openapi.get("/api/elderly/:id/volunteers", asRoute(ListVolunteersByElderlyEndpoi
 // Volunteer endpoints
 openapi.get("/api/volunteers", asRoute(ListVolunteersEndpoint));
 openapi.post("/api/volunteers", asRoute(CreateVolunteerEndpoint));
+openapi.get("/api/volunteers/me/assignments", asRoute(GetVolunteerMeAssignmentsEndpoint));
 openapi.get("/api/volunteers/:id", asRoute(GetVolunteerEndpoint));
 openapi.put("/api/volunteers/:id", asRoute(UpdateVolunteerEndpoint));
 openapi.post("/api/volunteers/:id/assign", asRoute(AssignVolunteerEndpoint));
