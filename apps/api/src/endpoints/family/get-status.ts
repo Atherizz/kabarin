@@ -6,7 +6,7 @@ import type { AppEnv } from "../../types/app-env";
 
 export class GetFamilyStatusEndpoint extends ApiRoute {
   schema = {
-    tags: ["Family"],
+    tags: ["Public Status (Zero-Login)"],
     summary: "Get elderly welfare status via family token (Zero-Login)",
     description: "Public endpoint. Allows family members to view their elderly relative's real-time traffic-light welfare status, active medications, and assigned volunteer contact without logging in.",
     request: {

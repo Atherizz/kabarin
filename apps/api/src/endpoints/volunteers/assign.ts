@@ -8,7 +8,7 @@ import crypto from "crypto";
 
 export class AssignVolunteerEndpoint extends ApiRoute {
   schema = {
-    tags: ["Volunteers"],
+    tags: ["Volunteer Management"],
     summary: "Assign volunteer to elderly",
     description: "Assigns a volunteer to an elderly individual as either primary or backup caregiver. Checks max capacity limit.",
     request: {

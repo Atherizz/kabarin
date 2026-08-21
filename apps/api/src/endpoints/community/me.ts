@@ -7,7 +7,7 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class GetMyCommunityEndpoint extends ApiRoute {
   schema = {
-    tags: ["Community"],
+    tags: ["Community & Territory"],
     summary: "Get my RT details",
     description: "Returns the community unit (RT) that the authenticated cadre belongs to.",
     responses: {

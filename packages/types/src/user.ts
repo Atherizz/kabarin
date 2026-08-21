@@ -42,8 +42,8 @@ export const SignInSchema = z
   })
   .openapi({
     example: {
-      email: "rian.hidayat@gmail.com",
-      password: "PasswordKeluarga123!",
+      email: "kader@gmail.com",
+      password: "PasswordKader123!",
       rememberMe: true,
     },
   });

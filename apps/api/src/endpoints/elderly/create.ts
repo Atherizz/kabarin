@@ -8,7 +8,7 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class CreateElderlyEndpoint extends ApiRoute {
   schema = {
-    tags: ["Elderly"],
+    tags: ["Elderly Management"],
     summary: "Register new elderly (Cadre Top-Down)",
     description:
       "Registers a new elderly individual living in the cadre's RT (Surface 1: Dashboard Kader). " +

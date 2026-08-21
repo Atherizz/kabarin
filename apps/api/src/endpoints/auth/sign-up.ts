@@ -5,7 +5,7 @@ import type { AppEnv } from "../../types/app-env";
 
 export class SignUpEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Register a new account",
     request: {
       body: {

@@ -7,7 +7,7 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class DeleteFamilyEndpoint extends ApiRoute {
   schema = {
-    tags: ["Family"],
+    tags: ["Family Contacts"],
     summary: "Delete family member contact",
     description: "Permanently deletes a family member contact and invalidates their status access token.",
     request: {

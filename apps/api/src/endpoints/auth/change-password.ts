@@ -5,7 +5,7 @@ import type { AppEnv } from "../../types/app-env";
 
 export class ChangePasswordEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Change account password (Shared for All Roles)",
     description:
       "Allows any authenticated user (cadre, volunteer, family, admin) to change their password. Managed by Better Auth.",

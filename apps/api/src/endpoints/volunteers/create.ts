@@ -8,7 +8,7 @@ import crypto from "crypto";
 
 export class CreateVolunteerEndpoint extends ApiRoute {
   schema = {
-    tags: ["Volunteers"],
+    tags: ["Volunteer Management"],
     summary: "Register and provision new volunteer",
     description:
       "Registers a new volunteer in the cadre's RT. " +

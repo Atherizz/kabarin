@@ -5,7 +5,7 @@ import type { AppEnv } from "../../types/app-env";
 
 export class SignInEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Sign in with email and password",
     request: {
       body: {

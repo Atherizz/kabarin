@@ -6,7 +6,7 @@ import { assertRole } from "../../lib/auth-guard";
 
 export class MeEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Get current authenticated user",
     description: "Returns the profile of the currently authenticated user based on their session cookie.",
     responses: {

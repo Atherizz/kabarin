@@ -8,7 +8,7 @@ import { assertRole } from "../../lib/auth-guard";
 
 export class CreateElderlyByFamilyEndpoint extends ApiRoute {
   schema = {
-    tags: ["Family"],
+    tags: ["Family Portal"],
     summary: "Register elderly parent (Family Bottom-Up)",
     description:
       "Allows an authenticated family member (Surface 3: Family Portal) to register their elderly parent.\n\n" +

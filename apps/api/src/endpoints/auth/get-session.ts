@@ -5,7 +5,7 @@ import type { AppEnv } from "../../types/app-env";
 
 export class GetSessionEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Get current session",
     description: "Returns the active session and user, or null if not authenticated.",
     responses: {

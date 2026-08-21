@@ -5,7 +5,7 @@ import type { AppEnv } from "../../types/app-env";
 
 export class SignOutEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Sign out and invalidate session",
     responses: {
       "200": {

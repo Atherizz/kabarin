@@ -7,7 +7,7 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class VerifyElderlyEndpoint extends ApiRoute {
   schema = {
-    tags: ["Elderly"],
+    tags: ["Elderly Verification & Escalations"],
     summary: "Verify bottom-up elderly registration",
     description:
       "Approves (verified) or rejects a bottom-up elderly registration submitted by family members. " +

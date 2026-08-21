@@ -6,7 +6,7 @@ import type { AppEnv } from "../../types/app-env";
 
 export class CheckCommunityEndpoint extends ApiRoute {
   schema = {
-    tags: ["Community"],
+    tags: ["Community & Territory"],
     summary: "Check RT availability (Real-Time Composite Territory Check)",
     description:
       "Public endpoint. Validates whether a specific RT/RW composite code ({subdistrictCode}-RWxx-RTxx) is already registered in Kabarin.",

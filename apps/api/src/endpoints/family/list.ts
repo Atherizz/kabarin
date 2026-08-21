@@ -7,7 +7,7 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class ListFamilyEndpoint extends ApiRoute {
   schema = {
-    tags: ["Family"],
+    tags: ["Family Contacts"],
     summary: "List all family contacts for an elderly",
     description: "Returns all registered family members linked to an elderly individual in the cadre's RT, including access tokens for the status page.",
     request: {

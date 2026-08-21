@@ -163,6 +163,21 @@ Run these commands from the root directory:
 | `bun run db:migrate` | Applies pending SQL migrations to the database |
 | `bun run db:studio` | Launches Drizzle Studio GUI for visual database management |
 
+---
+
+## 🧪 Testing Credentials & Demo Accounts
+
+For testing endpoints across different roles in Scalar API Docs (`/docs`) or web dashboards, use these pre-provisioned demo accounts:
+
+| Role | Name | Email | Password | Scope & Responsibilities |
+|---|---|---|---|---|
+| 🏢 **Kader RT (`cadre`)** | Ibu Endang Astuti | `kader@gmail.com` | `PasswordKader123!` | Kelola Wilayah RT, Onboarding Lansia, Approval Pendaftaran, Penugasan Relawan, & Triase RT |
+| 🤝 **Relawan RT 1 (`volunteer`)** | Mas Dimas Prasetyo | `relawan@gmail.com` | `Kabarin2026!` | Portal Relawan, Lansia Binaan, & Laporan Kunjungan Lapangan |
+| 🤝 **Relawan RT 2 (`volunteer`)** | Mas Dimas Wahyu | `relawan2@gmail.com` | `Kabarin2026!` | Relawan Cadangan / Pendamping Tambahan RT |
+| 👨‍👩‍👧 **Keluarga (`family`)** | Rian Hidayat (Anak Pemantau) | `keluarga@gmail.com` | `Kabarin2026!` | Pendaftaran Orang Tua Mandiri (Bottom-Up) & Pantau Kondisi Harian |
+
+> [!TIP]
+> Buka **`http://localhost:8787/docs`** untuk mencoba request API via Scalar Docs. Gunakan dropdown selector di pojok kiri atas untuk beralih antar-role dokumen secara terisolasi!
 
 ---
 

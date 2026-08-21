@@ -7,7 +7,7 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class UnassignVolunteerEndpoint extends ApiRoute {
   schema = {
-    tags: ["Volunteers"],
+    tags: ["Volunteer Management"],
     summary: "Unassign volunteer from elderly",
     description: "Removes caregiving assignment between a volunteer and an elderly individual.",
     request: {

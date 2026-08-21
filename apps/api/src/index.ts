@@ -106,7 +106,7 @@ const openapi = fromHono(app, {
     info: {
       title: "Kabarin API",
       version: "1.0.0",
-      description: "Sistem pemantauan kesejahteraan lansia berbasis komunitas RT",
+      description: "Sistem Pemantauan Kesejahteraan Lansia Berbasis Komunitas RT",
     },
   },
 });
@@ -162,14 +162,21 @@ openapi.get("/api/family/status/:token", asRoute(GetFamilyStatusEndpoint));
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));
 
+import { getFilteredOpenApiSpec, renderScalarHtml, RoleGroupKey } from "./lib/role-openapi";
+
 // Public endpoints
 app.get("/health", (c) => c.json({ status: "ok", timestamp: new Date().toISOString() }));
 
-// Scalar API docs
-app.get("/docs", apiReference({
-  spec: { url: "/openapi.json" },
-  theme: "kepler",
-}));
+// Role-filtered OpenAPI schemas
+app.get("/openapi/:role", (c) => {
+  const role = c.req.param("role").replace(/\.json$/, "") as RoleGroupKey;
+  const fullSchema = (openapi as any).schema;
+  const filtered = getFilteredOpenApiSpec(fullSchema, role);
+  return c.json(filtered);
+});
+
+// Scalar API docs with Multi-Source Role Dropdown Selector
+app.get("/docs", (c) => c.html(renderScalarHtml((openapi as any).schema)));
 
 app.onError(onError);
 

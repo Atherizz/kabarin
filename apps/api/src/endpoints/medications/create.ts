@@ -8,7 +8,7 @@ import crypto from "crypto";
 
 export class CreateMedicationEndpoint extends ApiRoute {
   schema = {
-    tags: ["Medications"],
+    tags: ["Medication Schedules"],
     summary: "Add medication schedule for an elderly",
     description: "Adds a new medication schedule to an elderly profile (manual entry or from Smart OCR extraction).",
     request: {

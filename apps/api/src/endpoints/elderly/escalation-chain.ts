@@ -7,7 +7,7 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class GetEscalationChainEndpoint extends ApiRoute {
   schema = {
-    tags: ["Elderly"],
+    tags: ["Elderly Verification & Escalations"],
     summary: "Get escalation chain configuration for an elderly",
     description:
       "Returns the hierarchical responder configuration for Tier 1 (Primary Volunteer), " +
@@ -102,7 +102,7 @@ export class GetEscalationChainEndpoint extends ApiRoute {
 
 export class UpdateEscalationChainEndpoint extends ApiRoute {
   schema = {
-    tags: ["Elderly"],
+    tags: ["Elderly Verification & Escalations"],
     summary: "Update escalation chain for an elderly",
     description:
       "Updates the primary responder (Tier 1 volunteer), secondary responder (Tier 2 volunteer), " +

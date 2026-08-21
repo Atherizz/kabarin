@@ -7,7 +7,7 @@ import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class UpdateVolunteerEndpoint extends ApiRoute {
   schema = {
-    tags: ["Volunteers"],
+    tags: ["Volunteer Management"],
     summary: "Update volunteer profile",
     description: "Updates details, max capacity, or active status of a volunteer. Scoped to cadre's RT.",
     request: {
