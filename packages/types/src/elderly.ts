@@ -5,6 +5,7 @@ import { CreateElderlyFamilyInputSchema, ElderlyFamilySchema } from "./family";
 export const MobilityStatusEnum = z.enum(["independent", "needs_assistance", "homebound"]);
 export const MonitoringModeEnum = z.enum(["active", "passive"]);
 export const CurrentStatusEnum = z.enum(["green", "yellow", "red", "grey"]);
+export const VerificationStatusEnum = z.enum(["verified", "pending_verification", "rejected"]);
 
 export const ElderlySchema = z.object({
   id: z.string(),
@@ -24,6 +25,8 @@ export const ElderlySchema = z.object({
   monitoringMode: MonitoringModeEnum,
   // Cached traffic-light status — updated after each care cycle
   currentStatus: CurrentStatusEnum,
+  // Verification status for bottom-up family registration
+  verificationStatus: VerificationStatusEnum,
   // 0–100 risk score computed from health profile + checkin history
   riskScore: z.number(),
   // Medical diagnoses / chronic conditions (e.g. "Hipertensi, Riwayat Stroke 2024")
@@ -147,6 +150,7 @@ export const ElderlyQuerySchema = z.object({
 export type MobilityStatus = z.infer<typeof MobilityStatusEnum>;
 export type MonitoringMode = z.infer<typeof MonitoringModeEnum>;
 export type CurrentStatus = z.infer<typeof CurrentStatusEnum>;
+export type VerificationStatus = z.infer<typeof VerificationStatusEnum>;
 export type Elderly = z.infer<typeof ElderlySchema>;
 export type CreateElderlyInput = z.infer<typeof CreateElderlyInputSchema>;
 export type UpdateElderlyInput = z.infer<typeof UpdateElderlyInputSchema>;

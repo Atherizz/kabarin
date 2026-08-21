@@ -264,40 +264,142 @@ ke database.                  secara otomatis.             untuk verifikasi lang
 
 ---
 
-### 🟢 FLOW 6: Alur Eskalasi Insiden & Tanggap Darurat Relawan 3-Tier
+### 🟢 FLOW 6: Konfigurasi Rantai Eskalasi Per Lansia & Alur Tanggap Darurat
+
+> **Prinsip Utama:**
+> Setiap lansia memiliki **konfigurasi eskalasi pribadi** yang ditentukan saat onboarding oleh kader atau keluarga. Tidak semua orang perlu tahu untuk setiap kejadian — sistemnya bertahap dan proporsional, disesuaikan dengan konteks sosial masing-masing keluarga.
+
+#### 📋 A. Konfigurasi Rantai Eskalasi Saat Onboarding Lansia
+
+Saat mendaftarkan lansia (Form Step 4), kader/keluarga mengisi preferensi kontak eskalasi pribadi:
 
 ```
-                            [Pemicu Eskalasi Terdeteksi]
-                   (Keluhan Sakit / Tidak Balas / Tombol Darurat)
-                                         │
-                 ┌───────────────────────┼───────────────────────┐
-                 ▼                       ▼                       ▼
-         [TIER 1: PERHATIAN]     [TIER 2: PERINGATAN]     [TIER 3: DARURAT KRITIS]
-         • Tidak balas sapaan    • Keluhan lemas/pusing   • Gejala stroke/jatuh/SOS
-         • Obat belum diminum    • Butuh cek fisik        • Butuh evakuasi medis
-                 │                       │                       │
-                 └───────────────────────┼───────────────────────┘
-                                         ▼
-                   [Sistem Mengirim Multi-Cast Alert Serentak]
-                   1. WhatsApp Relawan Utama: Tugas cek lokasi + link form
-                   2. WhatsApp Seluruh Keluarga: Notifikasi status terkini
-                   3. Dashboard Kader: Kartu prioritas menyala
-                   4. (Emergency Broadcast Fallback: Jika Relawan Utama
-                       tidak respons >10 menit ➔ Broadcast ke seluruh relawan RT)
-                                         │
-                                         ▼
-                   [Relawan Datang Mengecek ke Rumah Lansia]
-                                         │
-                 ┌───────────────────────┴───────────────────────┐
-                 ▼                                               ▼
-   [Opsi A: Form Cepat /lapor/:token]            [Opsi B: Dashboard Relawan di Web]
-   Relawan buka link dari WA di HP,               Relawan login ke web, buka data lansia,
-   isi kondisi 1 menit, submit selesai.           isi laporan observasi & foto kunjungan.
-                                         │
-                                         ▼
-                   [Sistem Memperbarui Status di Seluruh Dashboard]
-                   • Status lansia kembali normal (HIJAU) setelah terverifikasi
-                   • Catatan kunjungan tersimpan di rekam riwayat
+KONFIGURASI RANTAI ESKALASI — Mbah Sumo (Contoh)
+──────────────────────────────────────────────────────────────────
+Relawan Utama (Primary Responder):
+  👤 Mas Budi Santoso  |  Jarak: 30m  |  Binaan aktif: 2 orang
+  ↳ Dihubungi PERTAMA di Tier 1 & Tier 2
+
+Relawan Cadangan (Secondary Responder):
+  👤 Ibu Wati Rahayu   |  Jarak: 60m  |  Binaan aktif: 1 orang
+  ↳ Fallback jika Mas Budi tidak respons >10 menit di Tier 1,
+    atau dipanggil SERENTAK dengan Mas Budi di Tier 3
+
+Family Primary Contact:
+  👤 Mas Rian (Anak ke-1, Malang)  |  WA: 081200001111
+  ↳ Dihubungi mulai Tier 2 & Tier 3
+  ↳ Dipilih karena paling responsif & paling dekat secara fisik
+
+Family Emergency Contacts (Semua Kontak):
+  👤 Mbak Maya (Anak ke-2, Jakarta)  |  WA: 081299887766
+  👤 Pak Arif (Menantu, Malang)      |  WA: 082188776655
+  ↳ Hanya dihubungi saat Tier 3 (Darurat Kritis)
+──────────────────────────────────────────────────────────────────
+Catatan: Primary Responder tidak harus relawan formal RT.
+Bisa diisi cucu yang tinggal 1 gang, tetangga dekat,
+atau siapa saja yang paling cepat bisa datang ke lokasi.
+```
+
+#### 📊 B. Breakdown Tindakan Per Tingkat Urgensi (Tier)
+
+```
+[Pemicu Eskalasi Terdeteksi oleh AI Care Agent]
+              │
+     ┌────────┴──────────────────────────────────────────────────────┐
+     │                                                               │
+     ▼                                                               ▼
+[Klasifikasi Otomatis dari Kondisi Lansia]            [Manual: Tombol SOS ditekan Keluarga]
+                                                       ➔ Langsung masuk Tier 3
+     │
+     ├──────────────────────────────┬────────────────────────────────────────────┐
+     │                              │                                            │
+     ▼                              ▼                                            ▼
+
+╔════════════════════════╗  ╔════════════════════════════╗  ╔════════════════════════════════╗
+║  🟡 TIER 1             ║  ║  🟠 TIER 2                 ║  ║  🔴 TIER 3                     ║
+║  PERHATIAN             ║  ║  PERINGATAN                ║  ║  DARURAT KRITIS                ║
+╠════════════════════════╣  ╠════════════════════════════╣  ╠════════════════════════════════╣
+║ PEMICU:                ║  ║ PEMICU:                    ║  ║ PEMICU:                        ║
+║ • Tidak balas sapaan   ║  ║ • Lansia mengeluh lemas,   ║  ║ • Gejala stroke / tidak sadar  ║
+║   melewati grace period║  ║   pusing, mual, atau nyeri ║  ║ • Jatuh / cedera fisik         ║
+║ • Pengingat obat ke-2  ║  ║ • Relawan Tier 1 lapor     ║  ║ • Tidak ada respons setelah    ║
+║   tidak dibalas        ║  ║   butuh pantau lebih lanjut║  ║   relawan Tier 1 sudah cek     ║
+║                        ║  ║                            ║  ║ • Tombol SOS ditekan keluarga  ║
+╠════════════════════════╣  ╠════════════════════════════╣  ╠════════════════════════════════╣
+║ SIAPA YANG DIHUBUNGI:  ║  ║ SIAPA YANG DIHUBUNGI:      ║  ║ SIAPA YANG DIHUBUNGI:          ║
+║                        ║  ║                            ║  ║                                ║
+║ • Relawan Utama        ║  ║ • Relawan Utama (Primary)  ║  ║ • Relawan Utama + Cadangan     ║
+║   (Primary saja)       ║  ║   + Relawan Cadangan       ║  ║   (SERENTAK, tidak bertahap)   ║
+║                        ║  ║ • Family Primary Contact   ║  ║ • Family Primary Contact       ║
+║ ⚠️ Keluarga TIDAK      ║  ║   (1 kontak keluarga       ║  ║ • SEMUA Family Emergency       ║
+║    dihubungi di Tier 1 ║  ║   yang paling responsif)   ║  ║   Contacts                     ║
+║    (Cegah alarm fatigue║  ║                            ║  ║ • Dashboard Kader: Kartu       ║
+║    harian berlebihan)  ║  ║ ℹ️ Kader dapat notif di    ║  ║   Darurat Merah Menyala        ║
+║                        ║  ║    dashboard, tidak via WA ║  ║ • Kader mendapat WA alert      ║
+║                        ║  ║                            ║  ║   prioritas tinggi             ║
+╠════════════════════════╣  ╠════════════════════════════╣  ╠════════════════════════════════╣
+║ AKSI RELAWAN:          ║  ║ AKSI RELAWAN:              ║  ║ AKSI RELAWAN:                  ║
+║                        ║  ║                            ║  ║                                ║
+║ • Cek ke rumah lansia  ║  ║ • Kunjungan fisik langsung ║  ║ • Tiba di lokasi, evaluasi     ║
+║ • Isi form cepat       ║  ║ • Dampingi & pantau lansia ║  ║   kondisi darurat              ║
+║   /lapor/:token        ║  ║ • Koordinasi dengan Family ║  ║ • Hubungi 119 / IGD jika       ║
+║ • Laporkan: Aman atau  ║  ║   Primary jika perlu       ║  ║   diperlukan                   ║
+║   Perlu Tindakan Lanjut║  ║   tindakan medis           ║  ║ • Update status via form       ║
+║   (➔ eskalasi Tier 2)  ║  ║                            ║  ║   /lapor/:token                ║
+╠════════════════════════╣  ╠════════════════════════════╣  ╠════════════════════════════════╣
+║ FALLBACK (>10 menit):  ║  ║ FALLBACK (>10 menit):      ║  ║ FALLBACK:                      ║
+║                        ║  ║                            ║  ║                                ║
+║ Primary tidak respons  ║  ║ Kedua relawan tidak respons║  ║ Broadcast ke SELURUH relawan   ║
+║ ➔ Hubungi Secondary    ║  ║ ➔ WA alert langsung ke     ║  ║ aktif RT + WA Kader untuk      ║
+║   Responder            ║  ║   Kader RT                 ║  ║   koordinasi langsung          ║
+╚════════════════════════╝  ╚════════════════════════════╝  ╚════════════════════════════════╝
+```
+
+#### 📲 C. Contoh Nyata: Eskalasi Mbah Sumo Step-by-Step
+
+```
+[Mbah Sumo tidak membalas sapaan jam 07:00 hingga jam 08:30]
+                              │
+                              ▼
+       [AI mendeteksi timeout grace period — Tier 1 aktif]
+                              │
+                              ▼
+  [WA ke Mas Budi — Primary Responder, jarak 30m:]
+  "Mas Budi, Mbah Sumo (No. 12 Jl. Mawar) belum membalas
+   sapaan kami sejak jam 07:00. Bisa minta tolong dicek
+   sebentar nggih? 🙏
+   Laporan cepat: https://kabarin.id/lapor/token_budi_sumo"
+
+  [Keluarga: TIDAK dihubungi — mungkin Mbah hanya ke pasar]
+                              │
+              ┌───────────────┴─────────────────────────────────┐
+              ▼                                                 ▼
+   [Mas Budi datang & cek]                   [Mas Budi tidak respons > 10 mnt]
+              │                                                 │
+              ▼                                                 ▼
+   ┌──────────┴──────────────┐            [WA ke Ibu Wati — Secondary Responder:]
+   ▼                         ▼            "Ibu Wati, tolong bantu cek Mbah Sumo
+[Laporan: AMAN]   [Laporan: PERLU BANTU]  ya Bu, Mas Budi belum bisa dihubungi 🙏"
+   │                         │
+   ▼                         ▼
+Status HIJAU ✅          Naik ke TIER 2:
+Keluarga tidak         • WA ke Mas Rian (Family Primary Contact)
+perlu tahu.            • Relawan Utama + Cadangan dipanggil bersama
+                       • Kader mendapat notif di dashboard
+```
+
+#### 🔄 D. Setelah Relawan Menyelesaikan Kunjungan
+
+```
+[Relawan Isi Laporan via /lapor/:token atau Dashboard Web]
+                              │
+                              ▼
+  [Sistem Memperbarui Status Secara Real-Time ke Seluruh Pihak]
+  • Status lansia kembali HIJAU setelah terverifikasi aman
+  • Catatan kunjungan tersimpan di riwayat profil lansia
+  • Keluarga yang terdaftar mendapat notif WA:
+    "Mbah Sumo sudah dikunjungi Mas Budi jam 09:15.
+     Kondisi: Aman, beliau tadi sedang tidur 🙂"
 ```
 
 ---

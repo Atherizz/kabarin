@@ -51,6 +51,11 @@ export const elderly = pgTable("elderly", {
   riskScore: doublePrecision("risk_score").notNull().default(0),
   // Chronic conditions and medical diagnoses (e.g. "Hipertensi, Riwayat Stroke") extracted from KMS/OCR
   medicalHistory: text("medical_history"),
+  // Registration approval status (verified for cadre direct registration, pending_verification for family bottom-up)
+  verificationStatus: text("verification_status")
+    .$type<"verified" | "pending_verification" | "rejected">()
+    .notNull()
+    .default("verified"),
   preferredCheckinTime: varchar("preferred_checkin_time", { length: 10 })
     .notNull()
     .default("07:00"),
