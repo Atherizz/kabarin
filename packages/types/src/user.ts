@@ -43,7 +43,7 @@ export const SignInSchema = z
   .openapi({
     example: {
       email: "kader@gmail.com",
-      password: "PasswordKader123!",
+      password: "Kabarin2026!",
       rememberMe: true,
     },
   });

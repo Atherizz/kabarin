@@ -1,15 +1,16 @@
 import { z, ElderlyFamilySchema } from "@kabarin/types";
-import { eq, and, desc, elderly, elderlyFamily } from "@kabarin/db";
+import { eq, desc, elderlyFamily } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { assertRole } from "../../lib/auth-guard";
+import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
 
 export class ListFamilyEndpoint extends ApiRoute {
   schema = {
     tags: ["Family Contacts"],
     summary: "List all family contacts for an elderly",
-    description: "Returns all registered family members linked to an elderly individual in the cadre's RT, including access tokens for the status page.",
+    description: "Returns all registered family members linked to an elderly individual, including access tokens for the status page.",
     request: {
       params: z.object({
         id: z.string(),
@@ -27,8 +28,16 @@ export class ListFamilyEndpoint extends ApiRoute {
           },
         },
       },
+      "403": {
+        description: "Forbidden: Not permitted to manage this elderly",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
       "404": {
-        description: "Elderly not found in this RT",
+        description: "Elderly not found",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -39,20 +48,12 @@ export class ListFamilyEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const session = assertRole(c, "cadre", "admin");
-    const communityUnitId = assertCommunity(session);
+    const session = assertRole(c, "cadre", "family", "admin");
     const db = c.get("db");
-
     const { id: elderlyId } = c.req.param();
 
-    // 1. Verify elderly belongs to the cadre's RT
-    const elderlyRecord = await db.query.elderly.findFirst({
-      where: and(eq(elderly.id, elderlyId), eq(elderly.communityUnitId, communityUnitId)),
-    });
-
-    if (!elderlyRecord) {
-      return c.json({ success: false, error: "Data lansia tidak ditemukan di RT ini" }, 404);
-    }
+    // 1. Verify access to elderly (admin / cadre of same RT / registered family)
+    await assertElderlyAccess(db, session, elderlyId);
 
     // 2. Fetch family members
     const records = await db.query.elderlyFamily.findMany({

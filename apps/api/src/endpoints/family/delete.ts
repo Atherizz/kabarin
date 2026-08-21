@@ -1,9 +1,10 @@
 import { z } from "@kabarin/types";
-import { eq, and, elderly, elderlyFamily } from "@kabarin/db";
+import { eq, and, elderlyFamily } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { assertRole } from "../../lib/auth-guard";
+import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
 
 export class DeleteFamilyEndpoint extends ApiRoute {
   schema = {
@@ -28,8 +29,16 @@ export class DeleteFamilyEndpoint extends ApiRoute {
           },
         },
       },
+      "403": {
+        description: "Forbidden: Not permitted to manage this elderly",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
       "404": {
-        description: "Elderly or family member not found in this RT",
+        description: "Elderly or family member not found",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -44,19 +53,9 @@ export class DeleteFamilyEndpoint extends ApiRoute {
     const db = c.get("db");
 
     const { id: elderlyId, familyId } = c.req.param();
-    const communityUnitId = session.user.communityUnitId;
 
-    // 1. Verify elderly belongs to the cadre's RT (if cadre)
-    const elderlyRecord = await db.query.elderly.findFirst({
-      where: and(
-        eq(elderly.id, elderlyId),
-        communityUnitId ? eq(elderly.communityUnitId, communityUnitId) : undefined
-      ),
-    });
-
-    if (!elderlyRecord) {
-      return c.json({ success: false, error: "Data lansia tidak ditemukan di RT ini" }, 404);
-    }
+    // 1. Verify access to elderly (admin / cadre of same RT / registered family)
+    await assertElderlyAccess(db, session, elderlyId);
 
     // 2. Verify family member exists for this elderly
     const existingFamily = await db.query.elderlyFamily.findFirst({

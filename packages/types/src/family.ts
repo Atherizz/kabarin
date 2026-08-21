@@ -96,3 +96,38 @@ export type ElderlyFamily = z.infer<typeof ElderlyFamilySchema>;
 export type CreateElderlyFamilyInput = z.infer<typeof CreateElderlyFamilyInputSchema>;
 export type UpdateElderlyFamilyInput = z.infer<typeof UpdateElderlyFamilyInputSchema>;
 export type FamilyPublicStatus = z.infer<typeof FamilyPublicStatusSchema>;
+
+// GET /api/family/me/elderly — response item shape
+export const FamilyMonitoredElderlySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  age: z.number(),
+  gender: z.enum(["male", "female"]),
+  currentStatus: z.enum(["green", "yellow", "red", "grey"]),
+  verificationStatus: z.enum(["verified", "pending_verification", "rejected"]),
+  address: z.string(),
+  rt: z.string(),
+  rw: z.string(),
+  communityUnitId: z.string(),
+  communityName: z.string(),
+  relationship: z.string(),
+  isPrimaryContact: z.boolean(),
+  accessToken: z.string(),
+  activeMedicationsCount: z.number(),
+  preferredCheckinTime: z.string(),
+  updatedAt: z.string().datetime(),
+});
+
+// POST /api/family/status/:token/trigger — request body (optional reason)
+export const TriggerFamilySosInputSchema = z
+  .object({
+    reason: z.string().optional(),
+  })
+  .openapi({
+    example: {
+      reason: "Sudah dari tadi siang tidak bisa dihubungi, sangat mengkhawatirkan",
+    },
+  });
+
+export type FamilyMonitoredElderly = z.infer<typeof FamilyMonitoredElderlySchema>;
+export type TriggerFamilySosInput = z.infer<typeof TriggerFamilySosInputSchema>;

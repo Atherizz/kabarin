@@ -55,9 +55,11 @@ import { DeleteMedicationEndpoint } from "./endpoints/medications/delete";
 import { ListFamilyEndpoint } from "./endpoints/family/list";
 import { CreateFamilyEndpoint } from "./endpoints/family/create";
 import { CreateElderlyByFamilyEndpoint } from "./endpoints/family/create-elderly";
+import { ListMeElderlyEndpoint } from "./endpoints/family/list-me-elderly";
 import { UpdateFamilyEndpoint } from "./endpoints/family/update";
 import { DeleteFamilyEndpoint } from "./endpoints/family/delete";
 import { GetFamilyStatusEndpoint } from "./endpoints/family/get-status";
+import { TriggerFamilySosEndpoint } from "./endpoints/family/trigger-sos";
 
 const app = new Hono<AppEnv>();
 
@@ -153,11 +155,13 @@ openapi.delete("/api/elderly/:id/medications/:medId", asRoute(DeleteMedicationEn
 
 // Family endpoints
 openapi.post("/api/family/me/elderly", asRoute(CreateElderlyByFamilyEndpoint));
+openapi.get("/api/family/me/elderly", asRoute(ListMeElderlyEndpoint));
 openapi.get("/api/elderly/:id/family", asRoute(ListFamilyEndpoint));
 openapi.post("/api/elderly/:id/family", asRoute(CreateFamilyEndpoint));
 openapi.put("/api/elderly/:id/family/:familyId", asRoute(UpdateFamilyEndpoint));
 openapi.delete("/api/elderly/:id/family/:familyId", asRoute(DeleteFamilyEndpoint));
 openapi.get("/api/family/status/:token", asRoute(GetFamilyStatusEndpoint));
+openapi.post("/api/family/status/:token/trigger", asRoute(TriggerFamilySosEndpoint));
 
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));

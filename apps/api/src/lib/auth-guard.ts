@@ -6,7 +6,6 @@ import type { AppEnv } from "../types/app-env";
 
 /**
  * Asserts that the incoming request has a valid session and matching user role.
- * Throws an HTTPException (401/403) which is captured by the global onError handler.
  */
 export function assertRole(
   c: Context<AppEnv>,
@@ -41,3 +40,4 @@ export function assertCommunity(session: AuthSession): string {
   }
   return communityUnitId;
 }
+
