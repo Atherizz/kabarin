@@ -10,7 +10,8 @@
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
     "push": "drizzle-kit push",
-    "studio": "drizzle-kit studio"
+    "studio": "drizzle-kit studio",
+    "seed": "bun run src/seed.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
@@ -18,6 +19,7 @@
     "postgres": "^3.4.0"
   },
   "devDependencies": {
+    "@kabarin/auth": "workspace:*",
     "drizzle-kit": "^0.27.0",
     "dotenv": "^16.4.0"
   }

@@ -1,0 +1,98 @@
+import type { AppDatabase } from "../create-db";
+import { checkinSessions } from "../schema";
+import {
+  COMMUNITY_RT01_ID,
+  ELD_SOEPARDI_ID,
+  ELD_AMINAH_ID,
+  ELD_KARTOWIJOYO_ID,
+  ELD_SRI_ID,
+  CHK_SOEPARDI_ID,
+  CHK_AMINAH_ID,
+  CHK_KARTOWIJOYO_ID,
+  CHK_SRI_ID,
+} from "./constants";
+
+export async function seedCheckins(db: AppDatabase) {
+  const todayWib = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+  }).format(new Date());
+
+  await db.insert(checkinSessions).values([
+    // 1. Mbah Soepardi — Replied via Voice Note (Normal / Positive)
+    {
+      id: CHK_SOEPARDI_ID,
+      communityUnitId: COMMUNITY_RT01_ID,
+      elderlyId: ELD_SOEPARDI_ID,
+      sessionDate: todayWib,
+      status: "replied",
+      sentAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+      repliedAt: new Date(Date.now() - 3.8 * 60 * 60 * 1000),
+      replyType: "voice",
+      rawText:
+        "Alhamdulillah Mas Dimas, kulo sehat walafiat, wau enjing sampun sarapan bubur ayam kaliyan ngunjuk obat tensi.",
+      voiceAudioUrl: "https://storage.kabarin.id/audio/soepardi-checkin-today.ogg",
+      aiTriageResult: {
+        urgency: "normal",
+        symptoms: [],
+        medicationCompliance: true,
+        clinicalReasoning:
+          "Lansia mengonfirmasi sudah sarapan bubur dan meminum obat anti-hipertensi secara rutin. Suara jernih dan bersemangat.",
+        recommendedAction: "Pertahankan pemantauan sapaan rutin esok hari pukul 07:00.",
+        toolsExecuted: ["whisper_stt", "triage_classifier", "update_elderly_status"],
+      },
+    },
+    // 2. Mbah Siti Aminah — Replied via Text (Needs Attention / Warning: Dizziness)
+    {
+      id: CHK_AMINAH_ID,
+      communityUnitId: COMMUNITY_RT01_ID,
+      elderlyId: ELD_AMINAH_ID,
+      sessionDate: todayWib,
+      status: "replied",
+      sentAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
+      repliedAt: new Date(Date.now() - 3.6 * 60 * 60 * 1000),
+      replyType: "text",
+      rawText: "Nggih mas, niki sirah kulo rodo mumet cekot-cekot saking subuh wau.",
+      aiTriageResult: {
+        urgency: "needs_attention",
+        symptoms: ["Pusing cekot-cekot sejak subuh", "Kelelahan"],
+        medicationCompliance: null,
+        clinicalReasoning:
+          "Keluhan pusing kepala berulang pada pasien riwayat DM Tipe 2. Perlu monitoring konsumsi cairan dan gula darah.",
+        recommendedAction:
+          "Kirimkan notifikasi pemantauan lanjutan ke relawan pendamping dan keluarga di perantauan.",
+        toolsExecuted: ["triage_classifier", "raise_tier2_escalation", "notify_family_wa"],
+      },
+    },
+    // 3. Mbah Kartowijoyo — Escalated (Homebound / Passive checkin)
+    {
+      id: CHK_KARTOWIJOYO_ID,
+      communityUnitId: COMMUNITY_RT01_ID,
+      elderlyId: ELD_KARTOWIJOYO_ID,
+      sessionDate: todayWib,
+      status: "escalated",
+      sentAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+      reminderSentAt: new Date(Date.now() - 4.5 * 60 * 60 * 1000),
+      replyType: "none",
+      aiTriageResult: {
+        urgency: "emergency",
+        symptoms: ["Tidak ada respon sapaan", "Tirah baring total"],
+        medicationCompliance: false,
+        clinicalReasoning:
+          "Lansia kategori homebound pasca stroke tidak merespons pengingat dan tidak memiliki HP mandiri.",
+        recommendedAction: "Dispatch kunjungan fisik darurat oleh relawan terdekat.",
+        toolsExecuted: ["timeout_escalator", "dispatch_volunteer_visit"],
+      },
+    },
+    // 4. Mbah Sri Wahyuni — Reminded (Waiting for response)
+    {
+      id: CHK_SRI_ID,
+      communityUnitId: COMMUNITY_RT01_ID,
+      elderlyId: ELD_SRI_ID,
+      sessionDate: todayWib,
+      status: "reminded",
+      sentAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+      reminderSentAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+      replyType: "none",
+    },
+  ]);
+}
