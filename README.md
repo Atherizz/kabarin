@@ -16,7 +16,7 @@
   - **Tier 1:** Local neighborhood volunteer alert for on-site physical welfare checks.
   - **Tier 2:** Primary family and RT administrator alert for non-responsive or developing concerns.
   - **Tier 3:** Direct coordination with local health clinics (*Puskesmas*) and emergency services for critical conditions.
-- **Role-Based Web Dashboard:** Administrative and volunteer portal for real-time welfare tracking, assignment dispatching, and audit logging.
+- **Role-Based Web Dashboard:** Administrative, volunteer, and family portal for real-time welfare tracking, assignment dispatching, and audit logging.
 
 ---
 
@@ -35,7 +35,6 @@ kabarin/
 │   ├── db/                     # Drizzle ORM schemas, migrations, and PostgreSQL client
 │   └── auth/                   # Better Auth server factory and client SDK wrapper
 │
-├── docker-compose.yml          # Container orchestration for local/production PostgreSQL
 ├── package.json                # Root package workspace definition
 ├── tsconfig.base.json          # Shared compiler options
 └── turbo.json                  # Turborepo task pipeline configuration
@@ -49,7 +48,7 @@ kabarin/
 | **`@kabarin/db`** | Database schema definitions, relations, and migration management. Isolated from client applications. | Drizzle ORM, postgres.js, PostgreSQL |
 | **`@kabarin/auth`** | Authentication server configuration (email/password & OAuth) and client authentication SDK. | Better Auth |
 | **`apps/api`** | HTTP REST API, WhatsApp bot socket handler, background cron scheduler, and AI triage service. | Hono, Chanfana, Scalar, Baileys |
-| **`apps/web`** | Responsive administrative and volunteer dashboard. | Astro, SvelteKit |
+| **`apps/web`** | Responsive administrative, volunteer, and family dashboard. | Astro, SvelteKit |
 
 ---
 
@@ -60,9 +59,8 @@ kabarin/
 - **Backend Framework:** [Hono](https://hono.dev)
 - **API Spec & Validation:** [Chanfana](https://github.com/cloudflare/chanfana) (OpenAPI 3.1)
 - **Interactive Documentation:** [Scalar](https://scalar.com)
-- **Database & ORM:** [PostgreSQL 16](https://www.postgresql.org) with [Drizzle ORM](https://orm.drizzle.team)
+- **Database & ORM:** [PostgreSQL 16](https://www.postgresql.org) (Local or Serverless like [Neon](https://neon.tech) / [Supabase](https://supabase.com)) with [Drizzle ORM](https://orm.drizzle.team)
 - **Authentication:** [Better Auth](https://www.better-auth.com)
-- **Containerization:** Docker & Docker Compose
 
 ---
 
@@ -70,10 +68,10 @@ kabarin/
 
 ### Prerequisites
 
-Ensure you have the following installed on your machine:
+Ensure you have the following installed or accessible:
 
 - **[Bun](https://bun.sh)** (`>= 1.1.0`)
-- **[Docker Desktop](https://www.docker.com/)** (if using containerized PostgreSQL)
+- **[PostgreSQL](https://www.postgresql.org)** (`>= 15`) — either running locally on your machine or provisioned via a managed serverless provider (such as [Neon](https://neon.tech) or [Supabase](https://supabase.com)).
 - **Node.js** (`>= 20.0.0` for tooling compatibility)
 
 ### 1. Installation
@@ -101,33 +99,22 @@ cp .env.example .env
 Open `.env` and configure your environment variables:
 
 ```env
-# Database Connection String (PostgreSQL container or Managed Neon)
-DATABASE_URL="postgresql://kabarin_user:kabarin_password@localhost:5432/kabarin_db"
+# Database Connection String (Local PostgreSQL instance or Managed Serverless Neon/Supabase)
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/kabarin_db"
 
 # Better Auth Configuration
-BETTER_AUTH_URL="http://localhost:3000"
+BETTER_AUTH_URL="http://localhost:8787"
 BETTER_AUTH_SECRET="generate_a_secure_32_character_secret"
 
 # Server Settings
-PORT=3000
+PORT=8787
 NODE_ENV="development"
 ```
 
-### 3. Database Initialization
+### 3. Database Initialization & Migration
 
-You can use either local Docker or a managed PostgreSQL instance (e.g., Neon).
+Ensure your local PostgreSQL database is created and reachable, or paste your managed serverless connection string into `DATABASE_URL`. Then push the Drizzle schema:
 
-#### Option A: Local Docker PostgreSQL
-Start the PostgreSQL container:
-```bash
-docker compose up -d postgres
-```
-
-#### Option B: Managed PostgreSQL (Neon)
-Set the `DATABASE_URL` in `.env` to your cloud connection string.
-
-#### Apply Database Schema
-Push the Drizzle schema to the database:
 ```bash
 bun run db:push
 ```
@@ -142,10 +129,10 @@ bun dev
 
 The services will be available at:
 
-- **API Server:** `http://localhost:3000`
-- **Interactive API Documentation (Scalar):** `http://localhost:3000/docs`
-- **OpenAPI 3.1 Specification:** `http://localhost:3000/api/openapi.json`
-- **Health Check Endpoint:** `http://localhost:3000/health`
+- **API Server:** `http://localhost:8787`
+- **Interactive API Documentation (Scalar):** `http://localhost:8787/docs`
+- **OpenAPI 3.1 Specification:** `http://localhost:8787/openapi/all.json`
+- **Health Check Endpoint:** `http://localhost:8787/health`
 
 ---
 
@@ -167,17 +154,18 @@ Run these commands from the root directory:
 
 ## 🧪 Testing Credentials & Demo Accounts
 
-For testing endpoints across different roles in Scalar API Docs (`/docs`) or web dashboards, use these pre-provisioned demo accounts:
+For testing endpoints across different roles in Scalar API Docs (`/docs`) or web dashboards, use these pre-provisioned demo accounts (all accounts share the password `Kabarin2026!`):
 
 | Role | Name | Email | Password | Scope & Responsibilities |
 |---|---|---|---|---|
-| 🏢 **Kader RT (`cadre`)** | Ibu Endang Astuti | `kader@gmail.com` | `Kabarin2026!` | Kelola Wilayah RT, Onboarding Lansia, Approval Pendaftaran, Penugasan Relawan, & Triase RT |
-| 🤝 **Relawan RT 1 (`volunteer`)** | Mas Dimas Prasetyo | `relawan@gmail.com` | `Kabarin2026!` | Portal Relawan, Lansia Binaan, & Laporan Kunjungan Lapangan |
-| 🤝 **Relawan RT 2 (`volunteer`)** | Mas Dimas Wahyu | `relawan2@gmail.com` | `Kabarin2026!` | Relawan Cadangan / Pendamping Tambahan RT |
-| 👨‍👩‍👧 **Keluarga (`family`)** | Rian Hidayat (Anak Pemantau) | `keluarga@gmail.com` | `Kabarin2026!` | Pendaftaran Orang Tua Mandiri (Bottom-Up) & Pantau Kondisi Harian |
+| 🏢 **Cadre (`cadre`)** | Ibu Endang Astuti | `kader@gmail.com` | `Kabarin2026!` | RT Territory Management, Elderly Onboarding & Verification, Volunteer Assignments, Medication Schedules, Check-in Monitoring, & Triage Dashboard |
+| 🤝 **Volunteer 1 (`volunteer`)** | Mas Dimas Prasetyo | `relawan@gmail.com` | `Kabarin2026!` | Volunteer Portal, Assigned Elderly Care List, Check-in History Transcripts, & Field Visit Reports |
+| 🤝 **Volunteer 2 (`volunteer`)** | Mas Dimas Wahyu | `relawan2@gmail.com` | `Kabarin2026!` | Secondary / Backup Neighborhood Caregiver |
+| 👨‍👩‍👧 **Family 1 (`family`)** | Budi Hidayat | `keluarga@gmail.com` | `Kabarin2026!` | Bottom-Up Elderly Parent Registration, Medication Management, & Daily Check-in Audio Transcripts |
+| 👨‍👩‍👧 **Family 2 (`family`)** | Rian Hidayat | `keluarga2@gmail.com` | `Kabarin2026!` | Secondary Emergency Family Contact & Welfare Monitoring |
 
 > [!TIP]
-> Buka **`http://localhost:8787/docs`** untuk mencoba request API via Scalar Docs. Gunakan dropdown selector di pojok kiri atas untuk beralih antar-role dokumen secara terisolasi!
+> Navigate to **`http://localhost:8787/docs`** to test API endpoints interactively via Scalar Docs. Use the top-left dropdown selector to switch between isolated role specifications (`Cadre`, `Volunteer`, `Family`, `Public`, `All`)!
 
 ---
 

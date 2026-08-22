@@ -10,3 +10,4 @@ export * from "./checkin";
 export * from "./escalation";
 export * from "./visit";
 export * from "./chat";
+export * from "./dashboard";

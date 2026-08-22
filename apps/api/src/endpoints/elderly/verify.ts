@@ -79,6 +79,7 @@ export class VerifyElderlyEndpoint extends ApiRoute {
           eq(volunteers.id, body.primaryVolunteerId),
           eq(volunteers.communityUnitId, communityUnitId)
         ),
+        with: { assignedElderly: true },
       });
 
       if (!vol) {
@@ -91,12 +92,6 @@ export class VerifyElderlyEndpoint extends ApiRoute {
         );
       }
 
-      // Unset previous primary
-      await db
-        .update(elderlyVolunteers)
-        .set({ isPrimary: false })
-        .where(eq(elderlyVolunteers.elderlyId, elderlyId));
-
       // Check if assignment exists
       const existingAssignment = await db.query.elderlyVolunteers.findFirst({
         where: and(
@@ -104,6 +99,25 @@ export class VerifyElderlyEndpoint extends ApiRoute {
           eq(elderlyVolunteers.volunteerId, body.primaryVolunteerId)
         ),
       });
+
+      if (!existingAssignment) {
+        const currentCount = vol.assignedElderly?.length ?? 0;
+        if (currentCount >= vol.maxCapacity) {
+          return c.json(
+            {
+              success: false,
+              error: `Relawan utama sudah mencapai batas kapasitas maksimal (${vol.maxCapacity} lansia)`,
+            },
+            400
+          );
+        }
+      }
+
+      // Unset previous primary
+      await db
+        .update(elderlyVolunteers)
+        .set({ isPrimary: false })
+        .where(eq(elderlyVolunteers.elderlyId, elderlyId));
 
       if (existingAssignment) {
         await db
@@ -127,6 +141,7 @@ export class VerifyElderlyEndpoint extends ApiRoute {
           eq(volunteers.id, body.secondaryVolunteerId),
           eq(volunteers.communityUnitId, communityUnitId)
         ),
+        with: { assignedElderly: true },
       });
 
       if (!secVol) {
@@ -147,6 +162,17 @@ export class VerifyElderlyEndpoint extends ApiRoute {
       });
 
       if (!existingSecondary) {
+        const currentSecCount = secVol.assignedElderly?.length ?? 0;
+        if (currentSecCount >= secVol.maxCapacity) {
+          return c.json(
+            {
+              success: false,
+              error: `Relawan cadangan sudah mencapai batas kapasitas maksimal (${secVol.maxCapacity} lansia)`,
+            },
+            400
+          );
+        }
+
         await db.insert(elderlyVolunteers).values({
           id: crypto.randomUUID(),
           elderlyId,

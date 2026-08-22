@@ -122,6 +122,7 @@ export class CreateElderlyEndpoint extends ApiRoute {
           eq(volunteers.id, primaryVolunteerId),
           eq(volunteers.communityUnitId, communityUnitId)
         ),
+        with: { assignedElderly: true },
       });
 
       if (!vol) {
@@ -131,6 +132,17 @@ export class CreateElderlyEndpoint extends ApiRoute {
             error: `Relawan utama dengan ID '${primaryVolunteerId}' tidak ditemukan di RT ini`,
           },
           404
+        );
+      }
+
+      const currentCount = vol.assignedElderly?.length ?? 0;
+      if (currentCount >= vol.maxCapacity) {
+        return c.json(
+          {
+            success: false,
+            error: `Relawan utama sudah mencapai batas kapasitas maksimal (${vol.maxCapacity} lansia)`,
+          },
+          400
         );
       }
 
@@ -149,6 +161,7 @@ export class CreateElderlyEndpoint extends ApiRoute {
           eq(volunteers.id, body.secondaryVolunteerId),
           eq(volunteers.communityUnitId, communityUnitId)
         ),
+        with: { assignedElderly: true },
       });
 
       if (!secVol) {
@@ -158,6 +171,17 @@ export class CreateElderlyEndpoint extends ApiRoute {
             error: `Relawan cadangan dengan ID '${body.secondaryVolunteerId}' tidak ditemukan di RT ini`,
           },
           404
+        );
+      }
+
+      const currentSecCount = secVol.assignedElderly?.length ?? 0;
+      if (currentSecCount >= secVol.maxCapacity) {
+        return c.json(
+          {
+            success: false,
+            error: `Relawan cadangan sudah mencapai batas kapasitas maksimal (${secVol.maxCapacity} lansia)`,
+          },
+          400
         );
       }
 

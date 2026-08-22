@@ -17,37 +17,42 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
     tagFilter: (tag) =>
       [
         "Auth & Session",
-        "Community & Territory",
+        "Public Onboarding & Territory",
+        "Community & Dashboard",
         "Elderly Management",
         "Elderly Verification & Escalations",
         "Volunteer Management",
         "Medication Schedules",
         "Family Contacts",
         "Field Visits",
+        "Check-in Monitoring",
+        "Check-in History & Transcripts",
       ].includes(tag),
   },
   {
     key: "volunteer",
     title: "Volunteer (Relawan)",
-    description: "Endpoints accessible to Caregiving Volunteers for viewing assigned elderly and logging visits.",
+    description: "Endpoints accessible to Caregiving Volunteers for viewing assigned elderly, daily check-in transcripts, and logging visits.",
     tagFilter: (tag) =>
       [
         "Auth & Session",
         "Volunteer Portal",
         "Field Visits",
+        "Check-in History & Transcripts",
         "Public Field Reports (Zero-Login)",
       ].includes(tag),
   },
   {
     key: "family",
     title: "Family (Keluarga)",
-    description: "Endpoints accessible to Family Members for registering parents, managing contacts, medications, and monitoring status.",
+    description: "Endpoints accessible to Family Members for registering parents, managing contacts, medications, check-in history, and monitoring status.",
     tagFilter: (tag) =>
       [
         "Auth & Session",
         "Family Portal",
         "Family Contacts",
         "Medication Schedules",
+        "Check-in History & Transcripts",
         "Public Status (Zero-Login)",
       ].includes(tag),
   },
@@ -57,7 +62,7 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
     description: "Zero-login endpoints accessible without authentication for status monitoring, field visit reports, and RT checks.",
     tagFilter: (tag) =>
       [
-        "Community & Territory",
+        "Public Onboarding & Territory",
         "Public Status (Zero-Login)",
         "Public Field Reports (Zero-Login)",
       ].includes(tag),

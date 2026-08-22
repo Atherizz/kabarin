@@ -6,7 +6,7 @@ import type { AppEnv } from "../../types/app-env";
 
 export class RegisterCommunityEndpoint extends ApiRoute {
   schema = {
-    tags: ["Community & Territory"],
+    tags: ["Public Onboarding & Territory"],
     summary: "Self-register RT + kader account",
     description:
       "Public endpoint. Creates a new community unit (RT) and the first cadre account in one request. " +

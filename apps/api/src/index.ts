@@ -16,11 +16,12 @@ import { GetSessionEndpoint } from "./endpoints/auth/get-session";
 import { ChangePasswordEndpoint } from "./endpoints/auth/change-password";
 import { MeEndpoint } from "./endpoints/auth/me";
 
-// Community endpoints
+// Community & Dashboard endpoints
 import { RegisterCommunityEndpoint } from "./endpoints/community/register";
 import { CheckCommunityEndpoint } from "./endpoints/community/check";
 import { GetMyCommunityEndpoint } from "./endpoints/community/me";
 import { UpdateMyCommunityEndpoint } from "./endpoints/community/update-me";
+import { GetDashboardStatsEndpoint } from "./endpoints/dashboard/stats";
 
 // Elderly endpoints
 import { ListElderlyEndpoint } from "./endpoints/elderly/list";
@@ -72,6 +73,11 @@ import { SubmitVisitFormEndpoint } from "./endpoints/visits/submit-form";
 import { ListEscalationsEndpoint } from "./endpoints/escalations/list";
 import { GetEscalationEndpoint } from "./endpoints/escalations/get";
 import { ResolveEscalationEndpoint } from "./endpoints/escalations/resolve";
+
+// Check-in endpoints
+import { ListCheckinsEndpoint } from "./endpoints/checkins/list";
+import { TodayCheckinsEndpoint } from "./endpoints/checkins/today";
+import { ListElderlyCheckinsEndpoint } from "./endpoints/checkins/list-by-elderly";
 
 const app = new Hono<AppEnv>();
 
@@ -133,11 +139,12 @@ openapi.post("/api/auth/sign-out", asRoute(SignOutEndpoint));
 openapi.get("/api/auth/get-session", asRoute(GetSessionEndpoint));
 openapi.post("/api/auth/change-password", asRoute(ChangePasswordEndpoint));
 
-// Community endpoints
+// Community & Dashboard endpoints
 openapi.post("/api/community/register", asRoute(RegisterCommunityEndpoint));
 openapi.get("/api/community/check", asRoute(CheckCommunityEndpoint));
 openapi.get("/api/community/me", asRoute(GetMyCommunityEndpoint));
 openapi.put("/api/community/me", asRoute(UpdateMyCommunityEndpoint));
+openapi.get("/api/dashboard/stats", asRoute(GetDashboardStatsEndpoint));
 
 // Elderly endpoints
 openapi.get("/api/elderly", asRoute(ListElderlyEndpoint));
@@ -187,6 +194,11 @@ openapi.post("/api/visits/form/:token/submit", asRoute(SubmitVisitFormEndpoint))
 openapi.get("/api/escalations", asRoute(ListEscalationsEndpoint));
 openapi.get("/api/escalations/:id", asRoute(GetEscalationEndpoint));
 openapi.patch("/api/escalations/:id/resolve", asRoute(ResolveEscalationEndpoint));
+
+// Check-in endpoints
+openapi.get("/api/checkins", asRoute(ListCheckinsEndpoint));
+openapi.get("/api/checkins/today", asRoute(TodayCheckinsEndpoint));
+openapi.get("/api/elderly/:id/checkins", asRoute(ListElderlyCheckinsEndpoint));
 
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));
