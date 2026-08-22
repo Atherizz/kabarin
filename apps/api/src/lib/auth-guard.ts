@@ -18,7 +18,7 @@ export function assertRole(
     });
   }
 
-  const role = (session.user.role as UserRole) ?? "cadre";
+  const role = (session.user.role as UserRole) ?? "family";
   if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
     throw new HTTPException(403, {
       message: `Akses ditolak: Hanya peran [${allowedRoles.join(", ")}] yang diizinkan`,

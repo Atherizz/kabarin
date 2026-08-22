@@ -48,7 +48,9 @@ export class GetDashboardStatsEndpoint extends ApiRoute {
     const communityUnitId = assertCommunity(session);
     const db = c.get("db");
 
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+    }).format(new Date());
 
     const [
       communityRecord,

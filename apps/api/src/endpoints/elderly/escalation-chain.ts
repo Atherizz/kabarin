@@ -4,6 +4,8 @@ import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
+import crypto from "crypto";
 
 export class GetEscalationChainEndpoint extends ApiRoute {
   schema = {
@@ -11,7 +13,10 @@ export class GetEscalationChainEndpoint extends ApiRoute {
     summary: "Get escalation chain configuration for an elderly",
     description:
       "Returns the hierarchical responder configuration for Tier 1 (Primary Volunteer), " +
-      "Tier 2 (Secondary Volunteer & Primary Family Contact), and Tier 3 emergency dispatch.",
+      "Tier 2 (Secondary Volunteer & Primary Family Contact), and Tier 3 emergency dispatch.\n\n" +
+      "### Multi-Role Access Control:\n" +
+      "- **Cadre RT:** Accessible for all seniors residing in the RT territory.\n" +
+      "- **Family:** Accessible exclusively for parents/relatives linked to the family account.",
     request: {
       params: z.object({
         id: z.string(),
@@ -29,8 +34,16 @@ export class GetEscalationChainEndpoint extends ApiRoute {
           },
         },
       },
+      "403": {
+        description: "Forbidden: Not permitted to view escalation chain for this elderly",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
       "404": {
-        description: "Elderly not found in this RT",
+        description: "Elderly not found",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -41,18 +54,12 @@ export class GetEscalationChainEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const session = assertRole(c, "cadre", "family", "volunteer", "admin");
+    const session = assertRole(c, "cadre", "family", "admin");
     const db = c.get("db");
     const { id: elderlyId } = c.req.param();
 
-    // 1. Verify elderly exists
-    const elderlyRecord = await db.query.elderly.findFirst({
-      where: eq(elderly.id, elderlyId),
-    });
-
-    if (!elderlyRecord) {
-      return c.json({ success: false, error: "Data lansia tidak ditemukan" }, 404);
-    }
+    // 1. Verify access to elderly via Strategy Pattern Policy Layer (closes cross-RT leak)
+    await assertElderlyAccess(db, session, elderlyId);
 
     // 2. Query volunteer assignments
     const volunteerAssignments = await db.query.elderlyVolunteers.findMany({
@@ -106,7 +113,7 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
     summary: "Update escalation chain for an elderly",
     description:
       "Updates the primary responder (Tier 1 volunteer), secondary responder (Tier 2 volunteer), " +
-      "and primary family contact for emergency escalation.",
+      "and primary family contact for emergency escalation. Restricted strictly to Cadre RT and Admin.",
     request: {
       params: z.object({
         id: z.string(),
@@ -128,8 +135,16 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
           },
         },
       },
+      "400": {
+        description: "Volunteer inactive or reached max capacity",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
       "404": {
-        description: "Elderly not found in this RT",
+        description: "Elderly or volunteer not found in this RT",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -156,7 +171,7 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
       return c.json({ success: false, error: "Data lansia tidak ditemukan di RT ini" }, 404);
     }
 
-    // 2. Update Primary Volunteer Assignment
+    // 2. Synchronize Primary Volunteer Assignment
     if (body.primaryVolunteerId !== undefined) {
       if (body.primaryVolunteerId) {
         const vol = await db.query.volunteers.findFirst({
@@ -164,6 +179,7 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
             eq(volunteers.id, body.primaryVolunteerId),
             eq(volunteers.communityUnitId, communityUnitId)
           ),
+          with: { assignedElderly: true },
         });
 
         if (!vol) {
@@ -175,21 +191,46 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
             404
           );
         }
-      }
 
-      // Unset previous primary
-      await db
-        .update(elderlyVolunteers)
-        .set({ isPrimary: false })
-        .where(eq(elderlyVolunteers.elderlyId, elderlyId));
+        if (!vol.isActive) {
+          return c.json(
+            {
+              success: false,
+              error: `Relawan utama '${vol.name}' berstatus non-aktif`,
+            },
+            400
+          );
+        }
 
-      if (body.primaryVolunteerId) {
         const existingAssignment = await db.query.elderlyVolunteers.findFirst({
           where: and(
             eq(elderlyVolunteers.elderlyId, elderlyId),
             eq(elderlyVolunteers.volunteerId, body.primaryVolunteerId)
           ),
         });
+
+        if (!existingAssignment) {
+          const currentCount = vol.assignedElderly?.length ?? 0;
+          if (currentCount >= vol.maxCapacity) {
+            return c.json(
+              {
+                success: false,
+                error: `Relawan utama '${vol.name}' sudah mencapai batas kapasitas maksimal (${vol.maxCapacity} lansia)`,
+              },
+              400
+            );
+          }
+        }
+
+        // Remove any other existing primary volunteer assignment
+        await db
+          .delete(elderlyVolunteers)
+          .where(
+            and(
+              eq(elderlyVolunteers.elderlyId, elderlyId),
+              eq(elderlyVolunteers.isPrimary, true)
+            )
+          );
 
         if (existingAssignment) {
           await db
@@ -204,17 +245,28 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
             isPrimary: true,
           });
         }
+      } else {
+        // Unassign primary responder
+        await db
+          .delete(elderlyVolunteers)
+          .where(
+            and(
+              eq(elderlyVolunteers.elderlyId, elderlyId),
+              eq(elderlyVolunteers.isPrimary, true)
+            )
+          );
       }
     }
 
-    // 3. Update Secondary Volunteer Assignment
-    if (body.secondaryVolunteerId !== undefined && body.secondaryVolunteerId !== body.primaryVolunteerId) {
-      if (body.secondaryVolunteerId) {
+    // 3. Synchronize Secondary Volunteer Assignment
+    if (body.secondaryVolunteerId !== undefined) {
+      if (body.secondaryVolunteerId && body.secondaryVolunteerId !== body.primaryVolunteerId) {
         const secVol = await db.query.volunteers.findFirst({
           where: and(
             eq(volunteers.id, body.secondaryVolunteerId),
             eq(volunteers.communityUnitId, communityUnitId)
           ),
+          with: { assignedElderly: true },
         });
 
         if (!secVol) {
@@ -227,6 +279,16 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
           );
         }
 
+        if (!secVol.isActive) {
+          return c.json(
+            {
+              success: false,
+              error: `Relawan cadangan '${secVol.name}' berstatus non-aktif`,
+            },
+            400
+          );
+        }
+
         const existingSecondary = await db.query.elderlyVolunteers.findFirst({
           where: and(
             eq(elderlyVolunteers.elderlyId, elderlyId),
@@ -235,6 +297,34 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
         });
 
         if (!existingSecondary) {
+          const currentSecCount = secVol.assignedElderly?.length ?? 0;
+          if (currentSecCount >= secVol.maxCapacity) {
+            return c.json(
+              {
+                success: false,
+                error: `Relawan cadangan '${secVol.name}' sudah mencapai batas kapasitas maksimal (${secVol.maxCapacity} lansia)`,
+              },
+              400
+            );
+          }
+        }
+
+        // Remove any other existing secondary volunteer assignment
+        await db
+          .delete(elderlyVolunteers)
+          .where(
+            and(
+              eq(elderlyVolunteers.elderlyId, elderlyId),
+              eq(elderlyVolunteers.isPrimary, false)
+            )
+          );
+
+        if (existingSecondary) {
+          await db
+            .update(elderlyVolunteers)
+            .set({ isPrimary: false })
+            .where(eq(elderlyVolunteers.id, existingSecondary.id));
+        } else {
           await db.insert(elderlyVolunteers).values({
             id: crypto.randomUUID(),
             elderlyId,
@@ -242,6 +332,16 @@ export class UpdateEscalationChainEndpoint extends ApiRoute {
             isPrimary: false,
           });
         }
+      } else {
+        // Unassign secondary responder
+        await db
+          .delete(elderlyVolunteers)
+          .where(
+            and(
+              eq(elderlyVolunteers.elderlyId, elderlyId),
+              eq(elderlyVolunteers.isPrimary, false)
+            )
+          );
       }
     }
 

@@ -59,6 +59,13 @@ export class GetVisitFormEndpoint extends ApiRoute {
       );
     }
 
+    if (new Date() > visit.tokenExpiresAt || visit.status === "expired") {
+      return c.json(
+        { success: false, error: "Link form kunjungan ini sudah kedaluwarsa (hanya berlaku 24 jam)." },
+        410
+      );
+    }
+
     // Fetch active medications for checklist
     const meds = await db.query.elderlyMedications.findMany({
       where: eq(elderlyMedications.elderlyId, visit.elderly.id),

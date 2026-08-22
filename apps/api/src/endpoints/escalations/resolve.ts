@@ -10,9 +10,12 @@ export class ResolveEscalationEndpoint extends ApiRoute {
     tags: ["Elderly Verification & Escalations"],
     summary: "Resolve an active escalation incident (Manual Cadre Fallback)",
     description:
-      "Manual resolution endpoint for RT Cadres to close an active emergency incident once the situation is confirmed safe on the ground.\n\n" +
-      "### Automated Effects:\n" +
+      "### Dual-Flow Architecture & Integration Context:\n" +
+      "- **🤖 Automated Bot Engine (Primary):** In normal automated workflows, active emergency escalations are automatically resolved when a volunteer submits a safe report (`'good'`) via the 1-tap WhatsApp form (`POST /api/visits/form/:token/submit`).\n" +
+      "- **👤 Manual Cadre Fallback (This Endpoint):** Provided as an emergency manual fallback button on the RT Cadre Web Dashboard when Bu RT handles the situation offline/in-person directly without waiting for a volunteer's WhatsApp form submission.\n\n" +
+      "### Automated Effects on Execution:\n" +
       "- Marks the escalation status as `'resolved'` with an audit timestamp and the Cadre's identity.\n" +
+      "- Appends a `'cadre_manual_resolution'` event to `tierHistory`.\n" +
       "- Resets the senior's welfare status back to **GREEN** (`'green'`).",
     request: {
       params: z.object({

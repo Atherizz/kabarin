@@ -1,18 +1,23 @@
 import { z, VolunteerAssignmentSchema } from "@kabarin/types";
-import { eq, and, elderly, elderlyVolunteers } from "@kabarin/db";
+import { eq, elderlyVolunteers } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { assertRole } from "../../lib/auth-guard";
+import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
 
 export class ListVolunteersByElderlyEndpoint extends ApiRoute {
   schema = {
-    tags: ["Volunteer Management"],
+    tags: ["Family Contacts"],
     summary: "List assigned volunteers for an elderly",
-    description: "Returns primary and backup volunteers assigned to a specific elderly in the cadre's RT.",
+    description:
+      "Returns primary and backup volunteers assigned to a specific elderly (accessible by RT Cadre and registered Family members).\n\n" +
+      "### Multi-Role Access Control:\n" +
+      "- **Cadre RT:** Accessible for all seniors residing in the RT territory.\n" +
+      "- **Family:** Accessible for parents/relatives linked to the family account so children know who their parent's designated neighborhood caregiver is.",
     request: {
       params: z.object({
-        id: z.string(),
+        id: z.string().describe("Elderly UUID"),
       }),
     },
     responses: {
@@ -27,8 +32,16 @@ export class ListVolunteersByElderlyEndpoint extends ApiRoute {
           },
         },
       },
+      "403": {
+        description: "Forbidden: Not permitted to view volunteers for this elderly",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
       "404": {
-        description: "Elderly not found in this RT",
+        description: "Elderly not found",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -39,20 +52,15 @@ export class ListVolunteersByElderlyEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const session = assertRole(c, "cadre", "admin");
-    const communityUnitId = assertCommunity(session);
+    const session = assertRole(c, "cadre", "family", "admin");
     const db = c.get("db");
 
     const { id: elderlyId } = c.req.param();
 
-    const elderlyRecord = await db.query.elderly.findFirst({
-      where: and(eq(elderly.id, elderlyId), eq(elderly.communityUnitId, communityUnitId)),
-    });
+    // 1. Verify access to elderly via Strategy Pattern Policy Layer (closes cross-RT leak)
+    await assertElderlyAccess(db, session, elderlyId);
 
-    if (!elderlyRecord) {
-      return c.json({ success: false, error: "Data lansia tidak ditemukan di RT ini" }, 404);
-    }
-
+    // 2. Fetch assigned volunteers
     const assignments = await db.query.elderlyVolunteers.findMany({
       where: eq(elderlyVolunteers.elderlyId, elderlyId),
       with: {

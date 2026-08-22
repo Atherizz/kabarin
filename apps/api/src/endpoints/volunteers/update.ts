@@ -52,10 +52,25 @@ export class UpdateVolunteerEndpoint extends ApiRoute {
 
     const existing = await db.query.volunteers.findFirst({
       where: and(eq(volunteers.id, id), eq(volunteers.communityUnitId, communityUnitId)),
+      with: { assignedElderly: true },
     });
 
     if (!existing) {
       return c.json({ success: false, error: "Relawan tidak ditemukan di RT ini" }, 404);
+    }
+
+    // Prevent reducing maxCapacity below currently assigned elderly count
+    if (body.maxCapacity !== undefined) {
+      const currentCount = existing.assignedElderly?.length ?? 0;
+      if (body.maxCapacity < currentCount) {
+        return c.json(
+          {
+            success: false,
+            error: `Kapasitas maksimal (${body.maxCapacity}) tidak boleh lebih kecil dari jumlah lansia yang sedang diasuh saat ini (${currentCount} lansia)`,
+          },
+          400
+        );
+      }
     }
 
     const [updated] = await db

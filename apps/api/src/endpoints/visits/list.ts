@@ -39,7 +39,7 @@ export class ListVisitsEndpoint extends ApiRoute {
   async handle(c: Context<AppEnv>) {
     const session = assertRole(c, "cadre", "volunteer", "admin");
     const db = c.get("db");
-    const query = c.req.query() as typeof VisitListQuerySchema._type;
+    const query = VisitListQuerySchema.parse(c.req.query());
 
     const conditions = [];
 

@@ -135,7 +135,7 @@ export async function assertElderlyAccess(
   session: AuthSession,
   elderlyId: string
 ) {
-  const userRole = (session.user.role as UserRole) ?? "cadre";
+  const userRole = (session.user.role as UserRole) ?? "family";
   const handler = ROLE_POLICY_HANDLERS[userRole];
 
   if (!handler) {

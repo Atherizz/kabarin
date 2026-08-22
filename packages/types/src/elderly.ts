@@ -1,6 +1,7 @@
 import { z } from "./zod-extended";
 import { CreateMedicationInputSchema, ElderlyMedicationSchema } from "./medication";
 import { CreateElderlyFamilyInputSchema, ElderlyFamilySchema } from "./family";
+import { VolunteerAssignmentSchema } from "./volunteer";
 
 export const MobilityStatusEnum = z.enum(["independent", "needs_assistance", "homebound"]);
 export const MonitoringModeEnum = z.enum(["active", "passive"]);
@@ -39,6 +40,7 @@ export const ElderlySchema = z.object({
   // Optional relational inclusions
   familyMembers: z.array(ElderlyFamilySchema).optional(),
   medications: z.array(ElderlyMedicationSchema).optional(),
+  volunteerAssignments: z.array(VolunteerAssignmentSchema).optional(),
 });
 
 export const CreateElderlyInputSchema = z
@@ -123,6 +125,7 @@ export const CreateElderlyByFamilyInputSchema = z
     preferredCheckinTime: z.string().default("07:00"),
     notes: z.string().optional(),
     relationship: z.string().default("Anak Kandung"),
+    familyPhone: z.string().min(8, "Nomor WhatsApp Anda wajib diisi untuk menerima kabar darurat").optional(),
     medications: z.array(CreateMedicationInputSchema).optional().default([]),
     additionalFamily: z.array(CreateElderlyFamilyInputSchema).optional().default([]),
   })

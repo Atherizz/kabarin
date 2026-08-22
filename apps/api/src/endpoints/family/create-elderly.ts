@@ -1,5 +1,5 @@
 import { z, CreateElderlyByFamilyInputSchema, ElderlySchema } from "@kabarin/types";
-import { eq, or, elderly, elderlyMedications, elderlyFamily, communityUnits } from "@kabarin/db";
+import { eq, or, and, elderly, elderlyMedications, elderlyFamily, communityUnits } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
@@ -83,6 +83,26 @@ export class CreateElderlyByFamilyEndpoint extends ApiRoute {
       );
     }
 
+    // 1.5 Prevent duplicate elderly phone in same RT
+    if (body.phone) {
+      const existingPhone = await db.query.elderly.findFirst({
+        where: and(
+          eq(elderly.communityUnitId, community.id),
+          eq(elderly.phone, body.phone)
+        ),
+      });
+
+      if (existingPhone) {
+        return c.json(
+          {
+            success: false,
+            error: `Lansia dengan nomor WhatsApp ${body.phone} sudah terdaftar di RT ini (${existingPhone.name})`,
+          },
+          409
+        );
+      }
+    }
+
     const elderlyId = crypto.randomUUID();
 
     // 2. Insert elderly record with pending_verification status using the canonical RT UUID
@@ -132,7 +152,17 @@ export class CreateElderlyByFamilyEndpoint extends ApiRoute {
     }
 
     // 4. Automatically link the authenticated family member as the Primary Contact
-    const userPhone = session.user.phone || (body.phone ? body.phone : "08123456789");
+    const userPhone = session.user.phone || body.familyPhone;
+
+    if (!userPhone) {
+      return c.json(
+        {
+          success: false,
+          error: "Nomor WhatsApp Anda belum terdaftar di akun. Silakan isi field 'familyPhone' agar dapat menerima kabar darurat orang tua.",
+        },
+        400
+      );
+    }
 
     const familyRowsToInsert: Array<{
       id: string;

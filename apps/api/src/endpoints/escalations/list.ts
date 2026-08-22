@@ -37,7 +37,7 @@ export class ListEscalationsEndpoint extends ApiRoute {
     const session = assertRole(c, "cadre", "admin");
     const communityUnitId = assertCommunity(session);
     const db = c.get("db");
-    const query = c.req.query() as typeof EscalationListQuerySchema._type;
+    const query = EscalationListQuerySchema.parse(c.req.query());
 
     const conditions = [eq(escalationLogs.communityUnitId, communityUnitId)];
 

@@ -37,7 +37,7 @@ export class ListCheckinsEndpoint extends ApiRoute {
     const session = assertRole(c, "cadre", "admin");
     const communityUnitId = assertCommunity(session);
     const db = c.get("db");
-    const query = c.req.query() as typeof CheckinListQuerySchema._type;
+    const query = CheckinListQuerySchema.parse(c.req.query());
 
     const conditions = [eq(checkinSessions.communityUnitId, communityUnitId)];
 

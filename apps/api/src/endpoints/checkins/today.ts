@@ -38,7 +38,9 @@ export class TodayCheckinsEndpoint extends ApiRoute {
     const communityUnitId = assertCommunity(session);
     const db = c.get("db");
 
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Jakarta",
+    }).format(new Date());
 
     const records = await db.query.checkinSessions.findMany({
       where: and(

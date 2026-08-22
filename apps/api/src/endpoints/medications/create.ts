@@ -1,5 +1,5 @@
 import { z, CreateMedicationInputSchema, ElderlyMedicationSchema } from "@kabarin/types";
-import { eq, elderlyMedications } from "@kabarin/db";
+import { eq, and, elderlyMedications } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
@@ -24,7 +24,7 @@ export class CreateMedicationEndpoint extends ApiRoute {
     },
     responses: {
       "200": {
-        description: "Medication schedule created",
+        description: "Medication schedule added successfully",
         content: {
           "application/json": {
             schema: z.object({
@@ -34,8 +34,24 @@ export class CreateMedicationEndpoint extends ApiRoute {
           },
         },
       },
+      "409": {
+        description: "Duplicate active medication schedule already exists",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
+      "403": {
+        description: "Forbidden: Not permitted to manage this elderly",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
       "404": {
-        description: "Elderly not found or access denied",
+        description: "Elderly not found",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -55,7 +71,27 @@ export class CreateMedicationEndpoint extends ApiRoute {
     // 1. Verify access to elderly (admin / cadre of same RT / registered family)
     await assertElderlyAccess(db, session, elderlyId);
 
-    // 2. Insert medication record
+    // 2. Prevent duplicate active medication schedule with same name & timing
+    const existingMed = await db.query.elderlyMedications.findFirst({
+      where: and(
+        eq(elderlyMedications.elderlyId, elderlyId),
+        eq(elderlyMedications.medicationName, body.medicationName),
+        eq(elderlyMedications.timeOfDay, body.timeOfDay),
+        eq(elderlyMedications.isActive, true)
+      ),
+    });
+
+    if (existingMed) {
+      return c.json(
+        {
+          success: false,
+          error: `Jadwal obat '${body.medicationName}' untuk waktu minum ${body.timeOfDay} sudah terdaftar dan masih aktif`,
+        },
+        409
+      );
+    }
+
+    // 3. Insert medication record
     const medicationId = crypto.randomUUID();
     const [newMedication] = await db
       .insert(elderlyMedications)

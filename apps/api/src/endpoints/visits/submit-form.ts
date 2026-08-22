@@ -1,8 +1,9 @@
 import { z, SubmitVisitReportSchema } from "@kabarin/types";
-import { eq, and, volunteerVisits, elderly, escalationLogs } from "@kabarin/db";
+import { eq, and, inArray, volunteerVisits, elderly, escalationLogs } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import crypto from "crypto";
 
 export class SubmitVisitFormEndpoint extends ApiRoute {
   schema = {
@@ -11,7 +12,7 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
     description:
       "Public zero-login endpoint for volunteers to submit physical observation reports.\n\n" +
       "### Automated System Cascade:\n" +
-      "- **Condition `'good'`:** Instantly resets elderly welfare status to **GREEN** (`'green'`).\n" +
+      "- **Condition `'good'`:** Instantly resets elderly welfare status to **GREEN** (`'green'`) and auto-resolves any active escalations.\n" +
       "- **Condition `'unwell'`:** Sets status to **YELLOW** (`'yellow'`) and prepares Tier 2 alerts for family.\n" +
       "- **Condition `'emergency'`:** Sets status to **RED** (`'red'`) and triggers immediate Tier 3 alerts for RT Cadre & healthcare clinics.",
     request: {
@@ -25,7 +26,7 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
     },
     responses: {
       "200": {
-        description: "Visit report submitted successfully",
+        description: "Visit report submitted and processed successfully",
         content: {
           "application/json": {
             schema: z.object({
@@ -34,16 +35,16 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
               data: z.object({
                 visitId: z.string(),
                 elderlyId: z.string(),
-                elderlyStatus: z.string(),
-                visitedAt: z.string(),
                 reportedCondition: z.string(),
+                elderlyStatus: z.string(),
+                visitedAt: z.string().datetime(),
               }),
             }),
           },
         },
       },
       "404": {
-        description: "Invalid visit form token",
+        description: "Invalid or non-existent visit form token",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -52,6 +53,14 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
       },
       "409": {
         description: "Visit report has already been submitted",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
+      "410": {
+        description: "Visit form link has expired",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -88,6 +97,13 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
       );
     }
 
+    if (new Date() > visit.tokenExpiresAt || visit.status === "expired") {
+      return c.json(
+        { success: false, error: "Link form kunjungan ini sudah kedaluwarsa (hanya berlaku 24 jam)." },
+        410
+      );
+    }
+
     const now = new Date();
 
     // 2. Update visit record
@@ -106,28 +122,45 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
       .where(eq(volunteerVisits.id, visit.id))
       .returning();
 
-    // 3. Auto-resolve or escalate linked escalation logs
+    // 3. Auto-resolve or escalate linked active escalation logs (covers both 'open' and 'in_progress')
     if (body.reportedCondition === "good") {
-      await db
-        .update(escalationLogs)
-        .set({
-          status: "resolved",
-          resolvedAt: now,
-          resolvedBy: "volunteer_visit",
-          resolutionNotes: `Kunjungan lapangan selesai oleh relawan. Kondisi lansia aman & sehat (${body.reportedCause ?? "sudah dicek"}).`,
-          updatedAt: now,
-        })
-        .where(
-          and(
-            eq(escalationLogs.elderlyId, visit.elderly.id),
-            eq(escalationLogs.status, "open")
-          )
-        );
+      const activeEscalations = await db.query.escalationLogs.findMany({
+        where: and(
+          eq(escalationLogs.elderlyId, visit.elderly.id),
+          inArray(escalationLogs.status, ["open", "in_progress"])
+        ),
+      });
+
+      for (const esc of activeEscalations) {
+        const updatedHistory = [
+          ...(esc.tierHistory ?? []),
+          {
+            tier: esc.tier,
+            action: "volunteer_visit_resolved",
+            targetType: "volunteer" as const,
+            targetId: visit.volunteerId ?? null,
+            note: `Kunjungan selesai: ${body.volunteerNotes ?? "Kondisi lansia aman dan sehat"}`,
+            timestamp: now.toISOString(),
+          },
+        ];
+
+        await db
+          .update(escalationLogs)
+          .set({
+            status: "resolved",
+            resolvedAt: now,
+            resolvedBy: "volunteer_visit",
+            resolutionNotes: `Kunjungan lapangan selesai oleh relawan. Kondisi lansia aman & sehat (${body.reportedCause ?? "sudah dicek"}).`,
+            tierHistory: updatedHistory,
+            updatedAt: now,
+          })
+          .where(eq(escalationLogs.id, esc.id));
+      }
     } else if (body.reportedCondition === "emergency") {
       const activeEscalation = await db.query.escalationLogs.findFirst({
         where: and(
           eq(escalationLogs.elderlyId, visit.elderly.id),
-          eq(escalationLogs.status, "open")
+          inArray(escalationLogs.status, ["open", "in_progress"])
         ),
       });
 
@@ -142,49 +175,67 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
           tierHistory: [
             {
               tier: 3,
-              action: "volunteer_emergency_report",
+              action: "volunteer_reported_emergency",
               targetType: "volunteer",
               targetId: visit.volunteerId ?? null,
-              note: body.volunteerNotes ?? "Kondisi darurat ditemukan saat kunjungan lapangan.",
+              note: body.volunteerNotes || "Relawan melaporkan kondisi darurat saat kunjungan fisik.",
               timestamp: now.toISOString(),
             },
           ],
         });
+      } else {
+        const updatedHistory = [
+          ...(activeEscalation.tierHistory ?? []),
+          {
+            tier: 3,
+            action: "volunteer_reported_emergency",
+            targetType: "volunteer" as const,
+            targetId: visit.volunteerId ?? null,
+            note: body.volunteerNotes || "Relawan melaporkan eskalasi darurat saat kunjungan fisik.",
+            timestamp: now.toISOString(),
+          },
+        ];
+
+        await db
+          .update(escalationLogs)
+          .set({
+            tier: 3,
+            tierHistory: updatedHistory,
+            updatedAt: now,
+          })
+          .where(eq(escalationLogs.id, activeEscalation.id));
       }
     }
 
-    // 4. Determine new traffic-light status for elderly
-    let newStatus: "green" | "yellow" | "red" = "green";
-    if (body.reportedCondition === "unwell") {
-      newStatus = "yellow";
-    } else if (body.reportedCondition === "emergency") {
-      newStatus = "red";
-    }
+    // 4. Update elderly welfare status
+    const newStatus =
+      body.reportedCondition === "good"
+        ? "green"
+        : body.reportedCondition === "unwell"
+          ? "yellow"
+          : "red";
 
-    await db
+    const [updatedElderly] = await db
       .update(elderly)
       .set({
         currentStatus: newStatus,
+        notes: body.volunteerNotes
+          ? `${visit.elderly.notes ? visit.elderly.notes + " | " : ""}[Kunjungan]: ${body.volunteerNotes}`
+          : visit.elderly.notes,
         updatedAt: now,
       })
-      .where(eq(elderly.id, visit.elderly.id));
-
-    const statusMessage =
-      newStatus === "green"
-        ? "Laporan berhasil terkirim! Status lansia telah diperbarui menjadi Aman (Hijau)."
-        : newStatus === "yellow"
-        ? "Laporan tercatat! Sistem meneruskan notifikasi pemantauan lanjutan ke keluarga lansia."
-        : "Laporan Darurat tercatat! Notifikasi siaga kritis segera dikirim ke Kader RT dan Puskesmas.";
+      .where(eq(elderly.id, visit.elderly.id))
+      .returning();
 
     return c.json({
       success: true,
-      message: statusMessage,
+      message: `Laporan kunjungan berhasil disimpan. Status lansia diperbarui menjadi ${newStatus.toUpperCase()}.`,
       data: {
         visitId: updatedVisit.id,
-        elderlyId: visit.elderly.id,
-        elderlyStatus: newStatus,
-        visitedAt: now.toISOString(),
+        elderlyId: updatedElderly.id,
         reportedCondition: body.reportedCondition,
+        elderlyStatus: updatedElderly.currentStatus,
+        visitedAt: updatedVisit.visitedAt ? updatedVisit.visitedAt.toISOString() : now.toISOString(),
       },
     });
   }
