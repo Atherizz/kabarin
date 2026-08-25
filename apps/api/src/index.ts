@@ -79,6 +79,9 @@ import { ListCheckinsEndpoint } from "./endpoints/checkins/list";
 import { TodayCheckinsEndpoint } from "./endpoints/checkins/today";
 import { ListElderlyCheckinsEndpoint } from "./endpoints/checkins/list-by-elderly";
 
+// Storage & Upload endpoints
+import { PresignedUploadEndpoint } from "./endpoints/upload/presigned-url";
+
 const app = new Hono<AppEnv>();
 
 // Global middleware
@@ -115,6 +118,7 @@ app.use("/api/*", async (c, next) => {
   if (c.req.path === "/api/community/check" && c.req.method === "GET") return next();
   if (c.req.path.startsWith("/api/family/status/")) return next();
   if (c.req.path.startsWith("/api/visits/form/")) return next();
+  if (c.req.path === "/api/upload/presigned-url" && c.req.method === "POST") return next();
   return requireAuth(c, next);
 });
 
@@ -199,6 +203,9 @@ openapi.patch("/api/escalations/:id/resolve", asRoute(ResolveEscalationEndpoint)
 openapi.get("/api/checkins", asRoute(ListCheckinsEndpoint));
 openapi.get("/api/checkins/today", asRoute(TodayCheckinsEndpoint));
 openapi.get("/api/elderly/:id/checkins", asRoute(ListElderlyCheckinsEndpoint));
+
+// Storage & Upload endpoints
+openapi.post("/api/upload/presigned-url", asRoute(PresignedUploadEndpoint));
 
 // Protected endpoints
 openapi.get("/api/me", asRoute(MeEndpoint));

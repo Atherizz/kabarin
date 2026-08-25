@@ -11,6 +11,16 @@ export type AppEnv = {
     TRUSTED_ORIGINS?: string;
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_CLIENT_SECRET?: string;
+    // R2 Storage
+    R2_ACCOUNT_ID?: string;
+    R2_ACCESS_KEY_ID?: string;
+    R2_SECRET_ACCESS_KEY?: string;
+    R2_BUCKET_NAME?: string;
+    R2_PUBLIC_URL?: string;
+    // Azure OpenAI (Care Agent & Smart OCR)
+    AZURE_OPENAI_API_KEY?: string;
+    AZURE_OPENAI_ENDPOINT?: string;
+    AZURE_OPENAI_DEPLOYMENT_NAME?: string;
   };
   Variables: {
     db: AppDatabase;

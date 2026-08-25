@@ -27,6 +27,7 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
         "Field Visits",
         "Check-in Monitoring",
         "Check-in History & Transcripts",
+        "Storage & Upload",
       ].includes(tag),
   },
   {
@@ -40,6 +41,7 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
         "Field Visits",
         "Check-in History & Transcripts",
         "Public Field Reports (Zero-Login)",
+        "Storage & Upload",
       ].includes(tag),
   },
   {
@@ -54,6 +56,7 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
         "Medication Schedules",
         "Check-in History & Transcripts",
         "Public Status (Zero-Login)",
+        "Storage & Upload",
       ].includes(tag),
   },
   {
@@ -65,6 +68,7 @@ export const ROLE_GROUPS: RoleGroupConfig[] = [
         "Public Onboarding & Territory",
         "Public Status (Zero-Login)",
         "Public Field Reports (Zero-Login)",
+        "Storage & Upload",
       ].includes(tag),
   },
   {
