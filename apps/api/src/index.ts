@@ -51,6 +51,8 @@ import { ListMedicationsEndpoint } from "./endpoints/medications/list";
 import { CreateMedicationEndpoint } from "./endpoints/medications/create";
 import { UpdateMedicationEndpoint } from "./endpoints/medications/update";
 import { DeleteMedicationEndpoint } from "./endpoints/medications/delete";
+import { OcrElderlyMedicationEndpoint } from "./endpoints/medications/ocr-elderly";
+import { OcrGeneralMedicationEndpoint } from "./endpoints/medications/ocr-general";
 
 // Family endpoints
 import { ListFamilyEndpoint } from "./endpoints/family/list";
@@ -176,6 +178,8 @@ openapi.get("/api/elderly/:id/medications", asRoute(ListMedicationsEndpoint));
 openapi.post("/api/elderly/:id/medications", asRoute(CreateMedicationEndpoint));
 openapi.put("/api/elderly/:id/medications/:medId", asRoute(UpdateMedicationEndpoint));
 openapi.delete("/api/elderly/:id/medications/:medId", asRoute(DeleteMedicationEndpoint));
+openapi.post("/api/elderly/:id/ocr", asRoute(OcrElderlyMedicationEndpoint));
+openapi.post("/api/ocr/medications", asRoute(OcrGeneralMedicationEndpoint));
 
 // Family endpoints
 openapi.post("/api/family/me/elderly", asRoute(CreateElderlyByFamilyEndpoint));
