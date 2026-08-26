@@ -20,12 +20,12 @@ Platform Kabarin dirancang dengan arsitektur **Multi-Role Web Dashboard** yang d
 • Onboarding Lansia + OCR      • Riwayat & Jadwal Kunjungan    • Daftarkan Orang Tua (Inisiatif)
 • Daftarkan Relawan RT         • Input Laporan Kunjungan       • Tambah Anggota Keluarga Lain
 • Verifikasi Pengajuan Warga   • Ganti Password Mandiri        • Request Bantuan On-Demand
-• Triase Prioritas Wilayah     • (Akses Cepat: /lapor/:token)  • (Akses Cepat: /status/:token)
+• Priority Status Cards & Briefing     • (Akses Cepat: /lapor/:token)  • (Akses Cepat: /status/:token)
 ```
 
 | Peran (*Role*) | Akses Web Utama | Jalur Pembuatan Akun | Kanal Cepat / Notifikasi | Tanggung Jawab Utama |
 |---|---|---|---|---|
-| **Kader / Ketua RT** (`cadre`) | **Dashboard Kader** | Registrasi Mandiri (`/register`) | Web App & WhatsApp Alert | Pendaftaran RT, pendataan lansia + OCR obat, mendaftarkan relawan, verifikasi warga baru, dan monitoring triase RT. |
+| **Kader / Ketua RT** (`cadre`) | **Dashboard Kader** | Registrasi Mandiri (`/register`) | Web App & WhatsApp Alert | Pendaftaran RT, pendataan lansia + OCR obat, mendaftarkan relawan, verifikasi warga baru, monitoring prioritas wilayah RT, dan briefing operasional harian. |
 | **Relawan RT** (`volunteer`) | **Dashboard Relawan** *(Opsional)* | **1 Pintu:** Didaftarkan oleh Kader RT di Dashboard | WhatsApp Alert & Link Cepat (`/lapor/:token`) | Memantau lansia binaan, verifikasi kunjungan fisik, submit laporan kondisi. **Tidak wajib login jika hanya pakai link WA.** |
 | **Keluarga Lansia** (`family`) | **Dashboard Keluarga** *(Opsional)* | Registrasi Mandiri (`/register/family`) atau via Token WA | WhatsApp Alert & Link Cepat (`/status/:token`) | Mendaftarkan orang tua ke RT, memantau kondisi harian, melihat histori obat/kunjungan, dan meminta bantuan darurat. **Tidak wajib login jika hanya pantau via link WA.** |
 | **Warga Lansia** | Tidak mengakses web | Didaftarkan Kader / Keluarga | **WhatsApp Bot** (Teks atau Voice Note) | Menerima sapaan pagi & pengingat obat, membalas bebas via teks atau rekaman suara tanpa aplikasi baru. |
@@ -137,9 +137,9 @@ Kader langsung masuk ke dashboard RT-nya yang siap dipakai mendata lansia.
 1. **Model Verifikasi Cepat (Khusus Pendaftaran oleh Keluarga):**
    - **Bot WhatsApp & Pengingat Obat $\rightarrow$ LANGSUNG AKTIF (Tanpa Menunggu):** Orang tua langsung disapa dan diingatkan minum obat sejak hari pertama tanpa perlu menunggu approval RT.
    - **Kunjungan Fisik Relawan $\rightarrow$ MENUNGGU VERIFIKASI KADER:** Kader RT memverifikasi alamat domisili di dashboard dan menugaskan relawan tetangga terdekat. Jika data fiktif atau salah RT, Kader berhak menolak atau memindahkan wilayah.
-2. **Mekanisme Penugasan Relawan Harian (*Geospatial Proximity*):**
-   - Sistem menghitung jarak koordinat rumah lansia ke relawan ($<100$ meter) dan kuota binaan masing-masing relawan.
-   - Di form Kader muncul rekomendasi: `[⭐ Rekomendasi Terdekat: Mas Budi (Jarak 25m, 1 Binaan)]`. Kader tinggal 1-klik setuju (*Human-in-the-Loop*).
+2. **Mekanisme Penugasan Relawan Harian (*Proximity & Workload Matching*):**
+   - Sistem menghitung jarak geografis secara matematis menggunakan **formula Haversine** antara koordinat rumah lansia dan rumah relawan (< 100 meter) serta memeriksa kuota beban tugas aktif (< 5 binaan) — *murni kalkulasi matematis database tanpa beban AI*.
+   - Di form Kader muncul rekomendasi terurut: `[⭐ Rekomendasi Terdekat: Mas Budi (Jarak 25m, 1 Binaan Aktif)]`. Kader tinggal 1-klik setuju (*Human-in-the-Loop*).
 
 ---
 
@@ -406,21 +406,25 @@ perlu tahu.            • Relawan Utama + Cadangan dipanggil bersama
 
 ### 🟢 FLOW 7: Alur Kerja Dashboard Kader RT (`/dashboard`)
 
-Dashboard Kader difokuskan pada **pengawasan wilayah dan tindakan cepat**:
+Dashboard Kader difokuskan pada **pengawasan wilayah, briefing operasional, dan tindakan cepat**:
 
-1. **Pantauan Status Wilayah (Triase Prioritas):**
+1. **Pantauan Status Wilayah (*Priority Status Cards*):**
    - Menampilkan metrik ringkasan RT: Total Lansia, Lansia Aman, Butuh Perhatian, dan Kondisi Darurat.
    - Menempatkan lansia yang membutuhkan tindakan segera di bagian paling atas (*Priority Action Feed*).
-2. **Manajemen Direktori Lansia (`/elderly`):**
+2. **Briefing Operasional Pagi (*Daily Operational Briefing*):**
+   - Menyajikan kartu rangkuman otomatis berbasis AI setiap pagi yang menyintesis siapa saja lansia yang belum merespons, eskalasi berjalan, serta pendaftaran baru dalam 30 detik pertama.
+3. **Deteksi Dini Penurunan Respons (*Early Welfare Anomaly Alert*):**
+   - Algoritma *rule-based* yang mendeteksi perubahan pola sapaan harian (misal pergeseran rata-rata waktu respons lansia yang melambat secara signifikan selama 3 hari berturut-turut).
+4. **Manajemen Direktori Lansia (`/elderly`):**
    - Pencarian warga lansia berdasarkan nama, status kesehatan, atau nomor rumah.
    - Membuka profil detail lansia: riwayat percakapan WhatsApp (termasuk rekaman suara & transkripsi), daftar obat harian, data keluarga, dan log kunjungan relawan.
-3. **Pendaftaran Relawan Baru 1-Pintu (`/volunteers` ➔ Modal Tambah Relawan):**
+5. **Pendaftaran Relawan Baru 1-Pintu (`/volunteers` ➔ Modal Tambah Relawan):**
    - Menambah relawan tetangga dan mengelola beban penugasan.
-4. **Verifikasi Pengajuan Warga Baru dari Keluarga:**
+6. **Verifikasi Pengajuan Warga Baru dari Keluarga:**
    - Meninjau data lansia yang didaftarkan mandiri oleh anak/kerabat dan menugaskan relawan pendamping.
-5. **Kelola Kontak Keluarga Tambahan (`/elderly/:id` ➔ Tab Keluarga):**
+7. **Kelola Kontak Keluarga Tambahan (`/elderly/:id` ➔ Tab Keluarga):**
    - Menambah kontak anak ke-2, anak ke-3, dll. Sistem langsung mengirim link status token ke WA masing-masing.
-6. **Log Riwayat Eskalasi (`/escalations`):**
+8. **Log Riwayat Eskalasi (`/escalations`):**
    - Rekam jejak seluruh insiden darurat yang pernah terjadi di RT beserta histori penanganannya.
 
 ---
@@ -449,7 +453,7 @@ Dashboard Relawan dirancang untuk **mempermudah relawan tetangga mengelola tugas
 ```
 
 - **Dua Pilihan Akses Relawan:**
-  1. **Akses Cepat (Tanpa Login):** Mengklik tautan `/lapor/:token` langsung dari pesan WhatsApp saat tiba di lokasi (selesai $<1$ menit).
+  1. **Akses Cepat (Tanpa Login):** Mengklik tautan `/lapor/:token` langsung dari pesan WhatsApp saat tiba di lokasi (selesai $<1$ menit). Formulir ini secara otomatis dilengkapi **Contextual Visit Guide**, yaitu 3–5 butir panduan observasi fisik sederhana yang di-generate dinamis oleh AI berbasis riwayat medis lansia (misal: protokol FAST stroke untuk riwayat hipertensi) berupa checklist ya/tidak praktis untuk relawan awam non-medis.
   2. **Akses Dashboard Web:** Login untuk melihat seluruh lansia binaan, riwayat laporan sebelumnya, jadwal kunjungan rutin, dan mengganti password akunnya sendiri.
 
 ---
@@ -479,8 +483,9 @@ Sedang dicek relawan).     yang sudah/belum diminum mengecek ke rumah.
      agar ikut menerima notifikasi   (Memicu kunjungan langsung jika cemas)
 ```
 
-- **Dua Pilihan Akses Keluarga:**
-  1. **Akses Cepat (Tanpa Login):** Membuka tautan `/status/:token` dari pesan WhatsApp untuk pemantauan instan hari ini.
-  2. **Akses Dashboard Web:** Login untuk mengelola profil orang tua, menambahkan kontak saudara lain (*kakak/adik*), melihat histori obat jangka panjang, dan memicu permintaan cek fisik relawan.
+- **Tiga Kanal Pemantauan Keluarga:**
+  1. **Akses Cepat (Tanpa Login):** Membuka tautan `/status/:token` dari pesan WhatsApp untuk pemantauan instan hari ini (status sapaan, riwayat obat 7 hari, kontak relawan, dan tombol On-Demand SOS).
+  2. **Rangkuman Mingguan Otomatis (*Weekly Welfare Digest via WhatsApp*):** Setiap Minggu pagi, sistem mengirimkan pesan rangkuman 7 hari terakhir (kepatuhan minum obat, respon sapaan harian, dan catatan kunjungan relawan) secara proaktif ke WhatsApp seluruh keluarga tanpa perlu login web.
+  3. **Akses Dashboard Web:** Login untuk mengelola profil orang tua, menambahkan kontak saudara lain (*kakak/adik*), melihat histori obat jangka panjang, dan memicu permintaan cek fisik relawan.
 
 ---
