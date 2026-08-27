@@ -1,1 +1,19 @@
 @import "tailwindcss";
+
+@theme {
+    --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+    
+    --color-brand: #6A6BC5;
+    --color-accent: #FFA45A;
+
+    --color-light: #FCFCFD;
+    --color-light-darker: #F0F2F5;
+
+    --color-dark: #27222A;
+}
+
+@layer base {
+  html {
+    letter-spacing: -0.02em;
+  }
+}

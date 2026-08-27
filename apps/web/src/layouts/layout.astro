@@ -1,5 +1,8 @@
 ---
+import '@fontsource-variable/inter';
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import Navbar from "../components/ui/navbar.astro"
 
 const {
     title,
@@ -18,7 +21,6 @@ const defaultDescription =
 
 const safeDescription = description ?? defaultDescription;
 const url = canonical ?? Astro.url.href;
-
 ---
 
 <!doctype html>
@@ -45,12 +47,20 @@ const url = canonical ?? Astro.url.href;
         <meta name="twitter:description" content={safeDescription} />
         <meta name="twitter:image" content={image} />
 
+        <ClientRouter />
+
         {noindex && <meta name="robots" content="noindex, follow" />}
     </head>
 
-    <body>
-        <main id="content">
+    <body class="bg-light text-dark flex h-dvh w-screen flex-col-reverse overflow-hidden md:flex-row">
+        
+        <aside class="h-fit w-full md:h-full md:w-fit">
+            <Navbar />
+        </aside>
+
+        <main id="content" class="h-full w-full overflow-y-auto p-6.25">
             <slot />
         </main>
+
     </body>
 </html>
