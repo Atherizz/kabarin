@@ -4,46 +4,48 @@ import { House, EnvelopeSimple, User } from 'phosphor-svelte';
 
 <nav
   transition:persist="bottom-nav"
-  class="h-full w-full bg-light-darker pb-safe border-t border-gray-200/50
-         md:border-t-0 md:border-r md:pb-0"
+  class="h-full w-full bg-light-darker pb-safe"
 >
-  <div class="flex h-full items-center justify-around px-6 pt-2 pb-4
+  <div class="flex h-full items-center justify-around px-6 pt-2 pb-5 text-dark/75
               md:flex-col md:justify-start md:gap-2 md:p-4">
 
     <!-- Beranda -->
-    <a href="/" class="nav-link flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
+    <a href="/" class="nav-link relative flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
                        md:justify-start md:w-full md:h-auto md:px-5 md:py-8 md:gap-2"
        data-href="/">
       <div class="relative flex items-center justify-center">
         <House weight="fill" class="size-9 icon" />
       </div>
       <span class="text-[13px] font-semibold tracking-tight md:text-[15px]">Beranda</span>
+      <div class="overlay absolute inset-0 rounded-4xl transition-colors duration-300"></div>
     </a>
 
     <!-- Pesan -->
-    <a href="/pesan" class="nav-link flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
+    <a href="/pesan" class="nav-link relative flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
                             md:justify-start md:w-full md:h-auto md:px-5 md:py-8 md:gap-2"
        data-href="/pesan">
       <div class="relative flex items-center justify-center">
         <EnvelopeSimple weight="fill" class="size-9 icon" />
 
         <!-- Notification Badge -->
-        <span class="absolute -top-1.5 -right-2.5 flex items-center italic justify-center h-5 px-1.5 min-w-5 text-[11px] font-bold text-white bg-brand rounded-full border-[2.5px] border-light-darker
+        <span class="absolute -top-1.5 -right-2.5 flex items-center italic justify-center h-5 pl-1 pr-1.5 min-w-5 text-[11px] font-bold text-white bg-brand rounded-full border-[2.5px] border-light-darker
                      md:-top-1 md:-right-2">
           10
         </span>
       </div>
       <span class="text-[13px] font-semibold tracking-tight md:text-[15px]">Pesan</span>
+      <div class="overlay absolute inset-0 rounded-4xl transition-colors duration-300"></div>
     </a>
 
     <!-- Profil -->
-    <a href="/profil" class="nav-link flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
+    <a href="/profil" class="nav-link relative flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
                              md:justify-start md:w-full md:h-auto md:px-5 md:py-8 md:gap-2"
        data-href="/profil">
       <div class="relative flex items-center justify-center">
         <User weight="fill" class="size-9 icon" />
       </div>
       <span class="text-[13px] font-semibold tracking-tight md:text-[15px]">Profil</span>
+      <div class="overlay absolute inset-0 rounded-4xl transition-colors duration-300"></div>
     </a>
 
   </div>
@@ -57,13 +59,14 @@ import { House, EnvelopeSimple, User } from 'phosphor-svelte';
     links.forEach((link) => {
       const href = link.dataset.href ?? '/';
       const isActive = currentPath === href || (href !== '/' && currentPath.startsWith(href));
+      const overlay = link.querySelector('.overlay');
 
       if (isActive) {
-        link.classList.add('bg-brand/25', 'text-brand');
-        link.classList.remove('text-dark/75');
+        link.classList.add('text-brand');
+        if (overlay) overlay.classList.add('bg-brand/25');
       } else {
-        link.classList.remove('bg-brand/25', 'text-brand');
-        link.classList.add('text-dark/75');
+        link.classList.remove('text-brand');
+        if (overlay) overlay.classList.remove('bg-brand/25');
       }
     });
   }
