@@ -21,7 +21,6 @@ const defaultDescription =
 
 const safeDescription = description ?? defaultDescription;
 const url = canonical ?? Astro.url.href;
-
 ---
 
 <!doctype html>
@@ -53,10 +52,15 @@ const url = canonical ?? Astro.url.href;
         {noindex && <meta name="robots" content="noindex, follow" />}
     </head>
 
-    <body class="bg-light text-dark p-6.25">
-        <main id="content">
-            <slot />
+    <body class="bg-light text-dark flex h-dvh w-screen flex-col-reverse overflow-hidden md:flex-row">
+        
+        <aside class="h-fit w-full md:h-full md:w-fit">
             <Navbar />
+        </aside>
+
+        <main id="content" class="h-full w-full overflow-y-auto p-6.25">
+            <slot />
         </main>
+
     </body>
 </html>
