@@ -1,14 +1,22 @@
 import { z, UpdateElderlyStatusInputSchema, ElderlySchema } from "@kabarin/types";
-import { eq, and, elderly } from "@kabarin/db";
+import { eq, elderly } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { assertRole } from "../../lib/auth-guard";
+import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
 
 export class UpdateElderlyStatusEndpoint extends ApiRoute {
   schema = {
-    tags: ["Elderly"],
-    summary: "Update elderly welfare status",
-    description: "Updates the real-time traffic-light status of an elderly individual (green/yellow/red/grey). Used by Care Agent, bot handlers, and manual overrides.",
+    tags: ["Elderly Management"],
+    summary: "Update elderly welfare status (Manual Override & Bot Integration)",
+    description:
+      "### Dual-Flow Architecture & Integration Context:\n" +
+      "- **🤖 Automated Bot Engine (Primary):** The senior's traffic-light welfare status (`green`, `yellow`, `red`, `grey`) is automatically calculated and updated by the AI Care Agent / WhatsApp Baileys Bot after processing daily greeting responses (Whisper voice notes or text sentiment) or upon check-in timeout.\n" +
+      "- **👤 Manual Override (This Endpoint):** Used by RT Cadres or designated Volunteers when a health change or emergency occurs outside the morning check-in window (e.g. sudden hospitalization, in-person discovery of an accident).\n\n" +
+      "### Multi-Role Access Control:\n" +
+      "- **Cadre RT:** Full override access for all seniors residing in the RT territory.\n" +
+      "- **Volunteer:** Strictly limited to assigned seniors under their designated caregiving responsibility.",
     request: {
       params: z.object({
         id: z.string(),
@@ -30,8 +38,16 @@ export class UpdateElderlyStatusEndpoint extends ApiRoute {
           },
         },
       },
+      "403": {
+        description: "Forbidden: Not permitted to update status for this elderly",
+        content: {
+          "application/json": {
+            schema: z.object({ success: z.literal(false), error: z.string() }),
+          },
+        },
+      },
       "404": {
-        description: "Elderly not found in this RT",
+        description: "Elderly not found",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -42,25 +58,16 @@ export class UpdateElderlyStatusEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
+    const session = assertRole(c, "cadre", "volunteer", "admin");
     const db = c.get("db");
-    const session = c.get("session")!;
-    const communityUnitId = session.user.communityUnitId;
-
-    if (!communityUnitId) {
-      return c.json({ success: false, error: "Akun Anda belum terhubung ke wilayah RT" }, 403);
-    }
 
     const { id } = c.req.param();
     const body = await c.req.json<typeof UpdateElderlyStatusInputSchema._type>();
 
-    const existing = await db.query.elderly.findFirst({
-      where: and(eq(elderly.id, id), eq(elderly.communityUnitId, communityUnitId)),
-    });
+    // 1. Verify access via Policy Layer (ensures volunteer can only update assigned elderly)
+    await assertElderlyAccess(db, session, id);
 
-    if (!existing) {
-      return c.json({ success: false, error: "Data lansia tidak ditemukan" }, 404);
-    }
-
+    // 2. Perform status update
     const [updated] = await db
       .update(elderly)
       .set({
@@ -68,7 +75,7 @@ export class UpdateElderlyStatusEndpoint extends ApiRoute {
         ...(body.notes && { notes: body.notes }),
         updatedAt: new Date(),
       })
-      .where(and(eq(elderly.id, id), eq(elderly.communityUnitId, communityUnitId)))
+      .where(eq(elderly.id, id))
       .returning();
 
     return c.json({

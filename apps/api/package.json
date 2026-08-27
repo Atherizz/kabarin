@@ -3,18 +3,24 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "bun run --env-file ../../.env --watch src/index.ts",
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "dev:bun": "bun run --env-file ../../.env --watch src/index.ts",
     "start": "bun run --env-file ../../.env src/index.ts",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
-    "hono": "^4.6.0",
-    "chanfana": "^2.0.0",
-    "@scalar/hono-api-reference": "^0.5.0",
-    "node-cron": "^3.0.3",
-    "@kabarin/types": "workspace:*",
+    "@aws-sdk/client-s3": "^3.1117.0",
+    "@aws-sdk/s3-request-presigner": "^3.1117.0",
+    "@kabarin/auth": "workspace:*",
     "@kabarin/db": "workspace:*",
-    "@kabarin/auth": "workspace:*"
+    "@kabarin/types": "workspace:*",
+    "@scalar/hono-api-reference": "^0.5.0",
+    "chanfana": "^2.0.0",
+    "hono": "^4.6.0",
+    "node-cron": "^3.0.3",
+    "openai": "^7.5.0"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.0",

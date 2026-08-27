@@ -3,10 +3,11 @@ import { eq, communityUnits } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class GetMyCommunityEndpoint extends ApiRoute {
   schema = {
-    tags: ["Community"],
+    tags: ["Community & Dashboard"],
     summary: "Get my RT details",
     description: "Returns the community unit (RT) that the authenticated cadre belongs to.",
     responses: {
@@ -19,7 +20,7 @@ export class GetMyCommunityEndpoint extends ApiRoute {
         },
       },
       "404": {
-        description: "Cadre not linked to any community unit",
+        description: "RT unit not found",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -30,13 +31,9 @@ export class GetMyCommunityEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
+    const session = assertRole(c, "cadre", "admin");
+    const communityUnitId = assertCommunity(session);
     const db = c.get("db");
-    const session = c.get("session")!;
-    const communityUnitId = session.user.communityUnitId;
-
-    if (!communityUnitId) {
-      return c.json({ success: false, error: "Akun ini tidak terhubung ke wilayah RT manapun" }, 404);
-    }
 
     const community = await db.query.communityUnits.findFirst({
       where: eq(communityUnits.id, communityUnitId),
@@ -56,3 +53,4 @@ export class GetMyCommunityEndpoint extends ApiRoute {
     });
   }
 }
+

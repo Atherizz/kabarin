@@ -3,11 +3,12 @@ import { eq, and, volunteers, elderly, elderlyVolunteers } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { assertRole, assertCommunity } from "../../lib/auth-guard";
 import crypto from "crypto";
 
 export class AssignVolunteerEndpoint extends ApiRoute {
   schema = {
-    tags: ["Volunteers"],
+    tags: ["Volunteer Management"],
     summary: "Assign volunteer to elderly",
     description: "Assigns a volunteer to an elderly individual as either primary or backup caregiver. Checks max capacity limit.",
     request: {
@@ -51,13 +52,9 @@ export class AssignVolunteerEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
+    const session = assertRole(c, "cadre", "admin");
+    const communityUnitId = assertCommunity(session);
     const db = c.get("db");
-    const session = c.get("session")!;
-    const communityUnitId = session.user.communityUnitId;
-
-    if (!communityUnitId) {
-      return c.json({ success: false, error: "Akun Anda belum terhubung ke wilayah RT" }, 403);
-    }
 
     const { id: volunteerId } = c.req.param();
     const body = await c.req.json<typeof AssignVolunteerInputSchema._type>();

@@ -2,11 +2,10 @@ import { z, UserResponseSchema } from "@kabarin/types";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import { getServices } from "../../services";
 
 export class GetSessionEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Get current session",
     description: "Returns the active session and user, or null if not authenticated.",
     responses: {
@@ -30,7 +29,7 @@ export class GetSessionEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const { auth } = getServices();
+    const auth = c.get("auth");
     return auth.handler(c.req.raw);
   }
 }

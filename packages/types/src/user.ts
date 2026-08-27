@@ -19,17 +19,18 @@ export const SignUpSchema = z
     name: z.string().min(2),
     email: z.string().email(),
     password: z.string().min(8),
-    role: UserRoleEnum.optional().default("cadre"),
+    role: UserRoleEnum.optional().default("family"),
     phone: z.string().optional(),
     communityUnitId: z.string().optional(),
   })
   .openapi({
     example: {
-      name: "Ibu Endang Astuti",
-      email: "kader.jatimulyo@gmail.com",
-      password: "PasswordKader123!",
-      role: "cadre",
-      phone: "081233445566",
+      name: "Rian Hidayat (Anak Pemantau)",
+      email: "rian.hidayat@gmail.com",
+      password: "PasswordKeluarga123!",
+      role: "family",
+      phone: "081234567890",
+      communityUnitId: "3573051007-RW10-RT01",
     },
   });
 
@@ -41,9 +42,23 @@ export const SignInSchema = z
   })
   .openapi({
     example: {
-      email: "kader.jatimulyo@gmail.com",
-      password: "PasswordKader123!",
+      email: "kader@gmail.com",
+      password: "Kabarin2026!",
       rememberMe: true,
+    },
+  });
+
+export const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Password saat ini wajib diisi"),
+    newPassword: z.string().min(8, "Password baru minimal 8 karakter"),
+    revokeOtherSessions: z.boolean().optional().default(true),
+  })
+  .openapi({
+    example: {
+      currentPassword: "PasswordLama123!",
+      newPassword: "PasswordBaruKader2026!",
+      revokeOtherSessions: true,
     },
   });
 
@@ -51,3 +66,4 @@ export type UserRole = z.infer<typeof UserRoleEnum>;
 export type UserResponse = z.infer<typeof UserResponseSchema>;
 export type SignUpInput = z.infer<typeof SignUpSchema>;
 export type SignInInput = z.infer<typeof SignInSchema>;
+export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;

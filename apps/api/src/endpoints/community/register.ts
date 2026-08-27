@@ -3,11 +3,10 @@ import { eq, communityUnits, user } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import { getServices } from "../../services";
 
 export class RegisterCommunityEndpoint extends ApiRoute {
   schema = {
-    tags: ["Community"],
+    tags: ["Public Onboarding & Territory"],
     summary: "Self-register RT + kader account",
     description:
       "Public endpoint. Creates a new community unit (RT) and the first cadre account in one request. " +

@@ -1,0 +1,31 @@
+---
+import Button from '../../ui/button.astro';
+
+import { BellRinging, CheckFat } from 'phosphor-svelte';
+---
+
+<div class="flex flex-col">
+    <h1 class="leading-none text-4xl"><span class="font-medium opacity-75">Halo</span><br /><span class="font-semibold opacity-100">atherizz</span></h1>
+    
+    <div class="flex justify-center gap-1.25 md:gap-5 mt-7.5">
+        <Button
+            href="#"
+            title="Ingatkan"
+            description="Ingatkan keluarga atau relawan terdekat."
+            variant="accent"
+            >
+            <BellRinging slot="small-icon" weight="fill" />
+            <BellRinging slot="large-icon" weight="fill" />
+        </Button>
+    
+        <Button
+            href="#"
+            title="Check-in"
+            description="Check-in status lansia secara berkala."
+            variant="brand"
+            >
+            <CheckFat slot="small-icon" weight="fill" />
+            <CheckFat slot="large-icon" weight="fill" />
+        </Button>
+    </div>
+</div>

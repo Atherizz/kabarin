@@ -2,10 +2,11 @@ import { z, UserResponseSchema } from "@kabarin/types";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { assertRole } from "../../lib/auth-guard";
 
 export class MeEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Get current authenticated user",
     description: "Returns the profile of the currently authenticated user based on their session cookie.",
     responses: {
@@ -35,7 +36,7 @@ export class MeEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const session = c.get("session")!;
+    const session = assertRole(c);
     const { user } = session;
 
     return c.json({

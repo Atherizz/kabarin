@@ -1,0 +1,70 @@
+---
+import { House, EnvelopeSimple, User } from 'phosphor-svelte';
+---
+
+<nav 
+  transition:persist="bottom-nav"
+  class="fixed bottom-0 left-0 z-50 w-full bg-light-darker pb-safe"
+>
+  <div class="flex items-start justify-around h-26 px-6 pt-3 max-w-md mx-auto">
+    
+    <!-- Beranda -->
+    <a href="/" class="nav-link flex flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl transition-colors duration-300" data-href="/">
+      <div class="relative flex items-center justify-center">
+        <House weight="fill" class="size-9 icon" />
+      </div>
+      <span class="text-[13px] font-semibold tracking-tight">Beranda</span>
+    </a>
+
+    <!-- Pesan -->
+    <a href="/pesan" class="nav-link flex flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl transition-colors duration-300" data-href="/pesan">
+      <div class="relative flex items-center justify-center">
+        <EnvelopeSimple weight="fill" class="size-9 icon" />
+        
+        <!-- Notification Badge -->
+        <span class="absolute -top-1.5 -right-2.5 flex items-center italic justify-center h-5 px-1.5 min-w-5 text-[11px] font-bold text-white bg-brand rounded-full border-[2.5px] border-light-darker">
+          10
+        </span>
+      </div>
+      <span class="text-[13px] font-semibold tracking-tight">Pesan</span>
+    </a>
+
+    <!-- Profil -->
+    <a href="/profil" class="nav-link flex flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl transition-colors duration-300" data-href="/profil">
+      <div class="relative flex items-center justify-center">
+        <User weight="fill" class="size-9 icon" />
+      </div>
+      <span class="text-[13px] font-semibold tracking-tight">Profil</span>
+    </a>
+
+  </div>
+</nav>
+
+<script>
+  function updateNav() {
+    const currentPath = window.location.pathname;
+    const links = document.querySelectorAll('.nav-link');
+
+    links.forEach(link => {
+      const href = link.getAttribute('data-href');
+      
+      const isActive = currentPath === href || (href !== '/' && currentPath.startsWith(href));
+
+      if (isActive) {
+        link.classList.add('bg-brand/25', 'text-brand');
+        link.classList.remove('text-dark/75');
+      } else {
+        link.classList.remove('bg-brand/25', 'text-brand');
+        link.classList.add('text-dark/75');
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', updateNav);
+</script>
+
+<style>
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+</style>

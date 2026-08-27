@@ -3,10 +3,11 @@ import { eq, and, volunteers } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class GetVolunteerEndpoint extends ApiRoute {
   schema = {
-    tags: ["Volunteers"],
+    tags: ["Volunteer Management"],
     summary: "Get single volunteer details",
     description: "Returns full details of a volunteer in the cadre's RT, including their assigned elderly care list.",
     request: {
@@ -38,13 +39,9 @@ export class GetVolunteerEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
+    const session = assertRole(c, "cadre", "admin");
+    const communityUnitId = assertCommunity(session);
     const db = c.get("db");
-    const session = c.get("session")!;
-    const communityUnitId = session.user.communityUnitId;
-
-    if (!communityUnitId) {
-      return c.json({ success: false, error: "Akun Anda belum terhubung ke wilayah RT" }, 403);
-    }
 
     const { id } = c.req.param();
 

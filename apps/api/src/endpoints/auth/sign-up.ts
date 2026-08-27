@@ -2,11 +2,10 @@ import { z, SignUpSchema, UserResponseSchema } from "@kabarin/types";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import { getServices } from "../../services";
 
 export class SignUpEndpoint extends ApiRoute {
   schema = {
-    tags: ["Auth"],
+    tags: ["Auth & Session"],
     summary: "Register a new account",
     request: {
       body: {
@@ -40,7 +39,7 @@ export class SignUpEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const { auth } = getServices();
+    const auth = c.get("auth");
     return auth.handler(c.req.raw);
   }
 }

@@ -12,7 +12,7 @@ export const user = pgTable("user", {
   role: text("role")
     .$type<"admin" | "cadre" | "volunteer" | "family">()
     .notNull()
-    .default("cadre"),
+    .default("family"),
   communityUnitId: text("community_unit_id").references(() => communityUnits.id, {
     onDelete: "set null",
   }),

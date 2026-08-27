@@ -3,10 +3,11 @@ import { eq, and, volunteers } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { assertRole, assertCommunity } from "../../lib/auth-guard";
 
 export class UpdateVolunteerEndpoint extends ApiRoute {
   schema = {
-    tags: ["Volunteers"],
+    tags: ["Volunteer Management"],
     summary: "Update volunteer profile",
     description: "Updates details, max capacity, or active status of a volunteer. Scoped to cadre's RT.",
     request: {
@@ -42,23 +43,34 @@ export class UpdateVolunteerEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
+    const session = assertRole(c, "cadre", "admin");
+    const communityUnitId = assertCommunity(session);
     const db = c.get("db");
-    const session = c.get("session")!;
-    const communityUnitId = session.user.communityUnitId;
-
-    if (!communityUnitId) {
-      return c.json({ success: false, error: "Akun Anda belum terhubung ke wilayah RT" }, 403);
-    }
 
     const { id } = c.req.param();
     const body = await c.req.json<typeof UpdateVolunteerInputSchema._type>();
 
     const existing = await db.query.volunteers.findFirst({
       where: and(eq(volunteers.id, id), eq(volunteers.communityUnitId, communityUnitId)),
+      with: { assignedElderly: true },
     });
 
     if (!existing) {
       return c.json({ success: false, error: "Relawan tidak ditemukan di RT ini" }, 404);
+    }
+
+    // Prevent reducing maxCapacity below currently assigned elderly count
+    if (body.maxCapacity !== undefined) {
+      const currentCount = existing.assignedElderly?.length ?? 0;
+      if (body.maxCapacity < currentCount) {
+        return c.json(
+          {
+            success: false,
+            error: `Kapasitas maksimal (${body.maxCapacity}) tidak boleh lebih kecil dari jumlah lansia yang sedang diasuh saat ini (${currentCount} lansia)`,
+          },
+          400
+        );
+      }
     }
 
     const [updated] = await db

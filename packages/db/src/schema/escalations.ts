@@ -5,6 +5,7 @@ import {
   integer,
   boolean,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { communityUnits } from "./community";
@@ -12,6 +13,17 @@ import { elderly } from "./elderly";
 import { checkinSessions } from "./checkins";
 import { volunteerVisits } from "./visits";
 import { elderlyFamily } from "./family";
+
+export interface TierHistoryItem {
+  tier: number;
+  action: string;
+  targetType?: "volunteer" | "family" | "cadre" | "broadcast";
+  targetId?: string | null;
+  targetName?: string | null;
+  targetPhone?: string | null;
+  note?: string | null;
+  timestamp: string;
+}
 
 export const escalationLogs = pgTable("escalation_logs", {
   id: text("id").primaryKey(),
@@ -38,6 +50,11 @@ export const escalationLogs = pgTable("escalation_logs", {
     .$type<"open" | "in_progress" | "resolved" | "cancelled">()
     .notNull()
     .default("open"),
+  // Audit trail timeline of actions taken across tiers
+  tierHistory: jsonb("tier_history")
+    .$type<TierHistoryItem[]>()
+    .notNull()
+    .default([]),
   // Timestamp when Tier 2 WhatsApp alerts were sent to registered family members
   familyNotifiedAt: timestamp("family_notified_at"),
   // Tier 3: Puskesmas / ILP fast-track referral card dispatched
