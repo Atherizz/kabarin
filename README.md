@@ -28,7 +28,7 @@ The project is structured as a TypeScript monorepo powered by **Bun Workspaces**
 kabarin/
 ├── apps/
 │   ├── api/                    # Backend server (Hono + Bun + Chanfana OpenAPI + Scalar)
-│   └── web/                    # Frontend web application (Astro + SvelteKit)
+│   └── web/                    # Frontend web application (Astro + Svelte 5)
 │
 ├── packages/
 │   ├── types/                  # Shared Zod schemas, DTOs, Enums, and Result pattern
@@ -48,7 +48,7 @@ kabarin/
 | **`@kabarin/db`** | Database schema definitions, relations, and migration management. Isolated from client applications. | Drizzle ORM, postgres.js, PostgreSQL |
 | **`@kabarin/auth`** | Authentication server configuration (email/password & OAuth) and client authentication SDK. | Better Auth |
 | **`apps/api`** | HTTP REST API, WhatsApp bot socket handler, background cron scheduler, and AI triage service. | Hono, Chanfana, Scalar, Baileys |
-| **`apps/web`** | Responsive administrative, volunteer, and family dashboard. | Astro, SvelteKit |
+| **`apps/web`** | Responsive administrative, volunteer, and family dashboard. | Astro, Svelte 5 |
 
 ---
 
@@ -86,42 +86,46 @@ bun install
 
 ### 2. Environment Configuration
 
-Copy the example environment template to create your root `.env` file:
+Kabarin utilizes `.env` for root workspace scripts (database migrations & seeding) and `apps/api/.dev.vars` for the Cloudflare Workers local runtime.
+
+Copy both environment templates:
 
 ```bash
 # Windows (PowerShell)
 copy .env.example .env
+copy apps\api\.dev.vars.example apps\api\.dev.vars
 
 # macOS / Linux
 cp .env.example .env
+cp apps/api/.dev.vars.example apps/api/.dev.vars
 ```
 
-Open `.env` and configure your environment variables:
+Ensure both `.env` and `apps/api/.dev.vars` contain your active database connection string and Better Auth secret:
 
 ```env
-# Database Connection String (Local PostgreSQL instance or Managed Serverless Neon/Supabase)
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/kabarin_db"
+# Database Connection String (Serverless PostgreSQL Neon)
+DATABASE_URL="postgresql://neondb_owner:your_password@ep-xxx-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
 # Better Auth Configuration
 BETTER_AUTH_URL="http://localhost:8787"
-BETTER_AUTH_SECRET="generate_a_secure_32_character_secret"
-
-# Server Settings
-PORT=8787
-NODE_ENV="development"
+BETTER_AUTH_SECRET="6177f086ac498001dcb2c84e8fa9904f7042598d4f63116cd01c5c0fd73de7c1"
 ```
 
-### 3. Database Initialization & Migration
+### 3. Database Initialization & Seeding
 
-Ensure your local PostgreSQL database is created and reachable, or paste your managed serverless connection string into `DATABASE_URL`. Then push the Drizzle schema:
+Synchronize the Drizzle schema with your PostgreSQL database, then populate it with demo data:
 
 ```bash
+# 1. Push schema tables to database
 bun run db:push
+
+# 2. Seed demo accounts, RT territories, elderly profiles, and test tokens
+bun run seed
 ```
 
 ### 4. Running the Development Environment
 
-Launch all workspace applications and background processes:
+Launch all workspace applications (API + Web) concurrently:
 
 ```bash
 bun dev
@@ -142,9 +146,9 @@ Run these commands from the root directory:
 
 | Command | Description |
 |---|---|
-| `bun dev` | Starts all applications in watch mode via Turborepo |
-| `bun run build` | Builds all packages and applications with topological dependency resolution |
-| `bun run lint` | Runs linter and TypeScript compiler checks across all workspaces |
+| `bun dev` | Starts all applications concurrently via Turborepo |
+| `bun run build` | Builds all packages and applications |
+| `bun run seed` | Seeds database with RT territories, 5 demo accounts, elderly, and checkin logs |
 | `bun run db:push` | Synchronizes Drizzle schema directly with the connected database |
 | `bun run db:generate` | Generates SQL migration files from schema modifications |
 | `bun run db:migrate` | Applies pending SQL migrations to the database |

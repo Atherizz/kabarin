@@ -20,12 +20,12 @@ Platform Kabarin dirancang dengan arsitektur **Multi-Role Web Dashboard** yang d
 • Onboarding Lansia + OCR      • Riwayat & Jadwal Kunjungan    • Daftarkan Orang Tua (Inisiatif)
 • Daftarkan Relawan RT         • Input Laporan Kunjungan       • Tambah Anggota Keluarga Lain
 • Verifikasi Pengajuan Warga   • Ganti Password Mandiri        • Request Bantuan On-Demand
-• Priority Status Cards & Briefing     • (Akses Cepat: /lapor/:token)  • (Akses Cepat: /status/:token)
+• Priority Status & Daily Briefing • (Akses Cepat: /lapor/:token)  • (Akses Cepat: /status/:token)
 ```
 
 | Peran (*Role*) | Akses Web Utama | Jalur Pembuatan Akun | Kanal Cepat / Notifikasi | Tanggung Jawab Utama |
 |---|---|---|---|---|
-| **Kader / Ketua RT** (`cadre`) | **Dashboard Kader** | Registrasi Mandiri (`/register`) | Web App & WhatsApp Alert | Pendaftaran RT, pendataan lansia + OCR obat, mendaftarkan relawan, verifikasi warga baru, monitoring prioritas wilayah RT, dan briefing operasional harian. |
+| **Kader / Ketua RT** (`cadre`) | **Dashboard Kader** | Registrasi Mandiri (`/register`) | Web App & WhatsApp Alert | Pendaftaran RT, pendataan lansia + OCR obat, mendaftarkan relawan, verifikasi warga baru, monitoring prioritas wilayah RT, dan Daily Operational Briefing harian. |
 | **Relawan RT** (`volunteer`) | **Dashboard Relawan** *(Opsional)* | **1 Pintu:** Didaftarkan oleh Kader RT di Dashboard | WhatsApp Alert & Link Cepat (`/lapor/:token`) | Memantau lansia binaan, verifikasi kunjungan fisik, submit laporan kondisi. **Tidak wajib login jika hanya pakai link WA.** |
 | **Keluarga Lansia** (`family`) | **Dashboard Keluarga** *(Opsional)* | Registrasi Mandiri (`/register/family`) atau via Token WA | WhatsApp Alert & Link Cepat (`/status/:token`) | Mendaftarkan orang tua ke RT, memantau kondisi harian, melihat histori obat/kunjungan, dan meminta bantuan darurat. **Tidak wajib login jika hanya pantau via link WA.** |
 | **Warga Lansia** | Tidak mengakses web | Didaftarkan Kader / Keluarga | **WhatsApp Bot** (Teks atau Voice Note) | Menerima sapaan pagi & pengingat obat, membalas bebas via teks atau rekaman suara tanpa aplikasi baru. |
