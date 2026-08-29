@@ -8,3 +8,4 @@ export * from "./checkins";
 export * from "./escalations";
 export * from "./visits";
 export * from "./chat";
+export * from "./bot-auth";
