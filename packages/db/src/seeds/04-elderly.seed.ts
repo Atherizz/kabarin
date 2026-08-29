@@ -33,6 +33,13 @@ export async function seedElderly(db: AppDatabase, authUsers: Record<string, any
       preferredCheckinTime: "07:00",
       notes: "Tinggal sendiri, rumah pagar hijau depan musholla Al-Ikhlas.",
       createdBy: authUsers["kader@gmail.com"]?.id,
+      defaultChecklist: [
+        { question: "Apakah Mbah Soepardi bisa bicara dengan jelas, tidak pelo atau pelo tiba-tiba?", type: "yes_no" },
+        { question: "Apakah wajahnya simetris, tidak ada yang terlihat miring atau turun sebelah?", type: "yes_no" },
+        { question: "Apakah kedua tangannya bisa diangkat dan digerakkan dengan normal?", type: "yes_no" },
+        { question: "Apakah mengeluh sakit kepala hebat, pusing berputar, atau pandangan kabur?", type: "yes_no" },
+        { question: "Apakah sudah minum obat hipertensinya hari ini?", type: "yes_no" },
+      ],
     },
     // 2. Mbah Siti Aminah — YELLOW (Pusing / Butuh Bantuan)
     {
@@ -56,6 +63,13 @@ export async function seedElderly(db: AppDatabase, authUsers: Record<string, any
       preferredCheckinTime: "07:00",
       notes: "Ibu tinggal sendiri, anak kandung bekerja di Jakarta (Rian).",
       createdBy: authUsers["kader@gmail.com"]?.id,
+      defaultChecklist: [
+        { question: "Apakah Mbah Aminah terlihat lemas, gemetar, atau berkeringat dingin (tanda gula darah rendah)?", type: "yes_no" },
+        { question: "Apakah ada luka baru atau luka yang tidak sembuh-sembuh di kaki atau jari kaki?", type: "yes_no" },
+        { question: "Apakah kaki atau tungkai terlihat bengkak dibanding biasanya?", type: "yes_no" },
+        { question: "Apakah sudah makan hari ini sebelum atau setelah minum obat diabetesnya?", type: "yes_no" },
+        { question: "Apakah mengeluh penglihatan kabur atau pandangan double secara tiba-tiba?", type: "yes_no" },
+      ],
     },
     // 3. Mbah Kartowijoyo — RED (Darurat / Tirah Baring)
     {
@@ -79,6 +93,13 @@ export async function seedElderly(db: AppDatabase, authUsers: Record<string, any
       preferredCheckinTime: "06:30",
       notes: "Tirah baring (bedridden), tidak memegang HP, pemantauan via kunjungan relawan & keluarga.",
       createdBy: authUsers["kader@gmail.com"]?.id,
+      defaultChecklist: [
+        { question: "Apakah Mbah Kartowijoyo sadar penuh dan bisa merespons saat dipanggil namanya?", type: "yes_no" },
+        { question: "Apakah ada sesak napas, napas cepat, atau terlihat kesulitan bernapas saat berbaring?", type: "yes_no" },
+        { question: "Apakah ada bengkak baru di kaki, pergelangan, atau perut terlihat lebih besar?", type: "yes_no" },
+        { question: "Apakah ada luka tekan (lecet/kemerahan) di punggung, pinggang, atau tumit akibat tirah baring?", type: "yes_no" },
+        { question: "Apakah nyeri dada atau terlihat kesakitan dengan ekspresi wajah menyeringai?", type: "yes_no" },
+      ],
     },
     // 4. Mbah Sri Wahyuni — GREY (Belum Merespons Pagi Ini)
     {
@@ -102,6 +123,13 @@ export async function seedElderly(db: AppDatabase, authUsers: Record<string, any
       preferredCheckinTime: "07:00",
       notes: "Biasanya bangun jam 06.00, hari ini belum ada respon sapaan WhatsApp.",
       createdBy: authUsers["kader@gmail.com"]?.id,
+      defaultChecklist: [
+        { question: "Apakah Mbah Sri mengeluh nyeri atau rasa berat di dada, terutama saat beraktivitas?", type: "yes_no" },
+        { question: "Apakah mengeluh nyeri ulu hati, mual, atau perut terasa penuh meskipun belum makan?", type: "yes_no" },
+        { question: "Apakah terlihat pucat, pusing, atau sempat pingsan hari ini?", type: "yes_no" },
+        { question: "Apakah sudah makan teratur hari ini dan minum obat maagnya sesuai jadwal?", type: "yes_no" },
+        { question: "Apakah kondisi rumah aman dan tidak ada tanda-tanda jatuh atau kecelakaan kecil?", type: "yes_no" },
+      ],
     },
     // 5. Mbah Djojodigdo — PENDING_VERIFICATION (Daftar Mandiri Keluarga)
     {
@@ -125,6 +153,13 @@ export async function seedElderly(db: AppDatabase, authUsers: Record<string, any
       preferredCheckinTime: "07:00",
       notes: "Baru didaftarkan oleh anak kemarin malam, menunggu approval Bu RT.",
       createdBy: authUsers["keluarga@gmail.com"]?.id,
+      defaultChecklist: [
+        { question: "Apakah Mbah Djojodigdo mengeluh nyeri, bengkak, atau kemerahan di sendi (jempol kaki, lutut, atau pergelangan)?", type: "yes_no" },
+        { question: "Apakah serangan nyeri sendi terasa lebih parah dari biasanya atau muncul di lokasi baru?", type: "yes_no" },
+        { question: "Apakah bisa berjalan dan bergerak normal tanpa menahan sakit?", type: "yes_no" },
+        { question: "Apakah sudah minum air putih yang cukup hari ini (minimal 8 gelas)?", type: "yes_no" },
+        { question: "Apakah sudah minum obat asam uratnya dan menghindari makanan pantangan (jeroan, seafood)?", type: "yes_no" },
+      ],
     },
   ]);
 }

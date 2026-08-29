@@ -5,6 +5,7 @@ import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { generateAccessToken } from "../../lib/token";
 import { assertRole } from "../../lib/auth-guard";
+import { refreshElderlyChecklist } from "../../lib/ai/checklist-service";
 
 export class CreateElderlyByFamilyEndpoint extends ApiRoute {
   schema = {
@@ -208,6 +209,11 @@ export class CreateElderlyByFamilyEndpoint extends ApiRoute {
     }
 
     const createdFamily = await db.insert(elderlyFamily).values(familyRowsToInsert as any).returning();
+
+    // Generate AI observational checklist in background
+    c.executionCtx.waitUntil(
+      refreshElderlyChecklist(db, c.env, elderlyId).catch(() => {})
+    );
 
     return c.json({
       success: true,

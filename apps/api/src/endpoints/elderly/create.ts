@@ -13,6 +13,7 @@ import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { generateAccessToken } from "../../lib/token";
 import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { refreshElderlyChecklist } from "../../lib/ai/checklist-service";
 import crypto from "crypto";
 
 export class CreateElderlyEndpoint extends ApiRoute {
@@ -275,6 +276,11 @@ export class CreateElderlyEndpoint extends ApiRoute {
         .returning();
       volunteerAssignments.push({ ...sAssign, volunteer: secondaryVolRecord });
     }
+
+    // Generate AI observational checklist in background — does not block response
+    c.executionCtx.waitUntil(
+      refreshElderlyChecklist(db, c.env, elderlyId).catch(() => {})
+    );
 
     return c.json({
       success: true,

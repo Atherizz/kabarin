@@ -81,7 +81,7 @@ export async function generateGuidedChecklist(
 }
 
 // Generic checklist for when AI fails or medical history is unknown
-function buildFallbackChecklist(): GuidedChecklistItem[] {
+export function buildFallbackChecklist(): GuidedChecklistItem[] {
   return [
     { question: "Apakah lansia terlihat sadar dan bisa berkomunikasi dengan jelas?", type: "yes_no" },
     { question: "Apakah lansia mengeluh sakit atau rasa tidak nyaman?", type: "yes_no" },
@@ -89,4 +89,16 @@ function buildFallbackChecklist(): GuidedChecklistItem[] {
     { question: "Apakah lansia sudah minum obat hariannya?", type: "yes_no" },
     { question: "Apakah kondisi rumah dan lingkungan sekitar lansia terlihat aman?", type: "yes_no" },
   ];
+}
+
+export async function refreshElderlyChecklist(
+  db: AppDatabase,
+  env: AppEnv["Bindings"] | undefined,
+  elderlyId: string
+): Promise<void> {
+  const checklist = await generateGuidedChecklist(db, env, elderlyId);
+  await db
+    .update(elderly)
+    .set({ defaultChecklist: checklist, updatedAt: new Date() })
+    .where(eq(elderly.id, elderlyId));
 }

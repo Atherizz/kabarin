@@ -4,6 +4,7 @@ import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { refreshElderlyChecklist } from "../../lib/ai/checklist-service";
 
 export class UpdateElderlyEndpoint extends ApiRoute {
   schema = {
@@ -79,6 +80,13 @@ export class UpdateElderlyEndpoint extends ApiRoute {
       })
       .where(and(eq(elderly.id, id), eq(elderly.communityUnitId, communityUnitId)))
       .returning();
+
+    // Regenerate checklist if medicalHistory changed 
+    if (body.medicalHistory !== undefined) {
+      c.executionCtx.waitUntil(
+        refreshElderlyChecklist(db, c.env, id).catch(() => {})
+      );
+    }
 
     return c.json({
       success: true,

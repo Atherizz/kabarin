@@ -5,6 +5,7 @@ import {
   integer,
   doublePrecision,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { communityUnits } from "./community";
@@ -59,6 +60,9 @@ export const elderly = pgTable("elderly", {
   preferredCheckinTime: varchar("preferred_checkin_time", { length: 10 })
     .notNull()
     .default("07:00"),
+  // Cached AI-generated observational checklist based on medicalHistory + active medications
+  // Null = not yet generated, visit dispatch will use fallback generic checklist
+  defaultChecklist: jsonb("default_checklist"),
   notes: text("notes"),
   createdBy: text("created_by").references(() => user.id, {
     onDelete: "set null",

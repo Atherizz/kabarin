@@ -5,6 +5,7 @@ import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { assertRole } from "../../lib/auth-guard";
 import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
+import { refreshElderlyChecklist } from "../../lib/ai/checklist-service";
 
 export class UpdateMedicationEndpoint extends ApiRoute {
   schema = {
@@ -84,6 +85,11 @@ export class UpdateMedicationEndpoint extends ApiRoute {
       })
       .where(and(eq(elderlyMedications.id, medId), eq(elderlyMedications.elderlyId, elderlyId)))
       .returning();
+
+    // Regenerate elderly checklist in background — medication change affects AI questions
+    c.executionCtx.waitUntil(
+      refreshElderlyChecklist(db, c.env, elderlyId).catch(() => {})
+    );
 
     return c.json({
       success: true,

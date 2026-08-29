@@ -5,6 +5,7 @@ import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { assertRole } from "../../lib/auth-guard";
 import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
+import { refreshElderlyChecklist } from "../../lib/ai/checklist-service";
 
 export class DeleteMedicationEndpoint extends ApiRoute {
   schema = {
@@ -66,6 +67,11 @@ export class DeleteMedicationEndpoint extends ApiRoute {
     await db
       .delete(elderlyMedications)
       .where(and(eq(elderlyMedications.id, medId), eq(elderlyMedications.elderlyId, elderlyId)));
+
+    // Regenerate elderly checklist in background
+    c.executionCtx.waitUntil(
+      refreshElderlyChecklist(db, c.env, elderlyId).catch(() => {})
+    );
 
     return c.json({
       success: true,
