@@ -21,6 +21,9 @@ export function getAzureOpenAIClient(env?: AppEnv["Bindings"]): {
   const client = new OpenAI({
     apiKey,
     baseURL: endpoint,
+    defaultHeaders: {
+      "api-key": apiKey,
+    },
   });
 
   return { client, deploymentName };

@@ -22,6 +22,7 @@ import { CheckCommunityEndpoint } from "./endpoints/community/check";
 import { GetMyCommunityEndpoint } from "./endpoints/community/me";
 import { UpdateMyCommunityEndpoint } from "./endpoints/community/update-me";
 import { GetDashboardStatsEndpoint } from "./endpoints/dashboard/stats";
+import { GetDashboardBriefingEndpoint } from "./endpoints/dashboard/briefing";
 
 // Elderly endpoints
 import { ListElderlyEndpoint } from "./endpoints/elderly/list";
@@ -35,6 +36,7 @@ import {
   GetEscalationChainEndpoint,
   UpdateEscalationChainEndpoint,
 } from "./endpoints/elderly/escalation-chain";
+import { GetVolunteerRecommendationsEndpoint } from "./endpoints/elderly/volunteer-recommendations";
 
 // Volunteer endpoints
 import { ListVolunteersEndpoint } from "./endpoints/volunteers/list";
@@ -151,6 +153,7 @@ openapi.get("/api/community/check", asRoute(CheckCommunityEndpoint));
 openapi.get("/api/community/me", asRoute(GetMyCommunityEndpoint));
 openapi.put("/api/community/me", asRoute(UpdateMyCommunityEndpoint));
 openapi.get("/api/dashboard/stats", asRoute(GetDashboardStatsEndpoint));
+openapi.get("/api/dashboard/briefing", asRoute(GetDashboardBriefingEndpoint));
 
 // Elderly endpoints
 openapi.get("/api/elderly", asRoute(ListElderlyEndpoint));
@@ -163,6 +166,7 @@ openapi.patch("/api/elderly/:id/verify", asRoute(VerifyElderlyEndpoint));
 openapi.get("/api/elderly/:id/escalation-chain", asRoute(GetEscalationChainEndpoint));
 openapi.put("/api/elderly/:id/escalation-chain", asRoute(UpdateEscalationChainEndpoint));
 openapi.get("/api/elderly/:id/volunteers", asRoute(ListVolunteersByElderlyEndpoint));
+openapi.get("/api/elderly/:id/volunteer-recommendations", asRoute(GetVolunteerRecommendationsEndpoint));
 
 // Volunteer endpoints
 openapi.get("/api/volunteers", asRoute(ListVolunteersEndpoint));

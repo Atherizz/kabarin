@@ -6,6 +6,7 @@ import type { AppEnv } from "../../types/app-env";
 import { generateAccessToken } from "../../lib/token";
 import { assertRole, assertCommunity } from "../../lib/auth-guard";
 import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
+import { generateGuidedChecklist } from "../../lib/ai/checklist-service";
 
 export class CreateVisitEndpoint extends ApiRoute {
   schema = {
@@ -109,7 +110,10 @@ export class CreateVisitEndpoint extends ApiRoute {
       }
     }
 
-    // 3. Generate unique 64-hex token valid for 24 hours
+    // 3. Generate guided observational checklist 
+    const guidedChecklist = await generateGuidedChecklist(db, c.env, body.elderlyId);
+
+    // 4. Generate unique 64-hex token valid for 24 hours
     const visitId = crypto.randomUUID();
     const formToken = generateAccessToken();
     const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
@@ -126,6 +130,7 @@ export class CreateVisitEndpoint extends ApiRoute {
         tokenExpiresAt,
         status: "pending",
         volunteerNotes: body.notes ?? null,
+        guidedChecklist,
       })
       .returning();
 
@@ -133,6 +138,9 @@ export class CreateVisitEndpoint extends ApiRoute {
       success: true,
       data: {
         ...createdVisit,
+        guidedChecklist: createdVisit.guidedChecklist ?? null,
+        checklistResponses: createdVisit.checklistResponses ?? null,
+        dispatchedAt: createdVisit.dispatchedAt ? createdVisit.dispatchedAt.toISOString() : null,
         tokenExpiresAt: createdVisit.tokenExpiresAt.toISOString(),
         visitedAt: createdVisit.visitedAt ? createdVisit.visitedAt.toISOString() : null,
         createdAt: createdVisit.createdAt.toISOString(),
@@ -141,3 +149,4 @@ export class CreateVisitEndpoint extends ApiRoute {
     });
   }
 }
+

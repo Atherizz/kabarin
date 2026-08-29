@@ -127,3 +127,100 @@ export const DashboardStatsSchema = z
   });
 
 export type DashboardStats = z.infer<typeof DashboardStatsSchema>;
+
+// ─── Daily Operational Briefing ───────────────────────────────────────────────
+
+export const ActionItemSchema = z.object({
+  type: z.enum([
+    "missed_checkin",
+    "open_escalation",
+    "pending_verification",
+    "pending_visit",
+    "high_risk",
+  ]),
+  label: z.string().describe("Human-readable action description for cadre"),
+  elderlyId: z.string().nullable().describe("Associated elderly ID, null if RT-level"),
+  elderlyName: z.string().nullable().describe("Associated elderly name"),
+  priority: z.enum(["urgent", "normal"]),
+});
+
+export const BriefingResponseSchema = z
+  .object({
+    generatedAt: z.string().datetime().describe("Timestamp when this briefing was generated"),
+    summary: z.string().describe("AI-generated natural language briefing paragraph for cadre"),
+    actionItems: z.array(ActionItemSchema).describe("Sorted list of action items requiring cadre attention today"),
+    stats: z.object({
+      missedCheckins: z.number(),
+      openEscalations: z.number(),
+      pendingVerifications: z.number(),
+      pendingVisits: z.number(),
+      highRiskCount: z.number(),
+    }),
+  })
+  .openapi({
+    example: {
+      generatedAt: "2026-08-28T00:05:00.000Z",
+      summary:
+        "Selamat pagi Bu Endang! Hari ini ada 2 lansia yang belum membalas sapaan pagi: Mbah Sumo (Jl. Mawar 12) dan Bu Siti (Jl. Melati 4). Terdapat 1 eskalasi aktif yang perlu ditangani segera. Selain itu, ada 1 warga baru yang didaftarkan oleh keluarganya dan menunggu verifikasi RT.",
+      actionItems: [
+        {
+          type: "missed_checkin",
+          label: "Mbah Sumo belum membalas sapaan pagi",
+          elderlyId: "eld_uuid_sumo",
+          elderlyName: "Mbah Sumo",
+          priority: "urgent",
+        },
+        {
+          type: "pending_verification",
+          label: "Bu Siti (Jl. Melati 4) menunggu verifikasi RT",
+          elderlyId: "eld_uuid_siti",
+          elderlyName: "Bu Siti",
+          priority: "normal",
+        },
+      ],
+      stats: {
+        missedCheckins: 2,
+        openEscalations: 1,
+        pendingVerifications: 1,
+        pendingVisits: 2,
+        highRiskCount: 3,
+      },
+    },
+  });
+
+export type ActionItem = z.infer<typeof ActionItemSchema>;
+export type BriefingResponse = z.infer<typeof BriefingResponseSchema>;
+
+// ─── Volunteer Proximity Recommendations ──────────────────────────────────────
+
+export const VolunteerRecommendationSchema = z
+  .object({
+    volunteerId: z.string(),
+    name: z.string(),
+    phone: z.string(),
+    address: z.string(),
+    distanceMeters: z.number().describe("Straight-line distance from elderly home (meters)"),
+    activeBinaan: z.number().describe("Current number of assigned elderly (active load)"),
+    maxCapacity: z.number().describe("Maximum elderly this volunteer can handle"),
+    availableSlots: z.number().describe("maxCapacity - activeBinaan"),
+    isRecommended: z.boolean().describe("True if distance < 100m AND activeBinaan < maxCapacity"),
+    latitude: z.number().nullable(),
+    longitude: z.number().nullable(),
+  })
+  .openapi({
+    example: {
+      volunteerId: "vol_uuid_budi",
+      name: "Mas Budi Santoso",
+      phone: "082133445566",
+      address: "Jl. Kalpataru No. 47",
+      distanceMeters: 28.5,
+      activeBinaan: 2,
+      maxCapacity: 5,
+      availableSlots: 3,
+      isRecommended: true,
+      latitude: -7.9479,
+      longitude: 112.6241,
+    },
+  });
+
+export type VolunteerRecommendation = z.infer<typeof VolunteerRecommendationSchema>;

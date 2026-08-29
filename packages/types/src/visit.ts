@@ -11,6 +11,16 @@ export const ReportedCauseEnum = z.enum([
   "other",
 ]);
 
+export const GuidedChecklistItemSchema = z.object({
+  question: z.string(),
+  type: z.literal("yes_no"),
+});
+
+export const ChecklistResponseSchema = z.object({
+  question: z.string(),
+  answer: z.boolean(),
+});
+
 export const VolunteerVisitSchema = z.object({
   id: z.string(),
   communityUnitId: z.string(),
@@ -27,6 +37,9 @@ export const VolunteerVisitSchema = z.object({
   medicationTaken: z.boolean().nullable().optional(),
   volunteerNotes: z.string().nullable().optional(),
   photoUrl: z.string().nullable().optional(),
+  guidedChecklist: z.array(GuidedChecklistItemSchema).nullable().optional(),
+  checklistResponses: z.array(ChecklistResponseSchema).nullable().optional(),
+  dispatchedAt: z.string().datetime().nullable().optional(),
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
 });
@@ -61,6 +74,10 @@ export const SubmitVisitReportSchema = z
       .boolean()
       .optional()
       .describe("Whether the senior has taken their prescribed medications for today"),
+    checklistResponses: z
+      .array(ChecklistResponseSchema)
+      .optional()
+      .describe("Volunteer answers to the guided observational checklist"),
     volunteerNotes: z
       .string()
       .optional()
@@ -75,6 +92,10 @@ export const SubmitVisitReportSchema = z
       reportedCondition: "good",
       reportedCause: "sleeping",
       medicationTaken: true,
+      checklistResponses: [
+        { question: "Apakah lansia bisa berbicara dengan jelas tanpa pelo?", answer: true },
+        { question: "Apakah wajah terlihat simetris (tidak miring sebelah)?", answer: true },
+      ],
       volunteerNotes: "Mbah Sumo sedang istirahat di teras. Kondisi stabil dan sudah sarapan serta minum obat.",
     },
   });
@@ -86,6 +107,7 @@ export const VisitPublicFormSchema = z.object({
     status: VisitStatusEnum,
     tokenExpiresAt: z.string().datetime(),
     notes: z.string().nullable().optional(),
+    guidedChecklist: z.array(GuidedChecklistItemSchema).nullable().optional(),
   }),
   elderly: z.object({
     id: z.string(),
@@ -144,3 +166,5 @@ export type CreateVolunteerVisitInput = z.infer<typeof CreateVolunteerVisitInput
 export type SubmitVisitReportInput = z.infer<typeof SubmitVisitReportSchema>;
 export type VisitPublicForm = z.infer<typeof VisitPublicFormSchema>;
 export type VisitListQuery = z.infer<typeof VisitListQuerySchema>;
+export type GuidedChecklistItem = z.infer<typeof GuidedChecklistItemSchema>;
+export type ChecklistResponse = z.infer<typeof ChecklistResponseSchema>;

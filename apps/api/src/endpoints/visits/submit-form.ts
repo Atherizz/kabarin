@@ -115,6 +115,7 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
         reportedCondition: body.reportedCondition,
         reportedCause: body.reportedCause ?? null,
         medicationTaken: body.medicationTaken ?? null,
+        checklistResponses: body.checklistResponses ?? null,
         volunteerNotes: body.volunteerNotes ?? null,
         photoUrl: body.photoUrl ?? null,
         updatedAt: now,

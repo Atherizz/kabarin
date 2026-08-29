@@ -4,6 +4,7 @@ import {
   varchar,
   boolean,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { communityUnits } from "./community";
@@ -49,6 +50,12 @@ export const volunteerVisits = pgTable("volunteer_visits", {
   medicationTaken: boolean("medication_taken"),
   volunteerNotes: text("volunteer_notes"),
   photoUrl: text("photo_url"),
+  // AI-generated observational checklist for this visit (3-5 yes/no questions based on elderly medical profile)
+  guidedChecklist: jsonb("guided_checklist").$type<Array<{ question: string; type: "yes_no" }>>(),
+  // Volunteer's answers to the guided checklist submitted via /lapor/:token
+  checklistResponses: jsonb("checklist_responses").$type<Array<{ question: string; answer: boolean }>>(),
+  // Timestamp when WhatsApp dispatch was sent to the volunteer
+  dispatchedAt: timestamp("dispatched_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

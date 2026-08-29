@@ -21,6 +21,11 @@ export type AppEnv = {
     AZURE_OPENAI_API_KEY?: string;
     AZURE_OPENAI_ENDPOINT?: string;
     AZURE_OPENAI_DEPLOYMENT_NAME?: string;
+    // Azure Whisper STT (voice note transcription in bot)
+    WHISPER_ENDPOINT?: string;
+    // WhatsApp Bot (Baileys — runs as separate Bun process)
+    WA_BOT_PHONE?: string;
+    WA_BAILEYS_SESSION?: string;
   };
   Variables: {
     db: AppDatabase;

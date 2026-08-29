@@ -84,6 +84,7 @@ export class GetVisitFormEndpoint extends ApiRoute {
           status: visit.status,
           tokenExpiresAt: visit.tokenExpiresAt.toISOString(),
           notes: visit.volunteerNotes,
+          guidedChecklist: visit.guidedChecklist ?? null,
         },
         elderly: {
           id: e.id,
