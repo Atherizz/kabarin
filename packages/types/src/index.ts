@@ -12,3 +12,4 @@ export * from "./visit";
 export * from "./chat";
 export * from "./dashboard";
 export * from "./upload";
+export * from "./bot";

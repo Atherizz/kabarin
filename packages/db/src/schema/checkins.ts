@@ -13,13 +13,17 @@ import { escalationLogs } from "./escalations";
 import { chatMessages } from "./chat";
 
 export interface AiTriageResult {
-  // "normal" | "needs_attention" | "emergency"
   urgency: "normal" | "needs_attention" | "emergency";
+  status?: "green" | "yellow" | "red";
+  sentiment?: "positive" | "neutral" | "concerned" | "distressed";
   symptoms: string[];
   medicationCompliance: boolean | null;
+  shouldEscalate?: boolean;
+  escalationTier?: 1 | 2 | 3 | null;
+  escalationReason?: string | null;
   clinicalReasoning: string;
   recommendedAction: string;
-  // Tools called by the Care Agent during this triage cycle (for observability)
+  replyMessage?: string;
   toolsExecuted: string[];
 }
 
@@ -31,7 +35,7 @@ export const checkinSessions = pgTable("checkin_sessions", {
   elderlyId: text("elderly_id")
     .notNull()
     .references(() => elderly.id, { onDelete: "cascade" }),
-  sessionDate: date("session_date").notNull(), // one record per elderly per day (YYYY-MM-DD)
+  sessionDate: date("session_date").notNull(),
   status: text("status")
     .$type<
       | "pending"
@@ -51,11 +55,8 @@ export const checkinSessions = pgTable("checkin_sessions", {
     .$type<"text" | "voice" | "none">()
     .notNull()
     .default("none"),
-  // Raw text reply or Whisper transcript from voice note
   rawText: text("raw_text"),
-  // GCS/S3 URL for the original voice note file
   voiceAudioUrl: text("voice_audio_url"),
-  // Structured output from the Agentic Care Orchestrator triage step
   aiTriageResult: jsonb("ai_triage_result").$type<AiTriageResult>(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

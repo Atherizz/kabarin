@@ -3,6 +3,7 @@ import { chatMessages } from "@kabarin/db";
 import type { AppDatabase } from "@kabarin/db";
 
 export function formatPhone(phone: string): string {
+  if (phone.includes("@")) return phone;
   let cleaned = phone.replace(/[^0-9]/g, "");
   if (cleaned.startsWith("0")) {
     cleaned = "62" + cleaned.slice(1);

@@ -26,7 +26,7 @@ export async function createWhatsAppClient(
   db: AppDatabase,
   callbacks?: WhatsAppClientCallbacks
 ): Promise<WASocket> {
-  const logger = pino({ level: "warn" });
+  const logger = pino({ level: "silent" });
   const { version, isLatest } = await fetchLatestBaileysVersion();
   console.log(`[baileys] version: ${version.join(".")} (latest: ${isLatest})`);
 
@@ -39,9 +39,11 @@ export async function createWhatsAppClient(
     printQRInTerminal: false,
     markOnlineOnConnect: true,
     syncFullHistory: false,
+    defaultQueryTimeoutMs: undefined,
     connectTimeoutMs: 60000,
     keepAliveIntervalMs: 30000,
     browser: ["Kabarin Bot", "Chrome", "1.0.0"],
+    shouldIgnoreJid: (jid) => jid === "status@broadcast" || jid.endsWith("@newsletter"),
   });
 
   sock.ev.on("creds.update", saveCreds);
@@ -83,6 +85,13 @@ export async function createWhatsAppClient(
   });
 
   sock.ev.on("messages.upsert", async (m) => {
+    // Ignore status broadcast updates (WhatsApp Stories) and newsletters
+    const msg = m.messages?.[0];
+    const remoteJid = msg?.key?.remoteJid;
+    if (remoteJid === "status@broadcast" || remoteJid?.endsWith("@newsletter")) {
+      return;
+    }
+
     if (callbacks?.onMessage && sock) {
       await callbacks.onMessage(sock, m);
     }

@@ -16,6 +16,9 @@ if (!databaseUrl) {
 const db = createDB(databaseUrl);
 const webhookPort = Number(process.env.BOT_WEBHOOK_PORT) || 3001;
 
+import { handleInboundMessage } from "./handlers/router";
+import { startScheduler } from "./scheduler";
+
 async function main() {
   const webhookApp = createWebhookServer(db);
   const server = Bun.serve({
@@ -25,18 +28,16 @@ async function main() {
   console.log(`[webhook] Server listening on http://localhost:${server.port}`);
 
   await createWhatsAppClient(db, {
-    onReady: async (_sock, userJid) => {
+    onReady: async (sock, userJid) => {
       console.log(`[bot] Ready as [${userJid}]`);
+      startScheduler(sock, db);
     },
-    onMessage: async (_sock, m) => {
+    onMessage: async (sock, m) => {
       const message = m.messages[0];
-      if (!message?.key?.fromMe && message?.message) {
-        const from = message.key.remoteJid;
-        const text =
-          message.message.conversation ||
-          message.message.extendedTextMessage?.text ||
-          "[media/audio]";
-        console.log(`[inbound] ${from}: ${text}`);
+      if (message) {
+        await handleInboundMessage(sock, db, message).catch((err) => {
+          console.error("[router] Error handling inbound message:", err);
+        });
       }
     },
   });
