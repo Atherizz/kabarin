@@ -2,7 +2,10 @@ import { Hono } from "hono";
 import { getSocket } from "../client";
 import { handleTestSend } from "./routes/test-send";
 import { handleElderlyOnboarded } from "./routes/elderly-onboarded";
+import { handleElderlySubmitted } from "./routes/elderly-submitted";
 import { handleVolunteerCreated } from "./routes/volunteer-created";
+import { handleVolunteerAssigned } from "./routes/volunteer-assigned";
+import { handleEscalationResolved } from "./routes/escalation-resolved";
 import { handleFamilySos } from "./routes/family-sos";
 import type { AppDatabase } from "@kabarin/db";
 
@@ -30,7 +33,10 @@ export function createWebhookServer(db: AppDatabase): Hono {
 
   app.post("/webhook/test-send", (c) => handleTestSend(c));
   app.post("/webhook/elderly-onboarded", (c) => handleElderlyOnboarded(c, db));
+  app.post("/webhook/elderly-submitted", (c) => handleElderlySubmitted(c, db));
   app.post("/webhook/volunteer-created", (c) => handleVolunteerCreated(c, db));
+  app.post("/webhook/volunteer-assigned", (c) => handleVolunteerAssigned(c, db));
+  app.post("/webhook/escalation-resolved", (c) => handleEscalationResolved(c, db));
   app.post("/webhook/family-sos", (c) => handleFamilySos(c, db));
 
   return app;

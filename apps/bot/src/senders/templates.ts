@@ -35,4 +35,46 @@ export const BOT_TEMPLATES = {
     `Halo Mas/Mbak *${volunteerName}* 👋\n\n` +
     `Anda telah ditugaskan sebagai relawan pendamping untuk Mbah *${elderlyName}* di RT ${rt}.\n\n` +
     `Jika beliau memerlukan kunjungan atau pemeriksaan fisik, notifikasi penugasan kunjungan akan dikirimkan ke WhatsApp ini. Terima kasih atas kepedulian Anda 🙏`,
+
+  cadreNewElderlySubmissionAlert: (
+    cadreName: string,
+    elderlyName: string,
+    rt: string,
+    familyName: string
+  ): string =>
+    `📢 *Pemberitahuan Pendaftaran Warga Baru — Kabarin RT ${rt}*\n\n` +
+    `Assalamu'alaikum Ibu/Bapak Kader ${cadreName},\n` +
+    `Ada pengajuan pemantauan lansia baru dari keluarga:\n` +
+    `👵 *Nama Lansia:* Mbah ${elderlyName}\n` +
+    `👨‍👩‍👧 *Didaftarkan oleh:* ${familyName}\n\n` +
+    `Sapaan harian & reminder obat otomatis telah aktif. Mohon verifikasi data dan tentukan relawan pendamping di Dashboard Kader Kabarin 🙏`,
+
+  familyVolunteerAssigned: (
+    familyName: string,
+    elderlyName: string,
+    volunteerName: string,
+    isPrimary: boolean,
+    statusUrl: string
+  ): string =>
+    `Halo ${familyName} 👋\n\n` +
+    `Kabar baik! Pengurus RT telah menugaskan *${volunteerName}* sebagai relawan pendamping ${
+      isPrimary ? "utama" : "cadangan"
+    } untuk Mbah *${elderlyName}*.\n\n` +
+    `Pantau perkembangan kondisi orang tua Anda di sini:\n` +
+    `👉 ${statusUrl}`,
+
+  familyEscalationResolved: (
+    familyName: string,
+    elderlyName: string,
+    volunteerName: string,
+    notes: string,
+    statusUrl: string
+  ): string =>
+    `📢 *Laporan Kunjungan Selesai — Kabarin*\n\n` +
+    `Halo ${familyName},\n` +
+    `Relawan ${volunteerName} telah selesai mengunjungi Mbah *${elderlyName}*.\n\n` +
+    `📌 *Catatan Kunjungan:* ${notes}\n` +
+    `✅ *Status Terkini:* Aman / Terverifikasi (Status Hijau)\n\n` +
+    `Lihat detail laporan kunjungan di portal status:\n` +
+    `👉 ${statusUrl}`,
 };

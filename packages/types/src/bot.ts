@@ -139,6 +139,48 @@ export const BotElderlyOnboardedPayloadSchema = z
     },
   });
 
+export const BotElderlySubmittedPayloadSchema = z
+  .object({
+    elderlyId: z.string(),
+    elderlyName: z.string(),
+    elderlyPhone: z.string().optional(),
+    rt: z.string(),
+    rw: z.string(),
+    communityUnitId: z.string(),
+    submittedByFamilyName: z.string(),
+    familyContacts: z
+      .array(
+        z.object({
+          name: z.string(),
+          phone: z.string(),
+          accessToken: z.string(),
+        })
+      )
+      .optional(),
+    cadrePhone: z.string().optional(),
+    cadreName: z.string().optional(),
+  })
+  .openapi({
+    example: {
+      elderlyId: "eld_sumo_123",
+      elderlyName: "Mbah Sumo",
+      elderlyPhone: "081234567890",
+      rt: "01",
+      rw: "10",
+      communityUnitId: "rt_01_rw_10_lowokwaru",
+      submittedByFamilyName: "Mas Nobbel",
+      familyContacts: [
+        {
+          name: "Mas Nobbel",
+          phone: "081298765432",
+          accessToken: "tok_fam_abc123",
+        },
+      ],
+      cadrePhone: "081233445566",
+      cadreName: "Ibu Endang",
+    },
+  });
+
 export const BotVolunteerCreatedPayloadSchema = z
   .object({
     name: z.string(),
@@ -152,6 +194,78 @@ export const BotVolunteerCreatedPayloadSchema = z
       phone: "081345678901",
       email: "siti.relawan@gmail.com",
       temporaryPassword: "Kabarin2026!",
+    },
+  });
+
+export const BotVolunteerAssignedPayloadSchema = z
+  .object({
+    elderlyId: z.string(),
+    elderlyName: z.string(),
+    rt: z.string(),
+    communityUnitId: z.string(),
+    volunteerName: z.string(),
+    volunteerPhone: z.string(),
+    isPrimary: z.boolean().default(true),
+    familyContacts: z
+      .array(
+        z.object({
+          name: z.string(),
+          phone: z.string(),
+          accessToken: z.string(),
+        })
+      )
+      .optional(),
+  })
+  .openapi({
+    example: {
+      elderlyId: "eld_sumo_123",
+      elderlyName: "Mbah Sumo",
+      rt: "01",
+      communityUnitId: "rt_01_rw_10_lowokwaru",
+      volunteerName: "Siti Rahma",
+      volunteerPhone: "081345678901",
+      isPrimary: true,
+      familyContacts: [
+        {
+          name: "Budi Santoso",
+          phone: "081298765432",
+          accessToken: "tok_fam_abc123",
+        },
+      ],
+    },
+  });
+
+export const BotEscalationResolvedPayloadSchema = z
+  .object({
+    elderlyId: z.string(),
+    elderlyName: z.string(),
+    rt: z.string(),
+    communityUnitId: z.string(),
+    volunteerName: z.string().optional(),
+    resolutionNotes: z.string().optional(),
+    familyContacts: z.array(
+      z.object({
+        name: z.string(),
+        phone: z.string(),
+        accessToken: z.string(),
+      })
+    ),
+  })
+  .openapi({
+    example: {
+      elderlyId: "eld_sumo_123",
+      elderlyName: "Mbah Sumo",
+      rt: "01",
+      communityUnitId: "rt_01_rw_10_lowokwaru",
+      volunteerName: "Mas Budi",
+      resolutionNotes: "Lansia sudah dicek, tensi stabil 125/80, sudah minum obat dan sarapan.",
+      familyContacts: [
+        {
+          name: "Mas Nobbel",
+          phone: "081298765432",
+          accessToken: "tok_fam_abc123",
+        },
+      ],
     },
   });
 
@@ -174,5 +288,8 @@ export type TriageContext = z.infer<typeof TriageContextSchema>;
 export type GreetingContext = z.infer<typeof GreetingContextSchema>;
 export type ReminderContext = z.infer<typeof ReminderContextSchema>;
 export type BotElderlyOnboardedPayload = z.infer<typeof BotElderlyOnboardedPayloadSchema>;
+export type BotElderlySubmittedPayload = z.infer<typeof BotElderlySubmittedPayloadSchema>;
 export type BotVolunteerCreatedPayload = z.infer<typeof BotVolunteerCreatedPayloadSchema>;
+export type BotVolunteerAssignedPayload = z.infer<typeof BotVolunteerAssignedPayloadSchema>;
+export type BotEscalationResolvedPayload = z.infer<typeof BotEscalationResolvedPayloadSchema>;
 export type BotFamilySosPayload = z.infer<typeof BotFamilySosPayloadSchema>;

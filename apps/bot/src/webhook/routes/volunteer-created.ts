@@ -11,7 +11,7 @@ export async function handleVolunteerCreated(c: Context, db: AppDatabase) {
     return c.json({ success: false, error: "Bot is not connected to WhatsApp" }, 503);
   }
 
-  const appBaseUrl = process.env.APP_BASE_URL || "https://kabarin.atherizz.dev";
+  const appBaseUrl = process.env.APP_BASE_URL || "https://kabarin.pages.dev";
   const body = (await c.req.json().catch(() => ({}))) as BotVolunteerCreatedPayload;
 
   const { name, phone, email, temporaryPassword = "Kabarin2026!" } = body;

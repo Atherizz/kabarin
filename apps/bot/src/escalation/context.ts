@@ -99,7 +99,7 @@ export async function buildEscalationContext(
     triggeredBy,
     now,
     nowIso: now.toISOString(),
-    appBaseUrl: process.env.APP_BASE_URL || "https://kabarin.atherizz.dev",
+    appBaseUrl: process.env.APP_BASE_URL || "https://kabarin.pages.dev",
     communityUnitId: record.communityUnitId,
     elderly: {
       id: record.id,
