@@ -14,6 +14,7 @@ import type { AppEnv } from "../../types/app-env";
 import { generateAccessToken } from "../../lib/token";
 import { assertRole, assertCommunity } from "../../lib/auth-guard";
 import { refreshElderlyChecklist } from "../../lib/ai/checklist-service";
+import { triggerBotWebhook } from "../../lib/bot-webhook";
 import crypto from "crypto";
 
 export class CreateElderlyEndpoint extends ApiRoute {
@@ -281,6 +282,27 @@ export class CreateElderlyEndpoint extends ApiRoute {
     c.executionCtx.waitUntil(
       refreshElderlyChecklist(db, c.env, elderlyId).catch(() => {})
     );
+
+    triggerBotWebhook(c, {
+      event: "elderly-onboarded",
+      payload: {
+        elderlyId,
+        elderlyName: newElderly.name,
+        elderlyPhone: newElderly.phone ?? undefined,
+        rt: newElderly.rt,
+        rw: newElderly.rw,
+        communityUnitId: newElderly.communityUnitId,
+        familyContacts: createdFamily.map((f) => ({
+          name: f.name,
+          phone: f.phone,
+          accessToken: f.accessToken,
+        })),
+        volunteerAssignments: volunteerAssignments.map((v) => ({
+          name: v.volunteer.name,
+          phone: v.volunteer.phone,
+        })),
+      },
+    });
 
     return c.json({
       success: true,

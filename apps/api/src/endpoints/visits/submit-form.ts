@@ -1,8 +1,9 @@
 import { z, SubmitVisitReportSchema } from "@kabarin/types";
-import { eq, and, inArray, volunteerVisits, elderly, escalationLogs } from "@kabarin/db";
+import { eq, and, inArray, volunteerVisits, elderly, escalationLogs, volunteers, elderlyFamily } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { triggerBotWebhook } from "../../lib/bot-webhook";
 import crypto from "crypto";
 
 export class SubmitVisitFormEndpoint extends ApiRoute {
@@ -227,6 +228,38 @@ export class SubmitVisitFormEndpoint extends ApiRoute {
       })
       .where(eq(elderly.id, visit.elderly.id))
       .returning();
+
+    // 5. Notify family members via WhatsApp if condition is good (resolved)
+    if (body.reportedCondition === "good") {
+      const famMembers = await db.query.elderlyFamily.findMany({
+        where: eq(elderlyFamily.elderlyId, visit.elderly.id),
+      });
+
+      let volName = "Relawan RT";
+      if (visit.volunteerId) {
+        const vol = await db.query.volunteers.findFirst({
+          where: eq(volunteers.id, visit.volunteerId),
+        });
+        if (vol) volName = vol.name;
+      }
+
+      triggerBotWebhook(c, {
+        event: "escalation-resolved",
+        payload: {
+          elderlyId: visit.elderly.id,
+          elderlyName: visit.elderly.name,
+          rt: visit.elderly.rt,
+          communityUnitId: visit.elderly.communityUnitId,
+          volunteerName: volName,
+          resolutionNotes: body.volunteerNotes || "Kunjungan fisik telah selesai, kondisi lansia aman dan stabil.",
+          familyContacts: famMembers.map((f) => ({
+            name: f.name,
+            phone: f.phone,
+            accessToken: f.accessToken,
+          })),
+        },
+      });
+    }
 
     return c.json({
       success: true,

@@ -1,7 +1,23 @@
-# Cloudflare Workers local development secrets template
-DATABASE_URL="postgresql://neondb_owner:password@ep-xxx-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+# Cloudflare Workers local development secrets (Wrangler dev)
+DATABASE_URL="postgresql://user:password@host/neondb?sslmode=require"
 BETTER_AUTH_URL="http://localhost:8787"
-BETTER_AUTH_SECRET="your_32_characters_random_secret_here"
+BETTER_AUTH_SECRET="your-better-auth-secret-min-32-chars"
 ENVIRONMENT="development"
 NODE_ENV="development"
 TRUSTED_ORIGINS="http://localhost:5173,http://localhost:4321,http://localhost:8787"
+
+# Cloudflare R2 Storage
+R2_ACCOUNT_ID="your-r2-account-id"
+R2_ACCESS_KEY_ID="your-r2-access-key-id"
+R2_SECRET_ACCESS_KEY="your-r2-secret-access-key"
+R2_BUCKET_NAME="kabarin-storage"
+R2_PUBLIC_URL="https://cdn.kabarin.atherizz.dev"
+
+# Azure OpenAI (Care Agent & Smart OCR)
+AZURE_OPENAI_API_KEY="your-azure-openai-api-key"
+AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com/openai/v1/"
+AZURE_OPENAI_DEPLOYMENT_NAME="gpt-5.4-mini"
+
+# Bot Webhook Bridge
+BOT_WEBHOOK_URL="http://localhost:3001"
+WEBHOOK_SECRET="kabarin-bot-secret"

@@ -4,6 +4,7 @@ import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { triggerBotWebhook } from "../../lib/bot-webhook";
 import crypto from "crypto";
 
 export class CreateVolunteerEndpoint extends ApiRoute {
@@ -140,6 +141,16 @@ export class CreateVolunteerEndpoint extends ApiRoute {
         isActive: true,
       })
       .returning();
+
+    triggerBotWebhook(c, {
+      event: "volunteer-created",
+      payload: {
+        name: newVolunteer.name,
+        phone: newVolunteer.phone,
+        email: body.email,
+        temporaryPassword,
+      },
+    });
 
     return c.json({
       success: true,

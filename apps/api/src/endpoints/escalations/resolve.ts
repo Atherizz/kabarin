@@ -1,9 +1,10 @@
 import { z, EscalationLogSchema, ResolveEscalationBodySchema } from "@kabarin/types";
-import { eq, and, escalationLogs, elderly } from "@kabarin/db";
+import { eq, and, escalationLogs, elderly, elderlyFamily } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { triggerBotWebhook } from "../../lib/bot-webhook";
 
 export class ResolveEscalationEndpoint extends ApiRoute {
   schema = {
@@ -111,6 +112,34 @@ export class ResolveEscalationEndpoint extends ApiRoute {
         updatedAt: now,
       })
       .where(eq(elderly.id, record.elderlyId));
+
+    // 4. Notify family members via WhatsApp Bot
+    const targetElderly = await db.query.elderly.findFirst({
+      where: eq(elderly.id, record.elderlyId),
+    });
+
+    const famMembers = await db.query.elderlyFamily.findMany({
+      where: eq(elderlyFamily.elderlyId, record.elderlyId),
+    });
+
+    if (targetElderly) {
+      triggerBotWebhook(c, {
+        event: "escalation-resolved",
+        payload: {
+          elderlyId: targetElderly.id,
+          elderlyName: targetElderly.name,
+          rt: targetElderly.rt,
+          communityUnitId: targetElderly.communityUnitId,
+          volunteerName: `Kader RT (${session.user.name})`,
+          resolutionNotes: body.resolutionNotes ?? "Diselesaikan secara manual oleh Kader RT.",
+          familyContacts: famMembers.map((f) => ({
+            name: f.name,
+            phone: f.phone,
+            accessToken: f.accessToken,
+          })),
+        },
+      });
+    }
 
     return c.json({
       success: true,

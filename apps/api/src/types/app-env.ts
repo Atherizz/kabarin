@@ -26,6 +26,8 @@ export type AppEnv = {
     // WhatsApp Bot (Baileys — runs as separate Bun process)
     WA_BOT_PHONE?: string;
     WA_BAILEYS_SESSION?: string;
+    BOT_WEBHOOK_URL?: string;
+    WEBHOOK_SECRET?: string;
   };
   Variables: {
     db: AppDatabase;

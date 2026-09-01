@@ -1,11 +1,12 @@
 import { z, CreateElderlyByFamilyInputSchema, ElderlySchema } from "@kabarin/types";
-import { eq, or, and, elderly, elderlyMedications, elderlyFamily, communityUnits } from "@kabarin/db";
+import { eq, or, and, elderly, elderlyMedications, elderlyFamily, communityUnits, user } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { generateAccessToken } from "../../lib/token";
 import { assertRole } from "../../lib/auth-guard";
 import { refreshElderlyChecklist } from "../../lib/ai/checklist-service";
+import { triggerBotWebhook } from "../../lib/bot-webhook";
 
 export class CreateElderlyByFamilyEndpoint extends ApiRoute {
   schema = {
@@ -214,6 +215,34 @@ export class CreateElderlyByFamilyEndpoint extends ApiRoute {
     c.executionCtx.waitUntil(
       refreshElderlyChecklist(db, c.env, elderlyId).catch(() => {})
     );
+
+    // Find Cadre of this RT for WhatsApp Alert
+    const cadre = await db.query.user.findFirst({
+      where: and(
+        eq(user.communityUnitId, community.id),
+        eq(user.role, "cadre")
+      ),
+    });
+
+    triggerBotWebhook(c, {
+      event: "elderly-submitted",
+      payload: {
+        elderlyId,
+        elderlyName: newElderly.name,
+        elderlyPhone: newElderly.phone ?? undefined,
+        rt: newElderly.rt,
+        rw: newElderly.rw,
+        communityUnitId: newElderly.communityUnitId,
+        submittedByFamilyName: session.user.name,
+        familyContacts: createdFamily.map((f) => ({
+          name: f.name,
+          phone: f.phone,
+          accessToken: f.accessToken,
+        })),
+        cadrePhone: cadre?.phone ?? undefined,
+        cadreName: cadre?.name ?? undefined,
+      },
+    });
 
     return c.json({
       success: true,

@@ -3,6 +3,7 @@ import { eq, and, inArray, elderly, elderlyFamily, escalationLogs } from "@kabar
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
+import { triggerBotWebhook } from "../../lib/bot-webhook";
 import crypto from "crypto";
 
 export class TriggerFamilySosEndpoint extends ApiRoute {
@@ -164,6 +165,14 @@ export class TriggerFamilySosEndpoint extends ApiRoute {
       .update(elderly)
       .set({ currentStatus: "red", updatedAt: now })
       .where(eq(elderly.id, targetElderly.id));
+
+    triggerBotWebhook(c, {
+      event: "family-sos",
+      payload: {
+        elderlyId: targetElderly.id,
+        reason: body.reason || "Keluarga menekan tombol darurat 'Kirim Kabar Sekarang'.",
+      },
+    });
 
     return c.json({
       success: true,

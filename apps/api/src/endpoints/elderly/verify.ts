@@ -1,9 +1,10 @@
 import { z, VerifyElderlyInputSchema, ElderlySchema } from "@kabarin/types";
-import { eq, and, elderly, elderlyVolunteers, volunteers } from "@kabarin/db";
+import { eq, and, elderly, elderlyVolunteers, elderlyFamily, volunteers } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
 import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { triggerBotWebhook } from "../../lib/bot-webhook";
 
 export class VerifyElderlyEndpoint extends ApiRoute {
   schema = {
@@ -178,6 +179,37 @@ export class VerifyElderlyEndpoint extends ApiRoute {
           elderlyId,
           volunteerId: body.secondaryVolunteerId,
           isPrimary: false,
+        });
+      }
+    }
+
+    // 5. Notify assigned volunteer & family via WhatsApp Bot
+    if (body.primaryVolunteerId) {
+      const vol = await db.query.volunteers.findFirst({
+        where: eq(volunteers.id, body.primaryVolunteerId),
+      });
+
+      const famMembers = await db.query.elderlyFamily.findMany({
+        where: eq(elderlyFamily.elderlyId, elderlyId),
+      });
+
+      if (vol) {
+        triggerBotWebhook(c, {
+          event: "volunteer-assigned",
+          payload: {
+            elderlyId,
+            elderlyName: updatedElderly.name,
+            rt: updatedElderly.rt,
+            communityUnitId,
+            volunteerName: vol.name,
+            volunteerPhone: vol.phone,
+            isPrimary: true,
+            familyContacts: famMembers.map((f) => ({
+              name: f.name,
+              phone: f.phone,
+              accessToken: f.accessToken,
+            })),
+          },
         });
       }
     }

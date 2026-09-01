@@ -186,8 +186,8 @@ Dalam realitas masyarakat Indonesia, satu orang tua sering memiliki banyak anak 
               │                                                               │
               │     (Catatan: Anda tidak perlu login untuk memantau status).  │
               │     (Opsional) Jika ingin membuka dashboard web lengkap:      │
-              │     👉 Buat akun di https://kabarin.atherizz.dev/register"    │
-              └───────────────────────────────────────────────────────────────┘
+              │     👉 Buat akun di https://kabarin.pages.dev/register"    │
+               └───────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -219,7 +219,7 @@ Untuk menjaga data tetap valid dan mencegah pendaftar liar dari luar RT, akun re
  Anda akan menerima pesan WhatsApp otomatis jika ada warga lansia binaan yang membutuhkan kunjungan/verifikasi.
  
  (Opsional) Jika Mas Budi ingin membuka Dashboard Web Relawan:
- 🌐 Login: https://kabarin.atherizz.dev/login
+ 🌐 Login: https://kabarin.pages.dev/login
  📧 Email: budi@gmail.com
  🔑 Password Sementara: Kabarin2026!
  (Disarankan langsung mengganti password setelah login pertama kali)"
