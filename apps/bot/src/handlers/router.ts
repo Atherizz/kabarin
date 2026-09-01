@@ -12,6 +12,7 @@ import {
 import { cleanDigits, sendText } from "../senders/send";
 import { triageElderlyResponse } from "../ai";
 import { dispatchEscalation } from "../escalation";
+import { transcribeVoiceNote } from "./voice";
 
 export async function handleInboundMessage(
   sock: WASocket,
@@ -45,7 +46,13 @@ export async function handleInboundMessage(
     "";
 
   if (isAudio && !textContent) {
-    textContent = "[Pesan Suara / Voice Note masuk]";
+    const transcript = await transcribeVoiceNote(sock, msg);
+    if (transcript) {
+      textContent = transcript;
+    } else {
+      console.log("[inbound] Voice note transcription failed or returned empty. Skipping.");
+      return;
+    }
   }
 
   if (!textContent.trim() && !isAudio) return;
