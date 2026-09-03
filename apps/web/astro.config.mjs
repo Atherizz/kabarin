@@ -2,14 +2,21 @@
 import { defineConfig } from 'astro/config';
 import svelte from '@astrojs/svelte';
 import tailwindcss from '@tailwindcss/vite';
+import cloudflare from '@astrojs/cloudflare';
 
-// https://astro.build/config
+// astro.config.mjs
 export default defineConfig({
+  output: "server",
   integrations: [svelte()],
   vite: {
     plugins: [tailwindcss()],
     ssr: {
       noExternal: ['phosphor-svelte']
     }
-  }
+  },
+  adapter: cloudflare({
+    platformProxy: {
+      enabled: false,
+    },
+  }),
 });
