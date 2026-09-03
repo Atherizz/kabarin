@@ -1,0 +1,88 @@
+---
+import Layout from "../layouts/layout.astro";
+import Button from "../components/ui/button.astro";
+import BriefingCard from "../components/astro/dashboard/briefing-card.astro";
+import StatsRow from "../components/astro/dashboard/stats-row.astro";
+import { apiFetch } from "../lib/api-fetch";
+import type { BriefingResponse, DashboardStats } from "@kabarin/types";
+import {
+  BellRinging,
+  NotePencil,
+  Scan,
+  UsersThree,
+  ArrowsClockwise,
+} from "phosphor-svelte";
+
+const [briefing, stats] = await Promise.all([
+  apiFetch<BriefingResponse>(Astro.request, "/api/dashboard/briefing"),
+  apiFetch<DashboardStats>(Astro.request, "/api/dashboard/stats"),
+]);
+
+const { user } = Astro.locals;
+---
+
+<Layout title="Dashboard" description="Ringkasan wilayah RT hari ini.">
+
+  <div class="flex flex-col gap-7.5">
+    <h1 class="leading-none text-4xl font-semibold">
+      <span class="opacity-75">Halo </span>
+      <span class="opacity-100">{user?.name ?? "Kader"}</span>
+    </h1>
+
+    <StatsRow stats={stats} />
+
+    <BriefingCard briefing={briefing} />
+
+    <div class="flex flex-wrap justify-center md:justify-start gap-1.25 md:gap-0">
+      <Button
+        href="/notifikasi"
+        title="Notifikasi"
+        description="Ingatkan keluarga atau relawan terdekat."
+        variant="accent"
+      >
+        <BellRinging slot="small-icon" weight="fill" />
+        <BellRinging slot="large-icon" weight="fill" />
+      </Button>
+
+      <Button
+        href="/elderly/new"
+        title="Isi Form"
+        description="Isi formulir status lansia secara berkala."
+        variant="brand"
+      >
+        <NotePencil slot="small-icon" weight="fill" />
+        <NotePencil slot="large-icon" weight="fill" />
+      </Button>
+
+      <Button
+        href="/elderly/new?ocr=1"
+        title="Pindai Resep Obat"
+        description="Catat penjadwalan obat lansia (bagi yang membutuhkan)."
+        variant="accent"
+      >
+        <Scan slot="small-icon" weight="fill" />
+        <Scan slot="large-icon" weight="fill" />
+      </Button>
+
+      <Button
+        href="/volunteers"
+        title="Tugaskan Relawan"
+        description="Bagikan penugasan relawan (maks. 5 lansia/relawan)."
+        variant="brand"
+      >
+        <UsersThree slot="small-icon" weight="fill" />
+        <UsersThree slot="large-icon" weight="fill" />
+      </Button>
+
+      <Button
+        href="/sync"
+        title="Sinkronisasi Puskesmas"
+        description="Sinkronisasi data kesehatan bulanan lansia dari puskesmas."
+        variant="accent"
+      >
+        <ArrowsClockwise slot="small-icon" weight="fill" />
+        <ArrowsClockwise slot="large-icon" weight="fill" />
+      </Button>
+    </div>
+  </div>
+</Layout>

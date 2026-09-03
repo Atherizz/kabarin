@@ -1,11 +1,9 @@
 ---
 import Layout from "../layouts/layout.astro";
-import PrimaryActions from "../components/astro/volunteer/primary-actions.astro"
+const { user } = Astro.locals;
 ---
-
-<Layout
-	title="Dashboard"
-	description="Welcome to the Kabarin dashboard."
->
-    <PrimaryActions />
+<Layout title="Dashboard">
+  <div>
+    <p>Welcome, {user?.name}</p>
+  </div>
 </Layout>

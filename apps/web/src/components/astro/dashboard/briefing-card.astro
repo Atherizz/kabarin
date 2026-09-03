@@ -1,0 +1,45 @@
+---
+import type { BriefingResponse } from "@kabarin/types";
+
+interface Props {
+  briefing: BriefingResponse | null;
+}
+
+const { briefing } = Astro.props;
+
+const priorityDot = {
+  urgent: "bg-red-500",
+  normal: "bg-accent",
+};
+
+const typeHref = (elderlyId: string | null) =>
+  elderlyId ? `/elderly/${elderlyId}` : "#";
+---
+
+<section class="rounded-[45px] bg-brand/10 p-6 md:p-8">
+  <p class="text-[13px] font-medium text-dark/50">Ringkasan Hari Ini</p>
+
+  {briefing ? (
+    <>
+      <p class="mt-2 text-[15px] leading-relaxed text-dark">{briefing.summary}</p>
+
+      {briefing.actionItems.length > 0 && (
+        <ul class="mt-4 flex flex-col gap-2">
+          {briefing.actionItems.slice(0, 5).map((item) => (
+            <li>
+              <a
+                href={typeHref(item.elderlyId)}
+                class="flex items-center gap-2.5 rounded-2xl bg-light px-4 py-2.5 text-[13px] hover:bg-light-darker transition-colors"
+              >
+                <span class={`size-2 shrink-0 rounded-full ${priorityDot[item.priority]}`}></span>
+                <span class="text-dark/80">{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  ) : (
+    <p class="mt-2 text-[15px] text-dark/50">Ringkasan tidak tersedia saat ini.</p>
+  )}
+</section>

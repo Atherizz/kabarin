@@ -1,0 +1,29 @@
+---
+import type { DashboardStats } from "@kabarin/types";
+
+interface Props {
+  stats: DashboardStats | null;
+}
+
+const { stats } = Astro.props;
+
+const items = stats
+  ? [
+      { label: "Total Lansia", value: stats.elderly.total, tone: "text-dark" },
+      { label: "Aman", value: stats.elderly.statusBreakdown.green, tone: "text-green-600" },
+      { label: "Perhatian", value: stats.elderly.statusBreakdown.yellow, tone: "text-accent" },
+      { label: "Darurat", value: stats.elderly.statusBreakdown.red, tone: "text-red-600" },
+    ]
+  : [];
+---
+
+{stats && (
+  <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+    {items.map((item) => (
+      <div class="rounded-3xl bg-light-darker px-5 py-6">
+        <p class={`text-4xl font-bold tracking-[-0.04em] ${item.tone}`}>{item.value}</p>
+        <p class="text-[14px] text-dark/75 mt-0.5">{item.label}</p>
+      </div>
+    ))}
+  </div>
+)}

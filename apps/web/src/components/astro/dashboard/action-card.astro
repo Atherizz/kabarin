@@ -1,0 +1,34 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  tone: "peach" | "lavender";
+  icon: "bell" | "form" | "scan" | "assign" | "sync";
+}
+
+const { href, title, description, tone, icon } = Astro.props;
+
+const toneClasses = {
+  peach: "bg-orange-100 text-dark",
+  lavender: "bg-indigo-100 text-dark",
+};
+
+const iconToneClasses = {
+  peach: "bg-orange-200",
+  lavender: "bg-indigo-200",
+};
+---
+
+<a
+  href={href}
+  class={`group relative flex flex-col justify-between rounded-4xl p-6 h-44 overflow-hidden transition-transform duration-300 hover:-translate-y-0.5 ${toneClasses[tone]}`}
+>
+  <div class={`flex size-11 items-center justify-center rounded-full ${iconToneClasses[tone]}`}>
+    <slot name="icon" />
+  </div>
+  <div>
+    <p class="font-semibold text-[15px]">{title}</p>
+    <p class="mt-0.5 text-[13px] text-dark/60 leading-snug">{description}</p>
+  </div>
+</a>
