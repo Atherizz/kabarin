@@ -13,54 +13,43 @@ const {
     noindex = false,
 } = Astro.props;
 
-const siteName = "Kabarin.";
-const fullTitle = title ? `${title} | ${siteName}` : siteName;
+const isLoggedIn = !!Astro.locals.session;
 
+const fullTitle = title ? `${title} - Kabarin.` : "Kabarin.";
 const defaultDescription =
     "Healthcare app for elderly people who are alone.";
-
 const safeDescription = description ?? defaultDescription;
 const url = canonical ?? Astro.url.href;
 ---
-
 <!doctype html>
 <html lang="en" dir="ltr">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
-
         <title>{fullTitle}</title>
         <meta name="description" content={safeDescription} />
         <link rel="canonical" href={url} />
-
-        <!-- Open Graph -->
         <meta property="og:title" content={fullTitle} />
         <meta property="og:description" content={safeDescription} />
         <meta property="og:type" content={type} />
         <meta property="og:url" content={url} />
         <meta property="og:image" content={image} />
-
-        <!-- Twitter -->
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={fullTitle} />
         <meta name="twitter:description" content={safeDescription} />
         <meta name="twitter:image" content={image} />
-
         <ClientRouter />
-
         {noindex && <meta name="robots" content="noindex, follow" />}
     </head>
-
     <body class="bg-light text-dark flex h-dvh w-screen flex-col-reverse overflow-hidden md:flex-row">
-        
-        <aside class="h-fit w-full md:h-full md:w-fit">
-            <Navbar />
-        </aside>
-
-        <main id="content" class="h-full w-full overflow-y-auto p-6.25">
+        {isLoggedIn && (
+          <aside class="h-fit w-full md:h-full md:w-fit">
+              <Navbar />
+          </aside>
+        )}
+        <main id="content" class="h-full w-full overflow-y-auto p-6.25 md:px-25 md:py-20">
             <slot />
         </main>
-
     </body>
 </html>

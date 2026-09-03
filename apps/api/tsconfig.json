@@ -11,5 +11,5 @@
       "@kabarin/auth/*": ["../../packages/auth/src/*"]
     }
   },
-  "include": ["src", "worker-configuration.d.ts"]
+  "include": ["src", "worker-configuration.d.ts", "../web/middleware.ts"]
 }
