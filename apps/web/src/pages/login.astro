@@ -1,0 +1,11 @@
+---
+import Layout from "../layouts/layout.astro";
+import LoginForm from '../components/svelte/login-form.svelte';
+---
+
+<Layout
+	title="Dashboard"
+	description="Welcome to the Kabarin dashboard."
+>
+      <LoginForm client:load />
+</Layout>

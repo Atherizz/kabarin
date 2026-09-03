@@ -1,18 +1,16 @@
 ---
-import { House, EnvelopeSimple, User } from 'phosphor-svelte';
+import { House, EnvelopeSimple, User, SignOut } from 'phosphor-svelte';
 ---
-
 <nav
   transition:persist="bottom-nav"
   class="h-full w-full bg-light-darker pb-safe"
 >
   <div class="flex h-full items-center justify-around px-6 pt-2 pb-5 text-dark/75
               md:flex-col md:justify-start md:gap-2 md:p-4 md:pt-5">
-
     <!-- Beranda -->
     <a href="/" class="nav-link relative flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
                        md:flex-row md:justify-start md:w-full md:h-auto md:px-5 md:py-6 md:gap-3 md:pr-12"
-       data-href="/">
+       data-href="/dashboard">
       <div class="relative flex items-center justify-center">
         <House weight="fill" class="size-9 icon md:size-7" />
       </div>
@@ -20,17 +18,14 @@ import { House, EnvelopeSimple, User } from 'phosphor-svelte';
       <div class="overlay absolute inset-0 rounded-4xl transition-color duration-300 border-transparent
       hover:border-dark/25 border-2"></div>
     </a>
-
     <!-- Pesan -->
     <a href="/pesan" class="nav-link relative flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
                             md:flex-row md:justify-start md:w-full md:h-auto md:px-5 md:py-6 md:gap-3 md:pr-12"
        data-href="/pesan">
       <div class="relative flex items-center justify-center">
         <EnvelopeSimple weight="fill" class="size-9 icon md:size-7" />
-
         <!-- Notification Badge -->
-        <span class="absolute -top-1.5 -right-2.5 flex items-center italic justify-center h-5 pl-1 pr-1.75 min-w-5 text-[11px] font-bold text-white bg-brand rounded-full border-[2.5px] border-light-darker
-                     md:-top-1 md:-right-2">
+        <span class="absolute -top-1.5 -right-2.5 flex items-center italic justify-center h-5 pl-1 pr-1.75 min-w-5 text-[11px] font-bold text-white bg-brand rounded-full border-[2.5px] border-light-darker">
           10
         </span>
       </div>
@@ -38,7 +33,6 @@ import { House, EnvelopeSimple, User } from 'phosphor-svelte';
       <div class="overlay absolute inset-0 rounded-4xl transition-color duration-300 border-transparent
       hover:border-dark/25 border-2"></div>
     </a>
-
     <!-- Profil -->
     <a href="/profil" class="nav-link relative flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
                              md:flex-row md:justify-start md:w-full md:h-auto md:px-5 md:py-6 md:gap-3 md:pr-12"
@@ -50,20 +44,30 @@ import { House, EnvelopeSimple, User } from 'phosphor-svelte';
       <div class="overlay absolute inset-0 rounded-4xl transition-color duration-300 border-transparent
       hover:border-dark/25 border-2"></div>
     </a>
-
+    <!-- Logout -->
+    <button
+      id="logout-btn"
+      type="button"
+      class="nav-link relative flex transition-colors duration-300 flex-col items-center justify-center w-30 h-18 gap-1 rounded-4xl
+             md:flex-row md:justify-start md:w-full md:h-auto md:px-5 md:py-6 md:gap-3 md:pr-12"
+    >
+      <div class="relative flex items-center justify-center">
+        <SignOut weight="fill" class="size-9 icon md:size-7" />
+      </div>
+      <span class="text-[13px] font-semibold tracking-tight md:text-[18px]">Keluar</span>
+      <div class="overlay absolute inset-0 rounded-4xl transition-color duration-300 border-transparent
+      hover:border-dark/25 border-2"></div>
+    </button>
   </div>
 </nav>
-
 <script>
   function updateNav() {
     const currentPath = window.location.pathname;
     const links = document.querySelectorAll<HTMLAnchorElement>('.nav-link');
-
     links.forEach((link) => {
       const href = link.dataset.href ?? '/';
       const isActive = currentPath === href || (href !== '/' && currentPath.startsWith(href));
       const overlay = link.querySelector('.overlay');
-
       if (isActive) {
         link.classList.add('text-brand');
         if (overlay) overlay.classList.add('bg-brand/25');
@@ -74,9 +78,42 @@ import { House, EnvelopeSimple, User } from 'phosphor-svelte';
     });
   }
 
-  document.addEventListener('astro:page-load', updateNav);
-</script>
+  function bindLogout() {
+    const btn = document.getElementById('logout-btn');
+    if (!btn) return;
 
+    if (btn.dataset.bound === 'true') return;
+    btn.dataset.bound = 'true';
+
+    btn.addEventListener('click', async () => {
+      if (btn.hasAttribute('disabled')) return;
+      btn.setAttribute('disabled', 'true');
+
+      const apiBase = import.meta.env.PUBLIC_API_URL ?? 'http://localhost:8787';
+
+      try {
+        const res = await fetch(`${apiBase}/api/auth/sign-out`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({}),
+        });
+        console.log('Sign-out response:', res.status, await res.text());
+      } catch (err) {
+        console.error('Sign-out fetch failed:', err);
+      } finally {
+        window.location.href = '/login';
+      }
+    });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    updateNav();
+    bindLogout();
+  });
+</script>
 <style>
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
