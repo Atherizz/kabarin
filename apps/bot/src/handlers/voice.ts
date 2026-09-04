@@ -5,14 +5,13 @@ import { getGroqClient } from "../ai/groq-client";
 
 const WHISPER_MODEL = "whisper-large-v3-turbo";
 const STT_PROMPT =
-  "Percakapan lansia dalam Bahasa Indonesia atau Bahasa Jawa. " +
-  "Sapaan umum: nggih, mboten, inggih, monggo, matur nuwun, alhamdulillah, Mbah, Mas, Bu, Pak, le, nduk. " +
-  "Keluhan kesehatan: pusing, pusing berputar, lemas, mual, sesak napas, nyeri dada, nyeri sendi, " +
-  "kesemutan, gemetar, pelo, susah bicara, jatuh, pingsan, demam, batuk, diare, tidak nafsu makan, " +
-  "sakit kepala, mata kabur, bengkak, susah tidur, linu, pegal-pegal. " +
-  "Obat-obatan umum: Amlodipine, Metformin, Captopril, Bisoprolol, Atorvastatin, Furosemide, " +
-  "Glibenclamide, Aspirin, Omeprazole, Vitamin B12, obat tensi, obat gula, obat jantung. " +
-  "Kondisi: hipertensi, diabetes, stroke, asam urat, kolesterol, jantung, rematik.";
+  "Percakapan sapaan dan keluhan kesehatan lansia dalam Bahasa Indonesia atau Bahasa Jawa sehari-hari. " +
+  "Kosakata umum: nggih, mboten, inggih, monggo, matur nuwun, alhamdulillah, Mbah, Mas, Mbak, Bu, Pak, le, nduk, wis, sampun, dereng, mangan, ngunjuk. " +
+  "Keluhan kesehatan: pusing, ngelu, mumet, pusing berputar, lemas, lemes, kesel, mual, enek, sesak napas, nyeri dada, nyeri sendi, boyok, linu, pegel, lara, " +
+  "kesemutan, gemetar, nrodok, pelo, susah bicara, jatuh, tiba, glundung, pingsan, demam, panas, sumer, batuk, diare, mencret, tidak nafsu makan, " +
+  "sakit kepala, sirah, mata kabur, bengkak, susah tidur, ora iso turu. " +
+  "Obat-obatan: Amlodipine, Metformin, Captopril, Bisoprolol, Atorvastatin, Furosemide, " +
+  "Glibenclamide, Aspirin, Omeprazole, obat tensi, obat gula, obat jantung, obat linu.";
 
 export async function transcribeVoiceNote(
   sock: WASocket,

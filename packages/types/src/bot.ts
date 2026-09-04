@@ -50,6 +50,14 @@ export const TriageEvaluationResultSchema = z
     },
   });
 
+export const ChatHistoryMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string(),
+  createdAt: z.string().optional(),
+});
+
+export type ChatHistoryMessage = z.infer<typeof ChatHistoryMessageSchema>;
+
 export const TriageContextSchema = z.object({
   elderlyId: z.string(),
   elderlyName: z.string(),
@@ -67,6 +75,7 @@ export const TriageContextSchema = z.object({
   ),
   messageText: z.string(),
   messageType: z.enum(["text", "voice"]),
+  conversationHistory: z.array(ChatHistoryMessageSchema).optional().default([]),
 });
 
 export const GreetingContextSchema = z.object({

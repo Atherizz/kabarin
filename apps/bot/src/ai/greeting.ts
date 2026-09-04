@@ -59,7 +59,7 @@ export async function generateReminderGreeting(context: ReminderContext): Promis
     console.error("[greeting] Error generating dynamic AI reminder:", error);
   }
 
-  return `Assalamu'alaikum Mbah ${context.elderlyName}, kami ingatkan kembali nggih. Apakah pagi ini Mbah dalam keadaan sehat? Cukup balas "Sehat" agar keluarga dan relawan tenang nggih.`;
+  return `Assalamu'alaikum Mbah ${context.elderlyName}, kami ingin memastikan kabar Mbah pagi ini. Apakah Mbah dalam keadaan sehat? Cukup balas "Sehat" agar keluarga dan relawan merasa tenang ya.`;
 }
 
 function buildFallbackGreeting(context: GreetingContext): string {
@@ -68,12 +68,12 @@ function buildFallbackGreeting(context: GreetingContext): string {
     const meds = context.morningMedications
       .map((m) => `${m.medicationName} (${m.dosage})`)
       .join(", ");
-    medText = `\nJangan lupa setelah sarapan nanti obat ${meds} diminum nggih Mbah.\n`;
+    medText = `\nSetelah sarapan nanti jangan lupa obat ${meds} diminum ya Mbah.\n`;
   }
 
   return (
-    `Assalamu'alaikum / Sugeng enjang Mbah *${context.elderlyName}*, selamat hari ${context.dayName}.\n` +
+    `Assalamu'alaikum, selamat pagi Mbah *${context.elderlyName}*, selamat hari ${context.dayName}.\n` +
     medText +
-    `\nPagi niki badanipun raos sehat bugar nopo wonten keluhan Mbah? Bisa balas ketik atau kirim rekaman suara (VN) nggih.`
+    `\nPagi ini bagaimana kabarnya Mbah, apakah badan terasa sehat atau ada keluhan? Mbah bisa membalas lewat pesan teks atau rekaman suara ya.`
   );
 }

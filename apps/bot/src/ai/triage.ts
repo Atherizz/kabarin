@@ -21,18 +21,41 @@ export async function triageElderlyResponse(
   try {
     const { client, deploymentName } = getAzureOpenAIClient();
 
+    const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+      { role: "system", content: TRIAGE_SYSTEM_PROMPT },
+      {
+        role: "system",
+        content: `PROFIL PASIEN:\n${JSON.stringify({
+          namaLansia: context.elderlyName,
+          usia: context.age,
+          jenisKelamin: context.gender,
+          alamat: context.address,
+          riwayatPenyakit: context.medicalHistory || "Tidak ada riwayat khusus yang tercatat",
+          daftarObatAktif: context.activeMedications,
+        }, null, 2)}`,
+      },
+    ];
+
+    if (context.conversationHistory && context.conversationHistory.length > 0) {
+      for (const hist of context.conversationHistory) {
+        messages.push({
+          role: hist.role,
+          content: hist.content,
+        });
+      }
+    }
+
+    messages.push({
+      role: "user",
+      content: `Pesan baru dari lansia (${context.messageType}): "${context.messageText}"`,
+    });
+
     const response = await client.chat.completions.create({
       model: deploymentName,
       response_format: { type: "json_object" },
       temperature: 0.2,
       max_completion_tokens: 500,
-      messages: [
-        { role: "system", content: TRIAGE_SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: `Data Lansia & Pesan Balasan:\n${JSON.stringify(profilePayload, null, 2)}`,
-        },
-      ],
+      messages,
     });
 
     const rawContent = response.choices[0]?.message?.content;
@@ -61,7 +84,7 @@ export async function triageElderlyResponse(
       recommendedAction: parsed.recommendedAction || "Lanjutkan pemantauan rutin.",
       replyMessage:
         parsed.replyMessage ||
-        `Matur nuwun atas kabarnya ${context.elderlyName}. Semoga sehat selalu nggih.`,
+        `Terima kasih atas kabarnya ${context.elderlyName}. Semoga sehat selalu ya.`,
       toolsExecuted: Array.isArray(parsed.toolsExecuted) ? parsed.toolsExecuted : [],
     };
   } catch (error) {
@@ -97,7 +120,7 @@ function buildFallbackTriage(context: TriageContext): TriageEvaluationResult {
       escalationReason: "Pesan lansia mengandung kata kunci darurat kritis.",
       clinicalReasoning: "Fallback rule-based triage: kata kunci darurat terdeteksi.",
       recommendedAction: "Dispatch darurat seluruh relawan & keluarga.",
-      replyMessage: `Mbah ${context.elderlyName}, tetap di posisi aman nggih. Bantuan darurat RT sedang menuju ke rumah Mbah sekarang.`,
+      replyMessage: `Mbah ${context.elderlyName}, mohon tetap beristirahat di posisi yang aman. Bantuan darurat RT sedang menuju ke rumah Mbah sekarang.`,
       toolsExecuted: [],
     };
   }
@@ -114,7 +137,7 @@ function buildFallbackTriage(context: TriageContext): TriageEvaluationResult {
       escalationReason: "Lansia menyampaikan keluhan rasa tidak nyaman atau sakit.",
       clinicalReasoning: "Fallback rule-based triage: keluhan gejala terdeteksi.",
       recommendedAction: "Kunjungan relawan pendamping RT untuk verifikasi kondisi.",
-      replyMessage: `Nggih Mbah ${context.elderlyName}, istirahat dulu nggih. Relawan RT sudah kami infokan untuk memeriksa kondisi Mbah.`,
+      replyMessage: `Baik Mbah ${context.elderlyName}, mohon istirahat dulu ya. Relawan RT sudah kami hubungi untuk memeriksa kondisi Mbah.`,
       toolsExecuted: [],
     };
   }
@@ -130,7 +153,7 @@ function buildFallbackTriage(context: TriageContext): TriageEvaluationResult {
     escalationReason: null,
     clinicalReasoning: "Fallback rule-based triage: respon normal.",
     recommendedAction: "Pemantauan rutin.",
-    replyMessage: `Alhamdulillah, matur nuwun kabarnya Mbah ${context.elderlyName}. Jaga kesehatan dan selamat beraktivitas nggih.`,
+    replyMessage: `Alhamdulillah, terima kasih atas kabarnya Mbah ${context.elderlyName}. Tetap jaga kesehatan dan selamat beraktivitas ya.`,
     toolsExecuted: [],
   };
 }

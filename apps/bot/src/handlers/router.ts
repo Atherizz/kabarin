@@ -4,6 +4,8 @@ import {
   eq,
   or,
   and,
+  desc,
+  gte,
   elderly,
   elderlyMedications,
   checkinSessions,
@@ -164,6 +166,27 @@ export async function handleInboundMessage(
     timeOfDay: m.timeOfDay,
   }));
 
+  // Fetch up to 6 recent messages in the last 24 hours for multi-turn context
+  const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const recentHistory = await db.query.chatMessages.findMany({
+    where: and(
+      eq(chatMessages.elderlyId, elderlyRecord.id),
+      gte(chatMessages.createdAt, twentyFourHoursAgo)
+    ),
+    orderBy: [desc(chatMessages.createdAt)],
+    limit: 6,
+  });
+
+  const conversationHistory = recentHistory.reverse().map((m) => ({
+    role: m.senderType === "elderly" ? ("user" as const) : ("assistant" as const),
+    content: m.content,
+    createdAt: m.createdAt.toISOString(),
+  }));
+
+  console.log(
+    `[router] Multi-turn context: Loaded ${conversationHistory.length} previous messages for ${elderlyRecord.name}`
+  );
+
   const triageResult = await triageElderlyResponse({
     elderlyId: elderlyRecord.id,
     elderlyName: elderlyRecord.name,
@@ -174,6 +197,7 @@ export async function handleInboundMessage(
     activeMedications: activeMeds,
     messageText: textContent,
     messageType: isAudio ? "voice" : "text",
+    conversationHistory,
   });
 
   console.log(

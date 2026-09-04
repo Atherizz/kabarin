@@ -9,6 +9,7 @@ import qrcode from "qrcode-terminal";
 import { usePostgresAuthState } from "./store";
 import type { AppDatabase } from "@kabarin/db";
 import { registerLidMapping } from "./handlers/lid-cache";
+import { handleIncomingCall } from "./handlers/call";
 
 let sock: WASocket | null = null;
 let reconnectAttempts = 0;
@@ -111,6 +112,16 @@ export async function createWhatsAppClient(
 
     if (callbacks?.onMessage && sock) {
       await callbacks.onMessage(sock, m);
+    }
+  });
+
+  sock.ev.on("call", async (calls) => {
+    for (const call of calls) {
+      if (sock) {
+        await handleIncomingCall(sock, db, call).catch((err) => {
+          console.error("[call] Error handling incoming call:", err);
+        });
+      }
     }
   });
 
