@@ -33,6 +33,9 @@ export interface SendMessageOptions {
   senderType?: "bot" | "system";
   db?: AppDatabase;
   botPhone?: string;
+  typingMs?: number;
+  jitterMinMs?: number;
+  jitterMaxMs?: number;
 }
 
 export async function sendText(
@@ -44,8 +47,9 @@ export async function sendText(
   try {
     const jid = formatPhone(targetPhone);
 
+    const typingDuration = options?.typingMs ?? Math.floor(Math.random() * 600) + 1200;
     await sock.sendPresenceUpdate("composing", jid).catch(() => {});
-    await sleep(1000);
+    await sleep(typingDuration);
 
     const result = await sock.sendMessage(jid, { text: message.trim() });
     await sock.sendPresenceUpdate("paused", jid).catch(() => {});
@@ -68,7 +72,9 @@ export async function sendText(
       });
     }
 
-    await randomJitter(1500, 2500);
+    const minJitter = options?.jitterMinMs ?? 2000;
+    const maxJitter = options?.jitterMaxMs ?? 3500;
+    await randomJitter(minJitter, maxJitter);
     return true;
   } catch (error) {
     console.error(`[sender] Failed to send message to ${targetPhone}:`, error);

@@ -18,7 +18,7 @@ export async function seedCheckins(db: AppDatabase) {
   }).format(new Date());
 
   await db.insert(checkinSessions).values([
-    // 1. Mbah Soepardi — Replied via Voice Note (Normal / Positive)
+    // Mbah Soepardi
     {
       id: CHK_SOEPARDI_ID,
       communityUnitId: COMMUNITY_RT01_ID,
@@ -41,7 +41,7 @@ export async function seedCheckins(db: AppDatabase) {
         toolsExecuted: ["whisper_stt", "triage_classifier", "update_elderly_status"],
       },
     },
-    // 2. Mbah Kartowijoyo — Escalated (Homebound / Passive checkin)
+    // Mbah Kartowijoyo
     {
       id: CHK_KARTOWIJOYO_ID,
       communityUnitId: COMMUNITY_RT01_ID,

@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import type { AppDatabase } from "@kabarin/db";
+import { eq, and, escalationLogs } from "@kabarin/db";
 import type { BotFamilySosPayload } from "@kabarin/types";
 import { getSocket } from "../../client";
 import { dispatchEscalation } from "../../escalation";
@@ -16,16 +17,27 @@ export async function handleFamilySos(c: Context, db: AppDatabase) {
     return c.json({ success: false, error: "Missing 'elderlyId'" }, 400);
   }
 
+  const activeEscalation = await db.query.escalationLogs.findFirst({
+    where: and(
+      eq(escalationLogs.elderlyId, body.elderlyId),
+      eq(escalationLogs.status, "open")
+    ),
+  });
+
+  const targetTier = activeEscalation && activeEscalation.tier >= 2 ? 3 : 1;
+
   await dispatchEscalation({
     db,
     sock,
     elderlyId: body.elderlyId,
-    tier: 3,
+    tier: targetTier,
     reason:
       body.reason ||
-      "Keluarga menekan tombol darurat 'Kirim Kabar Sekarang' dari portal pemantauan.",
+      (targetTier === 3
+        ? "Keluarga mengonfirmasi kebutuhan bantuan darurat segera (Tier 3) dari portal pemantauan."
+        : "Keluarga meminta pengecekan fisik relawan ke rumah lansia dari portal pemantauan."),
     triggeredBy: "family_sos",
   });
 
-  return c.json({ success: true });
+  return c.json({ success: true, escalatedTier: targetTier });
 }

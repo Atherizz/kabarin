@@ -14,7 +14,7 @@ import {
 
 export async function seedEscalations(db: AppDatabase) {
   await db.insert(escalationLogs).values([
-    // Tier 2 — Mbah Soepardi (Keluhan Pusing / Butuh Pantau)
+    // Tier 2: Mbah Soepardi
     {
       id: ESC_SOEPARDI_ID,
       communityUnitId: COMMUNITY_RT01_ID,
@@ -46,7 +46,7 @@ export async function seedEscalations(db: AppDatabase) {
         },
       ],
     },
-    // Tier 3 — Mbah Kartowijoyo (Darurat Tirah Baring)
+    // Tier 3: Mbah Kartowijoyo
     {
       id: ESC_KARTOWIJOYO_ID,
       communityUnitId: COMMUNITY_RT01_ID,

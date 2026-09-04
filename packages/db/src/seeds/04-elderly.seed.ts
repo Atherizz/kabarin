@@ -11,7 +11,7 @@ import {
 
 export async function seedElderly(db: AppDatabase, authUsers: Record<string, any>) {
   await db.insert(elderly).values([
-    // 1. Mbah Soepardi — Mandiri & Sehat
+    // Mbah Soepardi
     {
       id: ELD_SOEPARDI_ID,
       communityUnitId: COMMUNITY_RT01_ID,
@@ -41,7 +41,7 @@ export async function seedElderly(db: AppDatabase, authUsers: Record<string, any
         { question: "Apakah sudah minum obat hipertensinya hari ini?", type: "yes_no" },
       ],
     },
-    // 2. Mbah Kartowijoyo — Tirah Baring
+    // Mbah Kartowijoyo
     {
       id: ELD_KARTOWIJOYO_ID,
       communityUnitId: COMMUNITY_RT01_ID,

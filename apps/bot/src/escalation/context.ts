@@ -28,6 +28,21 @@ export interface FamilyInfo {
   isPrimaryContact: boolean;
 }
 
+export interface ActiveMedicationInfo {
+  conditionName: string;
+  medicationName: string;
+  dosage: string;
+  frequency: string;
+  timeOfDay: string;
+}
+
+export interface FaskesInfo {
+  healthFacilityName: string | null;
+  healthFacilityPhone: string | null;
+  communityHealthWorkerPhone: string | null;
+  ambulancePhone: string | null;
+}
+
 export interface EscalationContext {
   db: AppDatabase;
   sock: WASocket;
@@ -42,15 +57,23 @@ export interface EscalationContext {
   elderly: {
     id: string;
     name: string;
+    age: number;
+    gender: "male" | "female";
     address: string;
     rt: string;
     rw: string;
+    latitude: number | null;
+    longitude: number | null;
+    medicalHistory: string | null;
     defaultChecklist: unknown;
   };
+  activeMedications: ActiveMedicationInfo[];
+  faskes: FaskesInfo;
   primaryVol?: VolunteerInfo;
   secondaryVol?: VolunteerInfo;
   primaryFamily?: FamilyInfo;
   otherFamilies: FamilyInfo[];
+  allFamilies: FamilyInfo[];
 }
 
 export function generate64HexToken(): string {
@@ -69,8 +92,12 @@ export async function buildEscalationContext(
   const record = await db.query.elderly.findFirst({
     where: eq(elderly.id, elderlyId),
     with: {
+      communityUnit: true,
       volunteerAssignments: { with: { volunteer: true } },
       familyMembers: true,
+      medications: {
+        where: (meds, { eq }) => eq(meds.isActive, true),
+      },
     },
   });
 
@@ -88,6 +115,47 @@ export async function buildEscalationContext(
     record.familyMembers.find((f) => f.isPrimaryContact) ??
     record.familyMembers[0];
 
+  const primaryFamilyInfo: FamilyInfo | undefined = primaryFam
+    ? {
+        id: primaryFam.id,
+        name: primaryFam.name,
+        phone: primaryFam.phone,
+        accessToken: primaryFam.accessToken,
+        notifyViaWhatsapp: primaryFam.notifyViaWhatsapp,
+        isPrimaryContact: primaryFam.isPrimaryContact,
+      }
+    : undefined;
+
+  const otherFamiliesInfo: FamilyInfo[] = record.familyMembers
+    .filter((f) => f.id !== primaryFam?.id)
+    .map((f) => ({
+      id: f.id,
+      name: f.name,
+      phone: f.phone,
+      accessToken: f.accessToken,
+      notifyViaWhatsapp: f.notifyViaWhatsapp,
+      isPrimaryContact: f.isPrimaryContact,
+    }));
+
+  const allFamiliesInfo: FamilyInfo[] = primaryFamilyInfo
+    ? [primaryFamilyInfo, ...otherFamiliesInfo]
+    : otherFamiliesInfo;
+
+  const activeMedicationsInfo: ActiveMedicationInfo[] = (record.medications ?? []).map((m) => ({
+    conditionName: m.conditionName,
+    medicationName: m.medicationName,
+    dosage: m.dosage,
+    frequency: m.frequency,
+    timeOfDay: m.timeOfDay,
+  }));
+
+  const faskesInfo: FaskesInfo = {
+    healthFacilityName: record.communityUnit?.healthFacilityName ?? null,
+    healthFacilityPhone: record.communityUnit?.healthFacilityPhone ?? null,
+    communityHealthWorkerPhone: record.communityUnit?.communityHealthWorkerPhone ?? null,
+    ambulancePhone: record.communityUnit?.ambulancePhone ?? "119",
+  };
+
   const now = new Date();
 
   return {
@@ -104,11 +172,18 @@ export async function buildEscalationContext(
     elderly: {
       id: record.id,
       name: record.name,
+      age: record.age,
+      gender: record.gender,
       address: record.address,
       rt: record.rt,
       rw: record.rw,
+      latitude: record.latitude,
+      longitude: record.longitude,
+      medicalHistory: record.medicalHistory,
       defaultChecklist: record.defaultChecklist,
     },
+    activeMedications: activeMedicationsInfo,
+    faskes: faskesInfo,
     primaryVol: primaryAssign?.volunteer
       ? {
           id: primaryAssign.volunteer.id,
@@ -123,17 +198,9 @@ export async function buildEscalationContext(
           phone: secondaryAssign.volunteer.phone,
         }
       : undefined,
-    primaryFamily: primaryFam
-      ? {
-          id: primaryFam.id,
-          name: primaryFam.name,
-          phone: primaryFam.phone,
-          accessToken: primaryFam.accessToken,
-          notifyViaWhatsapp: primaryFam.notifyViaWhatsapp,
-          isPrimaryContact: primaryFam.isPrimaryContact,
-        }
-      : undefined,
-    otherFamilies: record.familyMembers.filter((f) => f.id !== primaryFam?.id),
+    primaryFamily: primaryFamilyInfo,
+    otherFamilies: otherFamiliesInfo,
+    allFamilies: allFamiliesInfo,
   };
 }
 
@@ -181,6 +248,8 @@ export async function recordEscalationLog(ctx: EscalationContext): Promise<void>
       status: "open",
       tierHistory: [tierHistoryItem],
       familyNotifiedAt: tier >= 2 ? now : null,
+      puskesmasReferralDispatched: tier === 3,
+      puskesmasDispatchedAt: tier === 3 ? now : null,
       createdAt: now,
       updatedAt: now,
     });
@@ -192,6 +261,9 @@ export async function recordEscalationLog(ctx: EscalationContext): Promise<void>
         tier: Math.max(active.tier, tier),
         tierHistory: [...history, tierHistoryItem],
         familyNotifiedAt: tier >= 2 ? now : active.familyNotifiedAt,
+        puskesmasReferralDispatched: tier === 3 ? true : active.puskesmasReferralDispatched,
+        puskesmasDispatchedAt:
+          tier === 3 && !active.puskesmasReferralDispatched ? now : active.puskesmasDispatchedAt,
         updatedAt: now,
       })
       .where(eq(escalationLogs.id, active.id));

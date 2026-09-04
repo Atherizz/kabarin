@@ -110,10 +110,10 @@ function buildFallbackTriage(context: TriageContext): TriageEvaluationResult {
       symptoms: ["keluhan fisik"],
       medicationCompliance: null,
       shouldEscalate: true,
-      escalationTier: 2,
+      escalationTier: 1,
       escalationReason: "Lansia menyampaikan keluhan rasa tidak nyaman atau sakit.",
       clinicalReasoning: "Fallback rule-based triage: keluhan gejala terdeteksi.",
-      recommendedAction: "Kunjungan relawan pendamping RT.",
+      recommendedAction: "Kunjungan relawan pendamping RT untuk verifikasi kondisi.",
       replyMessage: `Nggih Mbah ${context.elderlyName}, istirahat dulu nggih. Relawan RT sudah kami infokan untuk memeriksa kondisi Mbah 🙂`,
       toolsExecuted: [],
     };

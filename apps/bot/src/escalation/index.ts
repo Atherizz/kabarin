@@ -16,7 +16,7 @@ export async function dispatchEscalation(
   await recordEscalationLog(ctx);
 
   await dispatchTier1(ctx);
-  if (ctx.tier >= 2) await dispatchTier2(ctx);
+  if (ctx.tier === 2) await dispatchTier2(ctx);
   if (ctx.tier === 3) await dispatchTier3(ctx);
 }
 
