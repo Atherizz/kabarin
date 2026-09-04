@@ -12,37 +12,26 @@ import {
 
 export async function seedAssignments(db: AppDatabase) {
   await db.insert(elderlyVolunteers).values([
-    // Mas Dimas Prasetyo (3 assignments = 3/3 capacity)
+    // Mas Dimas Prasetyo (Primary Volunteer Mbah Soepardi)
     {
       id: crypto.randomUUID(),
       elderlyId: ELD_SOEPARDI_ID,
       volunteerId: VOL_DIMAS_ID,
       isPrimary: true,
     },
+    // Mas Dimas Wahyu (Secondary / Backup Volunteer Mbah Soepardi)
     {
       id: crypto.randomUUID(),
-      elderlyId: ELD_KARTOWIJOYO_ID,
-      volunteerId: VOL_DIMAS_ID,
-      isPrimary: true,
-    },
-    {
-      id: crypto.randomUUID(),
-      elderlyId: ELD_SRI_ID,
-      volunteerId: VOL_DIMAS_ID,
-      isPrimary: true,
-    },
-    // Mas Dimas Wahyu (2 assignments = 2/3 capacity)
-    {
-      id: crypto.randomUUID(),
-      elderlyId: ELD_AMINAH_ID,
+      elderlyId: ELD_SOEPARDI_ID,
       volunteerId: VOL_WAHYU_ID,
-      isPrimary: true,
+      isPrimary: false,
     },
+    // Mas Dimas Wahyu (Primary Volunteer Mbah Kartowijoyo)
     {
       id: crypto.randomUUID(),
       elderlyId: ELD_KARTOWIJOYO_ID,
       volunteerId: VOL_WAHYU_ID,
-      isPrimary: false, // Secondary responder
+      isPrimary: true,
     },
   ]);
 }

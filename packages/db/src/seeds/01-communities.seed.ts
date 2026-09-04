@@ -17,7 +17,7 @@ export async function seedCommunities(db: AppDatabase) {
       rt: "01",
       healthFacilityName: "Puskesmas Kendalsari",
       healthFacilityPhone: "0341491122",
-      communityHealthWorkerPhone: "081234567890",
+      communityHealthWorkerPhone: null,
       ambulancePhone: "119",
     },
     {
@@ -33,7 +33,7 @@ export async function seedCommunities(db: AppDatabase) {
       rt: "02",
       healthFacilityName: "Puskesmas Kendalsari",
       healthFacilityPhone: "0341491122",
-      communityHealthWorkerPhone: "081298765432",
+      communityHealthWorkerPhone: null,
       ambulancePhone: "119",
     },
   ]);

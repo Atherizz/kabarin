@@ -41,29 +41,7 @@ export async function seedCheckins(db: AppDatabase) {
         toolsExecuted: ["whisper_stt", "triage_classifier", "update_elderly_status"],
       },
     },
-    // 2. Mbah Siti Aminah — Replied via Text (Needs Attention / Warning: Dizziness)
-    {
-      id: CHK_AMINAH_ID,
-      communityUnitId: COMMUNITY_RT01_ID,
-      elderlyId: ELD_AMINAH_ID,
-      sessionDate: todayWib,
-      status: "replied",
-      sentAt: new Date(Date.now() - 4 * 60 * 60 * 1000),
-      repliedAt: new Date(Date.now() - 3.6 * 60 * 60 * 1000),
-      replyType: "text",
-      rawText: "Nggih mas, niki sirah kulo rodo mumet cekot-cekot saking subuh wau.",
-      aiTriageResult: {
-        urgency: "needs_attention",
-        symptoms: ["Pusing cekot-cekot sejak subuh", "Kelelahan"],
-        medicationCompliance: null,
-        clinicalReasoning:
-          "Keluhan pusing kepala berulang pada pasien riwayat DM Tipe 2. Perlu monitoring konsumsi cairan dan gula darah.",
-        recommendedAction:
-          "Kirimkan notifikasi pemantauan lanjutan ke relawan pendamping dan keluarga di perantauan.",
-        toolsExecuted: ["triage_classifier", "raise_tier2_escalation", "notify_family_wa"],
-      },
-    },
-    // 3. Mbah Kartowijoyo — Escalated (Homebound / Passive checkin)
+    // 2. Mbah Kartowijoyo — Escalated (Homebound / Passive checkin)
     {
       id: CHK_KARTOWIJOYO_ID,
       communityUnitId: COMMUNITY_RT01_ID,
@@ -82,17 +60,6 @@ export async function seedCheckins(db: AppDatabase) {
         recommendedAction: "Dispatch kunjungan fisik darurat oleh relawan terdekat.",
         toolsExecuted: ["timeout_escalator", "dispatch_volunteer_visit"],
       },
-    },
-    // 4. Mbah Sri Wahyuni — Reminded (Waiting for response)
-    {
-      id: CHK_SRI_ID,
-      communityUnitId: COMMUNITY_RT01_ID,
-      elderlyId: ELD_SRI_ID,
-      sessionDate: todayWib,
-      status: "reminded",
-      sentAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
-      reminderSentAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-      replyType: "none",
     },
   ]);
 }

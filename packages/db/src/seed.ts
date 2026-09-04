@@ -114,25 +114,28 @@ async function main() {
   console.log("========================================================\n");
 
   console.log("🔑 TEST USER ACCOUNTS (Password: Kabarin2026!):");
-  console.log("┌─────────────────────┬───────────────────┬──────────────┬───────────────────────────────┐");
-  console.log("│ Role                │ Email             │ Password     │ Name                          │");
-  console.log("├─────────────────────┼───────────────────┼──────────────┼───────────────────────────────┤");
-  console.log("│ 🏢 Cadre (Kader RT) │ kader@gmail.com   │ Kabarin2026! │ Ibu Endang Astuti (RT 01)     │");
-  console.log("│ 🤝 Volunteer 1      │ relawan@gmail.com │ Kabarin2026! │ Mas Dimas Prasetyo            │");
-  console.log("│ 🤝 Volunteer 2      │ relawan2@gmail.com│ Kabarin2026! │ Mas Dimas Wahyu               │");
-  console.log("│ 👨‍👩‍👧 Family 1         │ keluarga@gmail.com│ Kabarin2026! │ Budi Hidayat (Anak Soepardi)  │");
-  console.log("│ 👨‍👩‍👧 Family 2         │ keluarga2@gmail.com│Kabarin2026! │ Rian Hidayat (Anak Aminah)    │");
-  console.log("└─────────────────────┴───────────────────┴──────────────┴───────────────────────────────┘\n");
+  console.log("┌─────────────────────┬───────────────────┬──────────────┬───────────────────────────────┬────────────────┐");
+  console.log("│ Role                │ Email             │ Password     │ Name                          │ Phone (WA)     │");
+  console.log("├─────────────────────┼───────────────────┼──────────────┼───────────────────────────────┼────────────────┤");
+  console.log("│ 🏢 Cadre (Kader RT) │ kader@gmail.com   │ Kabarin2026! │ Ibu Endang Astuti (RT 01)     │ 085648907716   │");
+  console.log("│ 🤝 Volunteer 1      │ relawan@gmail.com │ Kabarin2026! │ Mas Dimas Prasetyo            │ 087847512517   │");
+  console.log("│ 🤝 Volunteer 2      │ relawan2@gmail.com│ Kabarin2026! │ Mas Dimas Wahyu               │ 081330964079   │");
+  console.log("│ 👨‍👩‍👧 Family 1 (Prim) │ keluarga@gmail.com│ Kabarin2026! │ Budi Hidayat (Anak Soepardi)  │ 085840625208   │");
+  console.log("│ 👨‍👩‍👧 Family 2        │ keluarga2@gmail.com│Kabarin2026! │ Siti Rahma (Anak Soepardi)    │ 088237348303   │");
+  console.log("│ 👨‍👩‍👧 Family 3        │ keluarga3@gmail.com│Kabarin2026! │ Rian Hidayat (Anak Soepardi)  │ 085738183231   │");
+  console.log("├─────────────────────┼───────────────────┼──────────────┼───────────────────────────────┼────────────────┤");
+  console.log("│ 👴 Lansia (Elderly) │ (WhatsApp Only)   │ -            │ Mbah Soepardi                 │ 085235342960   │");
+  console.log("└─────────────────────┴───────────────────┴──────────────┴───────────────────────────────┴────────────────┘\n");
 
   console.log("🔗 LIVE ZERO-LOGIN TEST TOKENS & URLs:");
   console.log("┌──────────────────────────────────────────┬──────────────────────────────────────────────────────────┐");
   console.log("│ Target Surface                           │ Live URL / Token                                         │");
   console.log("├──────────────────────────────────────────┼──────────────────────────────────────────────────────────┤");
-  console.log(`│ 👨‍👩‍👧 Public Status Mbah Soepardi (Green)   │ http://localhost:8787/api/family/status/${familyTokens.tokenSoepardiFamily.slice(0, 16)}... │`);
-  console.log(`│ 👨‍👩‍👧 Public Status Mbah Aminah (Yellow)    │ http://localhost:8787/api/family/status/${familyTokens.tokenAminahFamily.slice(0, 16)}... │`);
-  console.log(`│ 📱 1-Tap Mobile Visit Form Mbah Sri      │ http://localhost:8787/api/visits/form/${visitTokens.tokenVisitSri.slice(0, 16)}...   │`);
+  console.log(`│ 👨‍👩‍👧 Public Status Mbah Soepardi (Budi)    │ http://localhost:8787/api/family/status/${familyTokens.tokenSoepardiFamily.slice(0, 16)}... │`);
+  console.log(`│ 👨‍👩‍👧 Public Status Mbah Soepardi (Rahma)   │ http://localhost:8787/api/family/status/${familyTokens.tokenRahmaFamily.slice(0, 16)}... │`);
+  console.log(`│ 📱 1-Tap Mobile Visit Form Mbah Soepardi │ http://localhost:8787/api/visits/form/${visitTokens.tokenVisitSoepardi.slice(0, 16)}...   │`);
   console.log("└──────────────────────────────────────────┴──────────────────────────────────────────────────────────┘");
-  console.log(`\nFull Visit Form Token: ${visitTokens.tokenVisitSri}`);
+  console.log(`\nFull Visit Form Token: ${visitTokens.tokenVisitSoepardi}`);
   console.log(`Full Soepardi Family Token: ${familyTokens.tokenSoepardiFamily}\n`);
 }
 
