@@ -10,7 +10,7 @@ export interface DispatchEscalationParams {
   tier: EscalationTier;
   reason: string;
   checkinSessionId?: string | null;
-  triggeredBy?: "ai_triage" | "no_response" | "family_sos" | "manual";
+  triggeredBy?: "ai_triage" | "no_response" | "family_sos" | "manual" | "volunteer_timeout";
 }
 
 export interface VolunteerInfo {

@@ -110,12 +110,33 @@ export async function dispatchTier2(ctx: EscalationContext): Promise<void> {
 
   if (triggeredBy === "volunteer_timeout" && secondaryVol?.phone && secondaryVol.id !== primaryVol?.id) {
     try {
+      const existingVisit = await db.query.volunteerVisits.findFirst({
+        where: and(
+          eq(volunteerVisits.elderlyId, elderly.id),
+          eq(volunteerVisits.status, "pending")
+        ),
+      });
+
+      if (existingVisit) {
+        await db
+          .update(volunteerVisits)
+          .set({
+            volunteerId: secondaryVol.id,
+            updatedAt: new Date(),
+          })
+          .where(eq(volunteerVisits.id, existingVisit.id));
+      }
+
+      const reportUrl = existingVisit?.formToken
+        ? `\n\nPanduan observasi dan laporan kunjungan:\n${appBaseUrl}/lapor/${existingVisit.formToken}`
+        : "";
+
       const secMsg =
         `*Pemberitahuan Siaga Pengganti — RT ${elderly.rt}*\n\n` +
-        `Mas/Mbak ${secondaryVol.name}, relawan utama (${primaryVol?.name ?? "Kader"}) belum merespons dalam 10 menit.\n` +
+        `Mas/Mbak ${secondaryVol.name}, relawan utama (${primaryVol?.name ?? "Kader"}) belum memberikan konfirmasi laporan kunjungan.\n` +
         `Mohon bantuan mengecek kondisi Mbah *${elderly.name}* di ${elderly.address} (RT ${elderly.rt} / RW ${elderly.rw}).\n\n` +
-        `Keterangan: ${reason}\n\n` +
-        `Relawan cadangan dimohon merapat ke lokasi.`;
+        `Keterangan: ${reason}` +
+        reportUrl;
 
       await sendText(sock, secondaryVol.phone, secMsg, {
         communityUnitId,
@@ -133,12 +154,17 @@ export async function dispatchTier2(ctx: EscalationContext): Promise<void> {
   if (primaryFamily?.phone && primaryFamily.notifyViaWhatsapp) {
     try {
       const statusUrl = `${appBaseUrl}/status/${primaryFamily.accessToken}`;
+      const relawanNote =
+        triggeredBy === "volunteer_timeout"
+          ? `Relawan utama sedang berhalangan, sehingga penugasan dialihkan ke relawan cadangan (${secondaryVol?.name ?? "Kader Posyandu"}).`
+          : `Relawan RT ${elderly.rt} (${primaryVol?.name ?? "Kader Posyandu"}) sudah ditugaskan untuk mengunjungi rumah beliau.`;
+
       const famMsg =
         `*Kabar Pemantauan Orang Tua — Kabarin RT ${elderly.rt}*\n\n` +
         `Halo ${primaryFamily.name},\n` +
         `Orang tua Anda, Mbah *${elderly.name}*, terdeteksi memerlukan perhatian:\n` +
-        `Keluhan: ${reason}\n\n` +
-        `Relawan RT ${elderly.rt} (${primaryVol?.name ?? "Kader Posyandu"}) sudah ditugaskan untuk mengunjungi rumah beliau.\n\n` +
+        `Keterangan: ${reason}\n\n` +
+        `${relawanNote}\n\n` +
         `Perkembangan kondisi dan hasil kunjungan dapat dipantau di tautan berikut:\n` +
         `${statusUrl}`;
 

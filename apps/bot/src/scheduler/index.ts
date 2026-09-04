@@ -3,6 +3,7 @@ import type { WASocket } from "@whiskeysockets/baileys";
 import type { AppDatabase } from "@kabarin/db";
 import { processMorningGreetings } from "./morning-greeting";
 import { processGracePeriodReminders, processGracePeriodEscalations } from "./grace-period";
+import { processVolunteerTimeout } from "./fallback-escalation";
 
 export function startScheduler(sock: WASocket, db: AppDatabase): void {
   console.log("[scheduler] Daily check-in and grace period cron jobs started");
@@ -12,6 +13,7 @@ export function startScheduler(sock: WASocket, db: AppDatabase): void {
       await processMorningGreetings(sock, db);
       await processGracePeriodReminders(sock, db);
       await processGracePeriodEscalations(sock, db);
+      await processVolunteerTimeout(sock, db);
     } catch (err) {
       console.error("[scheduler] Error during cron execution:", err);
     }
@@ -20,3 +22,4 @@ export function startScheduler(sock: WASocket, db: AppDatabase): void {
 
 export * from "./morning-greeting";
 export * from "./grace-period";
+export * from "./fallback-escalation";

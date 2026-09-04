@@ -25,6 +25,13 @@ export async function seedVisits(db: AppDatabase) {
       status: "pending",
       volunteerNotes:
         "Kunjungan fisik untuk mengecek kondisi tensi Mbah Soepardi yang mengeluh pusing.",
+      guidedChecklist: [
+        { question: "Apakah Mbah Soepardi bisa bicara dengan jelas, tidak pelo atau pelo tiba-tiba?", type: "yes_no" },
+        { question: "Apakah wajahnya simetris, tidak ada yang terlihat miring atau turun sebelah?", type: "yes_no" },
+        { question: "Apakah kedua tangannya bisa diangkat dan digerakkan dengan normal?", type: "yes_no" },
+        { question: "Apakah mengeluh sakit kepala hebat, pusing berputar, atau pandangan kabur?", type: "yes_no" },
+        { question: "Apakah sudah minum obat hipertensinya hari ini?", type: "yes_no" },
+      ],
     },
   ]);
 
