@@ -13,6 +13,7 @@ import { cleanDigits, sendText } from "../senders/send";
 import { triageElderlyResponse } from "../ai";
 import { dispatchEscalation } from "../escalation";
 import { transcribeVoiceNote } from "./voice";
+import { getPhoneFromLid, registerLidMapping } from "./lid-cache";
 
 export async function handleInboundMessage(
   sock: WASocket,
@@ -91,6 +92,20 @@ export async function handleInboundMessage(
     } catch {}
   }
 
+  // Attempt LID resolution via persistent LID cache
+  const cachedPhone = getPhoneFromLid(remoteJid) || getPhoneFromLid(rawDigits);
+  if (cachedPhone) {
+    const resDigits = cleanDigits(cachedPhone);
+    candidatePhones.add(cachedPhone);
+    candidatePhones.add(resDigits);
+    if (resDigits.startsWith("62")) {
+      candidatePhones.add(`0${resDigits.slice(2)}`);
+    } else if (resDigits.startsWith("0")) {
+      candidatePhones.add(`62${resDigits.slice(1)}`);
+    }
+    console.log(`[inbound] Resolved LID ${remoteJid} -> ${cachedPhone} via LID cache`);
+  }
+
   const matchConditions = Array.from(candidatePhones).map((p) => eq(elderly.phone, p));
 
   const elderlyRecord = await db.query.elderly.findFirst({
@@ -107,6 +122,11 @@ export async function handleInboundMessage(
       `[inbound] Phone / LID ${rawDigits} is not registered as an elderly in DB. Candidate checks: [${Array.from(candidatePhones).join(", ")}]`
     );
     return;
+  }
+
+  // Persist mapping if incoming was an LID
+  if (remoteJid.endsWith("@lid") && elderlyRecord.phone) {
+    await registerLidMapping(remoteJid, elderlyRecord.phone, db);
   }
 
   console.log(

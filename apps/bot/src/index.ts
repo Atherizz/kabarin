@@ -17,9 +17,11 @@ const db = createDB(databaseUrl);
 const webhookPort = Number(process.env.BOT_WEBHOOK_PORT) || 3001;
 
 import { handleInboundMessage } from "./handlers/router";
+import { initLidCache } from "./handlers/lid-cache";
 import { startScheduler } from "./scheduler";
 
 async function main() {
+  await initLidCache(db);
   const webhookApp = createWebhookServer(db);
   const server = Bun.serve({
     port: webhookPort,

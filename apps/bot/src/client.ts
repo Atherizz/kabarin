@@ -8,6 +8,7 @@ import pino from "pino";
 import qrcode from "qrcode-terminal";
 import { usePostgresAuthState } from "./store";
 import type { AppDatabase } from "@kabarin/db";
+import { registerLidMapping } from "./handlers/lid-cache";
 
 let sock: WASocket | null = null;
 let reconnectAttempts = 0;
@@ -80,6 +81,22 @@ export async function createWhatsAppClient(
 
       if (callbacks?.onReady && sock) {
         await callbacks.onReady(sock, botJid);
+      }
+    }
+  });
+
+  sock.ev.on("chats.phoneNumberShare", async ({ lid, jid }) => {
+    if (lid && jid) {
+      console.log(`[baileys] Phone number share: ${lid} -> ${jid}`);
+      await registerLidMapping(lid, jid, db);
+    }
+  });
+
+  sock.ev.on("contacts.upsert", async (contacts) => {
+    for (const c of contacts) {
+      const lid = (c as any).lid;
+      if (c.id && lid) {
+        await registerLidMapping(lid, c.id, db);
       }
     }
   });
