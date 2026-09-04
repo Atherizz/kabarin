@@ -198,7 +198,7 @@ function buildFallbackSummary(
     );
   }
   if (parts.length === 0) {
-    parts.push(`Semua lansia di ${rt} dalam kondisi baik hari ini. Tidak ada tindakan mendesak. 🙂`);
+    parts.push(`Semua lansia di ${rt} dalam kondisi baik hari ini. Tidak ada tindakan mendesak.`);
   }
 
   return parts.join(" ");

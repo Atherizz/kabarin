@@ -61,7 +61,7 @@ export async function triageElderlyResponse(
       recommendedAction: parsed.recommendedAction || "Lanjutkan pemantauan rutin.",
       replyMessage:
         parsed.replyMessage ||
-        `Matur nuwun atas kabarnya ${context.elderlyName}. Semoga sehat selalu nggih 🙂`,
+        `Matur nuwun atas kabarnya ${context.elderlyName}. Semoga sehat selalu nggih.`,
       toolsExecuted: Array.isArray(parsed.toolsExecuted) ? parsed.toolsExecuted : [],
     };
   } catch (error) {
@@ -114,7 +114,7 @@ function buildFallbackTriage(context: TriageContext): TriageEvaluationResult {
       escalationReason: "Lansia menyampaikan keluhan rasa tidak nyaman atau sakit.",
       clinicalReasoning: "Fallback rule-based triage: keluhan gejala terdeteksi.",
       recommendedAction: "Kunjungan relawan pendamping RT untuk verifikasi kondisi.",
-      replyMessage: `Nggih Mbah ${context.elderlyName}, istirahat dulu nggih. Relawan RT sudah kami infokan untuk memeriksa kondisi Mbah 🙂`,
+      replyMessage: `Nggih Mbah ${context.elderlyName}, istirahat dulu nggih. Relawan RT sudah kami infokan untuk memeriksa kondisi Mbah.`,
       toolsExecuted: [],
     };
   }
@@ -130,7 +130,7 @@ function buildFallbackTriage(context: TriageContext): TriageEvaluationResult {
     escalationReason: null,
     clinicalReasoning: "Fallback rule-based triage: respon normal.",
     recommendedAction: "Pemantauan rutin.",
-    replyMessage: `Alhamdulillah, matur nuwun kabarnya Mbah ${context.elderlyName}. Jaga kesehatan dan selamat beraktivitas nggih 🙂`,
+    replyMessage: `Alhamdulillah, matur nuwun kabarnya Mbah ${context.elderlyName}. Jaga kesehatan dan selamat beraktivitas nggih.`,
     toolsExecuted: [],
   };
 }

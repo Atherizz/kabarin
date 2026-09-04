@@ -1,8 +1,8 @@
 export const BOT_TEMPLATES = {
   elderlyWelcome: (name: string, rt: string, rw: string): string =>
-    `Assalamu'alaikum / Selamat pagi Mbah *${name}* 🙂\n\n` +
-    `Saya *Kabarin*, asisten kesehatan digital dari RT ${rt} / RW ${rw} yang diminta tolong oleh keluarga dan pengurus RT untuk menemani serta mengingatkan jadwal minum obat Mbah setiap pagi.\n\n` +
-    `Mulai besok pagi, kami akan menyapa Mbah lewat WhatsApp ini nggih. Jika ada keluhan atau butuh bantuan, Mbah cukup balas pesan ini (bisa ketik atau kirim rekaman suara / Voice Note).`,
+    `Assalamu'alaikum / Selamat pagi Mbah *${name}*.\n\n` +
+    `Ini nomor resmi layanan Kabarin dari pengurus RT ${rt} / RW ${rw}. Atas persetujuan keluarga, kami akan menemani dan mengingatkan jadwal minum obat Mbah setiap pagi.\n\n` +
+    `Mulai besok pagi, pesan sapaan akan dikirimkan ke WhatsApp ini. Jika Mbah merasa kurang enak badan atau butuh bantuan, Mbah cukup membalas pesan ini lewat tulisan atau rekaman suara.`,
 
   familyLinked: (
     familyName: string,
@@ -10,11 +10,11 @@ export const BOT_TEMPLATES = {
     rt: string,
     statusUrl: string
   ): string =>
-    `Halo ${familyName} 👋\n\n` +
-    `Pendaftaran orang tua Anda, Mbah *${elderlyName}*, di program pemantauan Kabarin RT ${rt} telah aktif.\n\n` +
-    `Pantau kondisi harian, kepatuhan minum obat, dan riwayat kunjungan relawan secara real-time di sini:\n` +
-    `👉 ${statusUrl}\n\n` +
-    `_(Anda tidak perlu login untuk memantau halaman status ini)_`,
+    `Halo ${familyName},\n\n` +
+    `Pendaftaran pemantauan untuk Mbah *${elderlyName}* di RT ${rt} sudah aktif.\n\n` +
+    `Perkembangan kondisi harian, jadwal obat, dan kunjungan relawan dapat dipantau langsung melalui tautan berikut:\n` +
+    `${statusUrl}\n\n` +
+    `Halaman status di atas dapat diakses langsung tanpa perlu login.`,
 
   volunteerProvisioned: (
     name: string,
@@ -22,19 +22,19 @@ export const BOT_TEMPLATES = {
     tempPass: string,
     loginUrl: string
   ): string =>
-    `Halo Mas/Mbak *${name}* 🙂\n\n` +
-    `Anda telah didaftarkan sebagai *Relawan Pendamping Lansia* oleh pengurus RT di sistem Kabarin.\n\n` +
-    `Anda akan menerima pesan WhatsApp otomatis jika ada warga lansia binaan yang memerlukan kunjungan fisik.\n\n` +
-    `_(Opsional) Jika ingin membuka Dashboard Web Relawan:_\n` +
-    `🌐 Login: ${loginUrl}\n` +
-    `📧 Email: ${email}\n` +
-    `🔑 Password: ${tempPass}\n` +
-    `_(Disarankan mengganti password setelah login pertama kali)_`,
+    `Halo ${name},\n\n` +
+    `Anda telah didaftarkan sebagai Relawan Pendamping Lansia oleh pengurus RT di sistem Kabarin.\n\n` +
+    `Nomor WhatsApp ini akan menerima pemberitahuan penugasan apabila ada lansia binaan yang memerlukan kunjungan fisik.\n\n` +
+    `Akses dasbor relawan:\n` +
+    `Tautan: ${loginUrl}\n` +
+    `Email: ${email}\n` +
+    `Kata Sandi: ${tempPass}\n` +
+    `Disarankan segera mengganti kata sandi setelah masuk pertama kali.`,
 
   volunteerAssigned: (volunteerName: string, elderlyName: string, rt: string): string =>
-    `Halo Mas/Mbak *${volunteerName}* 👋\n\n` +
-    `Anda telah ditugaskan sebagai relawan pendamping untuk Mbah *${elderlyName}* di RT ${rt}.\n\n` +
-    `Jika beliau memerlukan kunjungan atau pemeriksaan fisik, notifikasi penugasan kunjungan akan dikirimkan ke WhatsApp ini. Terima kasih atas kepedulian Anda 🙏`,
+    `Halo ${volunteerName},\n\n` +
+    `Pengurus RT menugaskan Anda sebagai relawan pendamping untuk Mbah *${elderlyName}* di RT ${rt}.\n\n` +
+    `Pemberitahuan akan dikirimkan ke nomor ini jika beliau memerlukan kunjungan atau verifikasi kondisi di lapangan. Terima kasih atas kesediaannya.`,
 
   cadreNewElderlySubmissionAlert: (
     cadreName: string,
@@ -42,12 +42,12 @@ export const BOT_TEMPLATES = {
     rt: string,
     familyName: string
   ): string =>
-    `📢 *Pemberitahuan Pendaftaran Warga Baru — Kabarin RT ${rt}*\n\n` +
-    `Assalamu'alaikum Ibu/Bapak Kader ${cadreName},\n` +
-    `Ada pengajuan pemantauan lansia baru dari keluarga:\n` +
-    `👵 *Nama Lansia:* Mbah ${elderlyName}\n` +
-    `👨‍👩‍👧 *Didaftarkan oleh:* ${familyName}\n\n` +
-    `Sapaan harian & reminder obat otomatis telah aktif. Mohon verifikasi data dan tentukan relawan pendamping di Dashboard Kader Kabarin 🙏`,
+    `*Pemberitahuan Pendaftaran Lansia Baru — RT ${rt}*\n\n` +
+    `Ibu/Bapak Kader ${cadreName},\n` +
+    `Terdapat pengajuan pemantauan lansia baru dari pihak keluarga:\n` +
+    `- Nama Lansia: Mbah ${elderlyName}\n` +
+    `- Didaftarkan oleh: ${familyName}\n\n` +
+    `Jadwal sapaan harian dan pengingat obat sudah aktif. Mohon lakukan verifikasi data serta penetapan relawan pendamping melalui Dasbor Kader.`,
 
   familyVolunteerAssigned: (
     familyName: string,
@@ -56,12 +56,12 @@ export const BOT_TEMPLATES = {
     isPrimary: boolean,
     statusUrl: string
   ): string =>
-    `Halo ${familyName} 👋\n\n` +
-    `Kabar baik! Pengurus RT telah menugaskan *${volunteerName}* sebagai relawan pendamping ${
+    `Halo ${familyName},\n\n` +
+    `Pengurus RT telah menetapkan *${volunteerName}* sebagai relawan pendamping ${
       isPrimary ? "utama" : "cadangan"
     } untuk Mbah *${elderlyName}*.\n\n` +
-    `Pantau perkembangan kondisi orang tua Anda di sini:\n` +
-    `👉 ${statusUrl}`,
+    `Pantau perkembangan kondisi beliau di tautan berikut:\n` +
+    `${statusUrl}`,
 
   familyEscalationResolved: (
     familyName: string,
@@ -70,11 +70,12 @@ export const BOT_TEMPLATES = {
     notes: string,
     statusUrl: string
   ): string =>
-    `📢 *Laporan Kunjungan Selesai — Kabarin*\n\n` +
+    `*Laporan Kunjungan Selesai — RT*\n\n` +
     `Halo ${familyName},\n` +
-    `Relawan ${volunteerName} telah selesai mengunjungi Mbah *${elderlyName}*.\n\n` +
-    `📌 *Catatan Kunjungan:* ${notes}\n` +
-    `✅ *Status Terkini:* Aman / Terverifikasi (Status Hijau)\n\n` +
-    `Lihat detail laporan kunjungan di portal status:\n` +
-    `👉 ${statusUrl}`,
+    `Relawan ${volunteerName} telah selesai melakukan kunjungan ke rumah Mbah *${elderlyName}*.\n\n` +
+    `Hasil Kunjungan:\n` +
+    `${notes}\n` +
+    `Status Terkini: Aman / Terverifikasi\n\n` +
+    `Detail laporan kunjungan dapat dilihat di:\n` +
+    `${statusUrl}`,
 };

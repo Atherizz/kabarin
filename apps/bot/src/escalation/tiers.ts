@@ -19,28 +19,28 @@ export function formatEmergencyReferralCard(ctx: EscalationContext): string {
   const medsText =
     activeMedications && activeMedications.length > 0
       ? activeMedications
-          .map((m) => `• ${m.medicationName} (${m.dosage} - ${m.frequency})`)
+          .map((m) => `- ${m.medicationName} (${m.dosage} - ${m.frequency})`)
           .join("\n")
-      : "• Tidak ada obat rutin tercatat";
+      : "- Tidak ada obat rutin tercatat";
 
   return (
-    `🚨 *[KABARIN EMERGENCY] KARTU RUJUKAN MEDIS DARURAT (TIER 3)*\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    `*Nama Lansia:* Mbah ${elderly.name} (${elderly.age} Th, ${elderly.gender === "male" ? "Laki-laki" : "Perempuan"})\n` +
-    `*Alamat:* ${elderly.address} (RT ${elderly.rt} / RW ${elderly.rw})\n` +
-    (mapsUrl ? `*Titik Lokasi:* ${mapsUrl}\n` : "") +
-    `*Indikasi Kritis:* ${reason}\n` +
-    `*Waktu Kejadian:* ${timeStr} WIB\n\n` +
-    `📋 *RIWAYAT MEDIS & OBAT AKTIF:*\n` +
-    `• *Diagnosis/Komorbid:* ${elderly.medicalHistory || "Tidak ada riwayat tercatat"}\n` +
+    `*RUJUKAN MEDIS DARURAT (TIER 3)*\n` +
+    `Sistem Pemantauan Lansia Kabarin RT ${elderly.rt}\n\n` +
+    `*Data Pasien:*\n` +
+    `- Nama: Mbah ${elderly.name} (${elderly.age} Th, ${elderly.gender === "male" ? "Laki-laki" : "Perempuan"})\n` +
+    `- Alamat: ${elderly.address} (RT ${elderly.rt} / RW ${elderly.rw})\n` +
+    (mapsUrl ? `- Titik Lokasi: ${mapsUrl}\n` : "") +
+    `- Indikasi Kritis: ${reason}\n` +
+    `- Waktu Kejadian: ${timeStr} WIB\n\n` +
+    `*Riwayat Medis & Obat:*\n` +
+    `- Diagnosis: ${elderly.medicalHistory || "Tidak ada data riwayat"}\n` +
     `${medsText}\n\n` +
-    `📞 *KONTAK DARURAT & RUJUKAN:*\n` +
-    `• *Puskesmas Pembina:* ${faskes.healthFacilityName || "Puskesmas Kendalsari"} (${faskes.healthFacilityPhone || "-"})\n` +
-    `• *Ambulans Siaga:* ${faskes.ambulancePhone || "119"}\n` +
-    `• *Relawan Utama:* ${primaryVol?.name || "-"} (${primaryVol?.phone || "-"})\n` +
-    `• *Kontak Keluarga:* ${primaryFamily?.name || "-"} (${primaryFamily?.phone || "-"})\n` +
-    `━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-    `_Pesan rujukan ini diterbitkan otomatis oleh Sistem Kabarin untuk mempercepat koordinasi medis darurat._`
+    `*Kontak Rujukan & Pendamping:*\n` +
+    `- Puskesmas Pembina: ${faskes.healthFacilityName || "Puskesmas Kendalsari"} (${faskes.healthFacilityPhone || "-"})\n` +
+    `- Ambulans: ${faskes.ambulancePhone || "119"}\n` +
+    `- Relawan Pendamping: ${primaryVol?.name || "-"} (${primaryVol?.phone || "-"})\n` +
+    `- Keluarga: ${primaryFamily?.name || "-"} (${primaryFamily?.phone || "-"})\n\n` +
+    `Pesan ini diterbitkan otomatis untuk mempercepat tindakan rujukan dan koordinasi medis.`
   );
 }
 
@@ -90,12 +90,11 @@ export async function dispatchTier1(ctx: EscalationContext): Promise<void> {
 
   const reportUrl = `${appBaseUrl}/lapor/${formToken}`;
   const message =
-    `⚠️ *Pemberitahuan Kunjungan Lansia — Kabarin RT ${elderly.rt}*\n\n` +
-    `Halo Mas/Mbak ${primaryVol.name},\n` +
-    `Mohon bantuan memeriksa kondisi Mbah *${elderly.name}* di ${elderly.address} (RT ${elderly.rt} / RW ${elderly.rw}).\n\n` +
-    `📌 *Alasan:* ${reason}\n\n` +
-    `Buka tautan ini untuk panduan observasi & mengisi laporan singkat kunjungan:\n` +
-    `👉 ${reportUrl}`;
+    `*Pemberitahuan Kunjungan Lansia — RT ${elderly.rt}*\n\n` +
+    `Mas/Mbak ${primaryVol.name}, mohon bantuan memeriksa kondisi Mbah *${elderly.name}* di ${elderly.address} (RT ${elderly.rt} / RW ${elderly.rw}).\n\n` +
+    `Keterangan: ${reason}\n\n` +
+    `Panduan observasi dan laporan kunjungan:\n` +
+    `${reportUrl}`;
 
   await sendText(sock, primaryVol.phone, message, {
     communityUnitId,
@@ -112,12 +111,11 @@ export async function dispatchTier2(ctx: EscalationContext): Promise<void> {
   if (triggeredBy === "volunteer_timeout" && secondaryVol?.phone && secondaryVol.id !== primaryVol?.id) {
     try {
       const secMsg =
-        `⚠️ *Pemberitahuan Siaga Pengganti — Kabarin RT ${elderly.rt}*\n\n` +
-        `Halo Mas/Mbak ${secondaryVol.name},\n` +
-        `Relawan utama (${primaryVol?.name ?? "Kader"}) belum merespons dalam 10 menit.\n` +
+        `*Pemberitahuan Siaga Pengganti — RT ${elderly.rt}*\n\n` +
+        `Mas/Mbak ${secondaryVol.name}, relawan utama (${primaryVol?.name ?? "Kader"}) belum merespons dalam 10 menit.\n` +
         `Mohon bantuan mengecek kondisi Mbah *${elderly.name}* di ${elderly.address} (RT ${elderly.rt} / RW ${elderly.rw}).\n\n` +
-        `📌 *Alasan:* ${reason}\n\n` +
-        `Relawan cadangan dimohon bersiap dan merapat ke lokasi.`;
+        `Keterangan: ${reason}\n\n` +
+        `Relawan cadangan dimohon merapat ke lokasi.`;
 
       await sendText(sock, secondaryVol.phone, secMsg, {
         communityUnitId,
@@ -136,13 +134,13 @@ export async function dispatchTier2(ctx: EscalationContext): Promise<void> {
     try {
       const statusUrl = `${appBaseUrl}/status/${primaryFamily.accessToken}`;
       const famMsg =
-        `📢 *Kabar Pemantauan Orang Tua — Kabarin*\n\n` +
+        `*Kabar Pemantauan Orang Tua — Kabarin RT ${elderly.rt}*\n\n` +
         `Halo ${primaryFamily.name},\n` +
         `Orang tua Anda, Mbah *${elderly.name}*, terdeteksi memerlukan perhatian:\n` +
-        `📌 *Keluhan:* ${reason}\n\n` +
+        `Keluhan: ${reason}\n\n` +
         `Relawan RT ${elderly.rt} (${primaryVol?.name ?? "Kader Posyandu"}) sudah ditugaskan untuk mengunjungi rumah beliau.\n\n` +
-        `Pantau perkembangan kondisi dan hasil kunjungan secara real-time di sini:\n` +
-        `👉 ${statusUrl}`;
+        `Perkembangan kondisi dan hasil kunjungan dapat dipantau di tautan berikut:\n` +
+        `${statusUrl}`;
 
       await sendText(sock, primaryFamily.phone, famMsg, {
         communityUnitId,
@@ -169,12 +167,12 @@ export async function dispatchTier3(ctx: EscalationContext): Promise<void> {
     try {
       const famStatusUrl = `${appBaseUrl}/status/${fam.accessToken}`;
       const famMsg =
-        `📢 *PEMBERITAHUAN DARURAT KELUARGA — KABARIN RT ${elderly.rt}*\n\n` +
+        `*PEMBERITAHUAN DARURAT KELUARGA — RT ${elderly.rt}*\n\n` +
         `Halo ${fam.name},\n` +
-        `Kami meneruskan Kartu Rujukan Medis Darurat untuk orang tua Anda, Mbah *${elderly.name}*:\n\n` +
+        `Berikut Kartu Rujukan Medis Darurat untuk orang tua Anda, Mbah *${elderly.name}*:\n\n` +
         `${baseReferralCard}\n\n` +
-        `Pengurus RT dan relawan sedang mengoordinasikan bantuan darurat ke lokasi. Pantau status perkembangan langsung:\n` +
-        `👉 ${famStatusUrl}`;
+        `Pengurus RT dan relawan sedang mengoordinasikan bantuan darurat ke lokasi. Pantau perkembangan status di:\n` +
+        `${famStatusUrl}`;
 
       await sendText(sock, fam.phone, famMsg, {
         communityUnitId,
@@ -198,11 +196,11 @@ export async function dispatchTier3(ctx: EscalationContext): Promise<void> {
       if (!cadre.phone) continue;
       try {
         const cadreMsg =
-          `🚨 *ALARM DARURAT KOORDINASI WILAYAH RT ${elderly.rt}*\n\n` +
-          `Yth. Ibu/Bapak Kader ${cadre.name},\n` +
-          `Warga lansia binaan Anda, Mbah *${elderly.name}*, mengalami kondisi DARURAT KRITIS (Tier 3).\n\n` +
+          `*ALARM DARURAT KOORDINASI WILAYAH RT ${elderly.rt}*\n\n` +
+          `Ibu/Bapak Kader ${cadre.name},\n` +
+          `Warga lansia Mbah *${elderly.name}* mengalami kondisi darurat kritis (Tier 3).\n\n` +
           `${baseReferralCard}\n\n` +
-          `Mohon segera lakukan koordinasi faskes / ambulans siaga dan pantau perkembangan melalui Dashboard RT.`;
+          `Mohon segera koordinasikan bantuan faskes / ambulans siaga dan pantau perkembangan melalui Dasbor RT.`;
 
         await sendText(sock, cadre.phone, cadreMsg, {
           communityUnitId,
@@ -228,9 +226,9 @@ export async function dispatchTier3(ctx: EscalationContext): Promise<void> {
   for (const vol of volunteersToAlert) {
     try {
       const volMsg =
-        `🚨 *PANGGILAN TANGGAP DARURAT TIER 3 — SEGERA KE LOKASI*\n\n` +
-        `Siaga Mas/Mbak ${vol.name} (Relawan Pendamping),\n` +
-        `Mbah *${elderly.name}* membutuhkan pertolongan darurat medis saat ini. Mohon segera datangi rumah beliau dengan membawa data rujukan berikut:\n\n` +
+        `*PANGGILAN TANGGAP DARURAT TIER 3 — SEGERA KE LOKASI*\n\n` +
+        `Mas/Mbak ${vol.name} (Relawan Pendamping),\n` +
+        `Mbah *${elderly.name}* membutuhkan pertolongan medis darurat saat ini. Mohon segera datangi rumah beliau dengan membawa data rujukan berikut:\n\n` +
         `${baseReferralCard}`;
 
       await sendText(sock, vol.phone, volMsg, {
