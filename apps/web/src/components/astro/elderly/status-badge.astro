@@ -1,0 +1,38 @@
+---
+interface Props {
+  status: "green" | "yellow" | "red" | "grey";
+  size?: "sm" | "md";
+}
+
+const { status, size = "md" } = Astro.props;
+
+const statusText = {
+  green: "text-green-600",
+  yellow: "text-yellow-600",
+  red: "text-red-600",
+  grey: "text-dark/40",
+};
+
+const statusBg = {
+  green: "bg-green-500/10",
+  yellow: "bg-yellow-500/10",
+  red: "bg-red-500/10",
+  grey: "bg-dark/5",
+};
+
+const statusLabel = {
+  green: "Aman",
+  yellow: "Perhatian",
+  red: "Darurat",
+  grey: "Belum Terjadwal",
+};
+
+const sizeClasses = {
+  sm: "px-3.5 py-1.5 text-[13px]",
+  md: "px-5 py-2.5 text-[15px]",
+};
+---
+
+<span class={`rounded-full font-semibold flex justify-center items-center ${statusText[status]} ${statusBg[status]} ${sizeClasses[size]}`}>
+  {statusLabel[status]}
+</span>

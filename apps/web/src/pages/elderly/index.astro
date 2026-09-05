@@ -1,0 +1,92 @@
+---
+import Layout from "../../layouts/layout.astro";
+import ElderlyCard from "../../components/astro/elderly/elderly-card.astro";
+import { apiFetch } from "../../lib/api-fetch";
+import type { Elderly } from "@kabarin/types";
+import { Plus, ArrowLeft } from "phosphor-svelte";
+
+const currentSearch = Astro.url.searchParams.get("search") ?? "";
+const currentStatus = Astro.url.searchParams.get("status") ?? "";
+
+const query = new URLSearchParams();
+if (currentSearch) query.set("search", currentSearch);
+if (currentStatus) query.set("status", currentStatus);
+
+const elderlyList = await apiFetch<Elderly[]>(
+  Astro.request,
+  `/api/elderly${query.toString() ? `?${query.toString()}` : ""}`
+);
+
+const statusFilters = [
+  { value: "", label: "Semua" },
+  { value: "red", label: "Darurat" },
+  { value: "yellow", label: "Perhatian" },
+  { value: "green", label: "Aman" },
+  { value: "grey", label: "Belum Terjadwal" },
+];
+---
+
+<Layout title="Direktori Lansia" description="Daftar seluruh lansia binaan RT.">
+  <div class="flex flex-col gap-8 max-w-3xl">
+    <a href="/dashboard" class="flex items-center gap-2 text-brand text-[16px] font-medium self-end">
+      <ArrowLeft weight="bold" class="size-5" />
+      <span>Kembali ke dasbor</span>
+    </a>
+
+    <div class="flex items-center justify-between">
+      <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Direktori Lansia</h1>
+      <a
+        href="/elderly/new"
+        class="flex items-center gap-2 rounded-full bg-brand text-white px-5 py-3 text-[15px] font-medium hover:bg-brand/90 transition-colors"
+      >
+        <Plus weight="bold" class="size-5" />
+        Daftarkan
+      </a>
+    </div>
+
+    <form method="get" class="flex flex-col gap-4">
+      <input
+        type="text"
+        name="search"
+        value={currentSearch}
+        placeholder="Cari nama atau alamat..."
+        class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40"
+      />
+
+      <div class="flex gap-2.5 overflow-x-auto pb-1">
+        {statusFilters.map((filter) => (
+          <a
+            href={`/elderly?status=${filter.value}${currentSearch ? `&search=${currentSearch}` : ""}`}
+            class={`shrink-0 rounded-full px-5 py-2.5 text-[14px] font-medium transition-colors ${
+              currentStatus === filter.value
+                ? "bg-brand text-white"
+                : "bg-light-darker text-dark/60 hover:bg-light-darker/70"
+            }`}
+          >
+            {filter.label}
+          </a>
+        ))}
+      </div>
+    </form>
+
+    <div class="flex flex-col gap-3.5">
+      {elderlyList && elderlyList.length > 0 ? (
+        elderlyList.map((e) => (
+          <ElderlyCard
+            id={e.id}
+            name={e.name}
+            age={e.age}
+            address={e.address}
+            mobilityStatus={e.mobilityStatus}
+            currentStatus={e.currentStatus}
+            verificationStatus={e.verificationStatus}
+          />
+        ))
+      ) : (
+        <p class="text-center text-dark/40 text-[16px] py-14">
+          Belum ada lansia yang terdaftar.
+        </p>
+      )}
+    </div>
+  </div>
+</Layout>
