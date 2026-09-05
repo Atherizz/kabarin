@@ -230,13 +230,17 @@ export async function handleInboundMessage(
     })
     .where(eq(checkinSessions.id, todaySession.id));
 
-  // Reply back directly to sender's active JID thread (whether LID or phone JID)
-  await sendText(sock, remoteJid, triageResult.replyMessage, {
+
+    const replyTarget = elderlyRecord.phone ?? remoteJid;
+  const sent = await sendText(sock, replyTarget, triageResult.replyMessage, {
     communityUnitId: elderlyRecord.communityUnitId,
     elderlyId: elderlyRecord.id,
     checkinSessionId: todaySession.id,
     db,
   });
+  if (sent) {
+    console.log(`[router] Reply sent to ${elderlyRecord.name}`);
+  }
 
   if (triageResult.shouldEscalate && triageResult.escalationTier) {
     console.log(

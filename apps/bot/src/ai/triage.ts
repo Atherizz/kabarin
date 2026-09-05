@@ -1,27 +1,18 @@
 import type { TriageContext, TriageEvaluationResult } from "@kabarin/types";
+import type { ChatCompletionMessageParam } from "openai/resources/chat/completions";
 import { getAzureOpenAIClient } from "./client";
 import { TRIAGE_SYSTEM_PROMPT } from "./prompts";
+import { SEARCH_HEALTH_TOOL, searchHealthInfo } from "./health-search";
 
 export type TriageResult = TriageEvaluationResult;
 
 export async function triageElderlyResponse(
   context: TriageContext
 ): Promise<TriageEvaluationResult> {
-  const profilePayload = {
-    namaLansia: context.elderlyName,
-    usia: context.age,
-    jenisKelamin: context.gender,
-    alamat: context.address,
-    riwayatPenyakit: context.medicalHistory || "Tidak ada riwayat khusus yang tercatat",
-    daftarObatAktif: context.activeMedications,
-    tipePesan: context.messageType,
-    isiPesanBalasan: context.messageText,
-  };
-
   try {
     const { client, deploymentName } = getAzureOpenAIClient();
 
-    const messages: Array<{ role: "system" | "user" | "assistant"; content: string }> = [
+    const messages: ChatCompletionMessageParam[] = [
       { role: "system", content: TRIAGE_SYSTEM_PROMPT },
       {
         role: "system",
@@ -36,12 +27,9 @@ export async function triageElderlyResponse(
       },
     ];
 
-    if (context.conversationHistory && context.conversationHistory.length > 0) {
+    if (context.conversationHistory?.length) {
       for (const hist of context.conversationHistory) {
-        messages.push({
-          role: hist.role,
-          content: hist.content,
-        });
+        messages.push({ role: hist.role, content: hist.content });
       }
     }
 
@@ -50,15 +38,47 @@ export async function triageElderlyResponse(
       content: `Pesan baru dari lansia (${context.messageType}): "${context.messageText}"`,
     });
 
-    const response = await client.chat.completions.create({
+    // Phase 1: Tool-enabled call — AI decides whether to search
+    const phase1 = await client.chat.completions.create({
+      model: deploymentName,
+      messages,
+      tools: [SEARCH_HEALTH_TOOL],
+      tool_choice: "auto",
+      temperature: 0.2,
+      max_completion_tokens: 300,
+    });
+
+    const assistantMsg = phase1.choices[0].message;
+    const toolCalled =
+      phase1.choices[0].finish_reason === "tool_calls" && assistantMsg.tool_calls?.length;
+
+    // Only carry Phase 1 assistant message into Phase 2 when tools were actually called.
+    // Without tools, passing Phase 1's response wastes token budget in Phase 2.
+    const runMessages: ChatCompletionMessageParam[] = toolCalled
+      ? [...messages, assistantMsg]
+      : [...messages];
+    const toolsExecuted: string[] = [];
+
+    if (toolCalled && assistantMsg.tool_calls) {
+      for (const tc of assistantMsg.tool_calls) {
+        if (tc.type !== "function") continue;
+        const args = JSON.parse(tc.function.arguments) as { query: string };
+        const result = await searchHealthInfo(args.query);
+        toolsExecuted.push(`search_health_info("${args.query}")`);
+        runMessages.push({ role: "tool", tool_call_id: tc.id, content: result });
+      }
+    }
+
+    // Phase 2: Final structured JSON output (with search context if any)
+    const phase2 = await client.chat.completions.create({
       model: deploymentName,
       response_format: { type: "json_object" },
       temperature: 0.2,
       max_completion_tokens: 500,
-      messages,
+      messages: runMessages,
     });
 
-    const rawContent = response.choices[0]?.message?.content;
+    const rawContent = phase2.choices[0]?.message?.content;
     if (!rawContent) return buildFallbackTriage(context);
 
     const parsed = JSON.parse(rawContent) as Partial<TriageEvaluationResult>;
@@ -69,14 +89,10 @@ export async function triageElderlyResponse(
       sentiment: parsed.sentiment || "neutral",
       symptoms: Array.isArray(parsed.symptoms) ? parsed.symptoms : [],
       medicationCompliance:
-        typeof parsed.medicationCompliance === "boolean"
-          ? parsed.medicationCompliance
-          : null,
+        typeof parsed.medicationCompliance === "boolean" ? parsed.medicationCompliance : null,
       shouldEscalate: Boolean(parsed.shouldEscalate),
       escalationTier:
-        parsed.escalationTier === 1 ||
-        parsed.escalationTier === 2 ||
-        parsed.escalationTier === 3
+        parsed.escalationTier === 1 || parsed.escalationTier === 2 || parsed.escalationTier === 3
           ? parsed.escalationTier
           : null,
       escalationReason: parsed.escalationReason || null,
@@ -85,7 +101,7 @@ export async function triageElderlyResponse(
       replyMessage:
         parsed.replyMessage ||
         `Terima kasih atas kabarnya ${context.elderlyName}. Semoga sehat selalu ya.`,
-      toolsExecuted: Array.isArray(parsed.toolsExecuted) ? parsed.toolsExecuted : [],
+      toolsExecuted,
     };
   } catch (error) {
     console.error("[triage] Error evaluating elderly response with AI:", error);
