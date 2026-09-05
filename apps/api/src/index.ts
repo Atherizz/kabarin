@@ -37,6 +37,7 @@ import {
   UpdateEscalationChainEndpoint,
 } from "./endpoints/elderly/escalation-chain";
 import { GetVolunteerRecommendationsEndpoint } from "./endpoints/elderly/volunteer-recommendations";
+import { GetElderlyRiskScoreEndpoint } from "./endpoints/elderly/risk-score";
 
 // Volunteer endpoints
 import { ListVolunteersEndpoint } from "./endpoints/volunteers/list";
@@ -167,6 +168,7 @@ openapi.get("/api/elderly/:id/escalation-chain", asRoute(GetEscalationChainEndpo
 openapi.put("/api/elderly/:id/escalation-chain", asRoute(UpdateEscalationChainEndpoint));
 openapi.get("/api/elderly/:id/volunteers", asRoute(ListVolunteersByElderlyEndpoint));
 openapi.get("/api/elderly/:id/volunteer-recommendations", asRoute(GetVolunteerRecommendationsEndpoint));
+openapi.get("/api/elderly/:id/risk-score", asRoute(GetElderlyRiskScoreEndpoint));
 
 // Volunteer endpoints
 openapi.get("/api/volunteers", asRoute(ListVolunteersEndpoint));

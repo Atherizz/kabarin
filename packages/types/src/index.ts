@@ -13,3 +13,4 @@ export * from "./chat";
 export * from "./dashboard";
 export * from "./upload";
 export * from "./bot";
+export * from "./risk-score";
