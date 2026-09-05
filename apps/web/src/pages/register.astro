@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/layout.astro";
+import RegisterForm from "../components/svelte/register-form.svelte";
+---
+
+<Layout title="Daftarkan RT" description="Registrasi wilayah RT baru dan akun Kader." noindex>
+  <div class="flex flex-col gap-8 max-w-2xl mx-auto py-8">
+    <div>
+      <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Kabarin.</h1>
+      <p class="text-dark/50 text-[16px] mt-1">
+        Daftarkan wilayah RT Anda dan mulai memantau kesejahteraan lansia hari ini.
+      </p>
+    </div>
+
+    <RegisterForm client:load />
+
+    <p class="text-center text-[15px] text-dark/50">
+      Sudah punya akun? <a href="/login" class="text-brand font-medium">Masuk di sini</a>
+    </p>
+  </div>
+</Layout>
