@@ -45,7 +45,7 @@ const url = canonical ?? Astro.url.href;
     <body class="bg-light text-dark flex h-dvh w-screen flex-col-reverse overflow-hidden md:flex-row">
         {isLoggedIn && (
           <aside class="h-fit w-full md:h-full md:w-fit">
-              <Navbar />
+              <Navbar role={Astro.locals.user?.role} />
           </aside>
         )}
         <main id="content" class="h-full w-full overflow-y-auto p-6.25 md:px-25 md:py-20">
