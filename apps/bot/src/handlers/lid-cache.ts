@@ -7,7 +7,9 @@ const phoneToLidMap = new Map<string, string>();
 
 // Seed default mappings for demo whitelist
 const DEFAULT_LID_MAPPINGS: Record<string, string> = {
-  // Mbah Soepardi
+  // Mbah Soepardi (Lansia Seed)
+  "240200357777615": "085648907716",
+  // Lansia Manual (untuk simulasi input via web)
   "142069381210117": "085235342960",
 };
 

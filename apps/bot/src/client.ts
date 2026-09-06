@@ -60,13 +60,15 @@ export async function createWhatsAppClient(
 
     if (connection === "close") {
       const error = lastDisconnect?.error as Boom | undefined;
-      const statusCode = error?.output?.statusCode;
-      const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+      const isReplaced = statusCode === DisconnectReason.connectionReplaced;
+      const shouldReconnect = statusCode !== DisconnectReason.loggedOut && !isReplaced;
 
       console.log(`[connection] Closed (status: ${statusCode}, reconnect: ${shouldReconnect})`);
 
       if (statusCode === DisconnectReason.loggedOut) {
         console.error("[auth] Logged out from WhatsApp. Clear session in database to re-authenticate.");
+      } else if (isReplaced) {
+        console.error("[connection] Connection replaced by another session/instance (440). Not reconnecting to avoid ping-pong loop.");
       } else if (shouldReconnect && reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
         reconnectAttempts++;
         const backoffMs = Math.min(1000 * Math.pow(1.5, reconnectAttempts), 30000);
