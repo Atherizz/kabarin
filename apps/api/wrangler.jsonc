@@ -11,7 +11,9 @@
   "vars": {
     "ENVIRONMENT": "production",
     "BETTER_AUTH_URL": "https://kabarin-api.atherizz.dev",
-    "TRUSTED_ORIGINS": "http://localhost:5173,http://localhost:4321,http://localhost:8787,https://kabarin.pages.dev,https://kabarin.atherizz.dev,https://kabarin-api.atherizz.dev"
+    "TRUSTED_ORIGINS": "http://localhost:5173,http://localhost:4321,http://localhost:8787,https://kabarin.pages.dev,https://kabarin.atherizz.dev,https://kabarin-api.atherizz.dev",
+    "BOT_WEBHOOK_URL": "https://kabarin-bot.atherizz.dev",
+    "WEBHOOK_SECRET": "5d89f735b0d741c7b5adde9ef11ac0a2dfa16126787a475e9879a41bc1e2c04f"
   },
   "observability": {
     "enabled": true
