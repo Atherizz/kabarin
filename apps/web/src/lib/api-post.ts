@@ -1,8 +1,13 @@
 export async function apiPost<T>(path: string, body: unknown): Promise<{ ok: boolean; data?: T; error?: string }> {
-  const apiBase = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
+  const apiBase = import.meta.env.PUBLIC_API_URL ?? "https://kabarin-api.atherizz.dev";
 
   try {
-    const res = await fetch(`${apiBase}${path}`, {
+    const endpoint =
+      typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+        ? path
+        : `${apiBase}${path}`;
+
+    const res = await fetch(endpoint, {
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },

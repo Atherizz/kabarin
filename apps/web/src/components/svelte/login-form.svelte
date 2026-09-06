@@ -12,7 +12,12 @@
     isLoading = true;
 
     try {
-      const res = await fetch(`${API_BASE}/api/auth/sign-in/email`, {
+      const endpoint =
+        typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+          ? "/api/auth/sign-in/email"
+          : `${API_BASE}/api/auth/sign-in/email`;
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -41,6 +41,12 @@ export function createAuth(db: AppDatabase, config: AuthConfig) {
     }),
     emailAndPassword: { enabled: true },
     socialProviders: googleProvider,
+    advanced: {
+      crossSubDomainCookies: {
+        enabled: config.baseURL.includes("atherizz.dev"),
+        domain: config.baseURL.includes("atherizz.dev") ? ".atherizz.dev" : undefined,
+      },
+    },
     databaseHooks: {
       user: {
         create: {
