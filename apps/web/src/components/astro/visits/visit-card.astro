@@ -1,0 +1,53 @@
+---
+import { Clock, CheckCircle } from "phosphor-svelte";
+
+interface Props {
+  id: string;
+  elderlyId: string;
+  elderlyName?: string;
+  visitType: "routine" | "escalation";
+  status: "pending" | "completed";
+  createdAt: string;
+  accessToken: string;
+}
+
+const { elderlyName, visitType, status, createdAt, accessToken } = Astro.props;
+
+const formattedDate = new Date(createdAt).toLocaleString("id-ID", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+const href = status === "pending" ? `/lapor/${accessToken}` : "#";
+---
+
+<a
+  href={href}
+  class={`flex flex-col gap-2 rounded-[28px] px-6 py-5 transition-transform duration-200 ${
+    status === "pending" ? "bg-accent/10 hover:-translate-y-0.5" : "bg-light-darker"
+  }`}
+>
+  <div class="flex items-center justify-between">
+    <div class="flex items-center gap-2.5">
+      {status === "pending" ? (
+        <Clock weight="fill" class="size-5 text-accent" />
+      ) : (
+        <CheckCircle weight="fill" class="size-5 text-green-500" />
+      )}
+      <p class="font-semibold text-[17px] text-dark">{elderlyName ?? "Lansia"}</p>
+    </div>
+    <span class="text-[13px] text-dark/40">{formattedDate}</span>
+  </div>
+
+  <p class="text-[14px] font-medium text-dark/60">
+    {visitType === "escalation" ? "Kunjungan Eskalasi" : "Kunjungan Rutin"}
+  </p>
+
+  <span class={`self-start rounded-full px-3.5 py-1.5 text-[13px] font-semibold mt-1 ${
+    status === "pending" ? "text-accent bg-accent/15" : "text-green-600 bg-green-500/10"
+  }`}>
+    {status === "pending" ? "Menunggu Laporan" : "Selesai"}
+  </span>
+</a>

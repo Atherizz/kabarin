@@ -1,0 +1,81 @@
+---
+import Layout from "../../layouts/layout.astro";
+import VisitCard from "../../components/astro/visits/visit-card.astro";
+import { apiFetch } from "../../lib/api-fetch";
+import { ArrowLeft } from "phosphor-svelte";
+
+interface VolunteerVisit {
+  id: string;
+  elderlyId: string;
+  visitType: "routine" | "escalation";
+  status: "pending" | "completed";
+  createdAt: string;
+  accessToken: string;
+}
+
+interface AssignmentsResponse {
+  assignments: { elderly: { id: string; name: string } }[];
+}
+
+const currentStatus = Astro.url.searchParams.get("status") ?? "pending";
+
+const [visits, assignmentsData] = await Promise.all([
+  apiFetch<VolunteerVisit[]>(Astro.request, `/api/visits?status=${currentStatus}`),
+  apiFetch<AssignmentsResponse>(Astro.request, "/api/volunteers/me/assignments"),
+]);
+
+const elderlyNameMap = new Map(
+  (assignmentsData?.assignments ?? []).map((a) => [a.elderly.id, a.elderly.name])
+);
+
+const statusFilters = [
+  { value: "pending", label: "Menunggu" },
+  { value: "completed", label: "Selesai" },
+];
+---
+
+<Layout title="Tugas Kunjungan" description="Daftar kunjungan yang perlu dilaporkan.">
+  <div class="flex flex-col gap-8 max-w-2xl">
+    <a href="/volunteer/dashboard" class="self-end flex items-center gap-2 text-brand text-[15px] font-medium">
+      <ArrowLeft weight="bold" class="size-5" />
+      <span>Kembali ke dasbor</span>
+    </a>
+
+    <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Tugas Kunjungan</h1>
+
+    <div class="flex gap-2.5">
+      {statusFilters.map((filter) => (
+        <a
+          href={`/volunteer/visits?status=${filter.value}`}
+          class={`rounded-full px-5 py-2.5 text-[14px] font-medium transition-colors ${
+            currentStatus === filter.value
+              ? "bg-brand text-white"
+              : "bg-light-darker text-dark/60 hover:bg-light-darker/70"
+          }`}
+        >
+          {filter.label}
+        </a>
+      ))}
+    </div>
+
+    <div class="flex flex-col gap-3.5">
+      {visits && visits.length > 0 ? (
+        visits.map((v) => (
+          <VisitCard
+            id={v.id}
+            elderlyId={v.elderlyId}
+            elderlyName={elderlyNameMap.get(v.elderlyId)}
+            visitType={v.visitType}
+            status={v.status}
+            createdAt={v.createdAt}
+            accessToken={v.accessToken}
+          />
+        ))
+      ) : (
+        <p class="text-center text-dark/40 text-[16px] py-14">
+          Tidak ada tugas kunjungan {currentStatus === "pending" ? "menunggu" : "yang selesai"}.
+        </p>
+      )}
+    </div>
+  </div>
+</Layout>
