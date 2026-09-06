@@ -1,5 +1,5 @@
 export async function apiPostPublic<T>(path: string, body: unknown): Promise<{ ok: boolean; data?: T; error?: string }> {
-  const apiBase = import.meta.env.PUBLIC_API_URL ?? "https://kabarin-api.atherizz.dev";
+  const apiBase = import.meta.env.BETTER_AUTH_URL ?? "https://kabarin-api.atherizz.dev";
 
   try {
     const res = await fetch(`${apiBase}${path}`, {
@@ -11,7 +11,7 @@ export async function apiPostPublic<T>(path: string, body: unknown): Promise<{ o
     const json = await res.json();
 
     if (!res.ok || json.success === false) {
-      return { ok: false, error: json.error ?? "Terjadi kesalahan." };
+      return { ok: false, error: json.error ?? json.message ?? "Terjadi kesalahan." };
     }
 
     return { ok: true, data: json.data };

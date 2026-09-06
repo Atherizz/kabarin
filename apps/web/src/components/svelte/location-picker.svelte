@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { MapPin } from "phosphor-svelte";
+  import { MapPin, MagnifyingGlass, CaretDown } from "phosphor-svelte";
 
   let {
     address = $bindable(""),
@@ -8,6 +8,7 @@
     longitude = $bindable<number | null>(null),
   } = $props();
 
+  // --- Map States ---
   let mapContainer: HTMLDivElement;
   let map: any = null;
   let marker: any = null;
@@ -15,13 +16,37 @@
   let isGeocoding = $state(false);
   let geocodeTimeout: ReturnType<typeof setTimeout>;
 
-  const DEFAULT_CENTER: [number, number] = [-7.9666, 112.6326]; // Malang
+  let suggestions = $state<any[]>([]);
+  let showSuggestions = $state(false);
+
+  const DEFAULT_CENTER: [number, number] = [-7.9666, 112.6326];
+
+  // --- Wilayah API States ---
+  const API_WILAYAH = "https://www.emsifa.com/api-wilayah-indonesia/api";
+
+  let provinces = $state<any[]>([]);
+  let regencies = $state<any[]>([]);
+  let districts = $state<any[]>([]);
+  let villages = $state<any[]>([]);
+
+  let selectedProv = $state("");
+  let selectedReg = $state("");
+  let selectedDist = $state("");
+  let selectedVill = $state("");
 
   onMount(async () => {
+    try {
+      const res = await fetch(`${API_WILAYAH}/provinces.json`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      provinces = await res.json();
+    } catch (e) {
+      console.error("Gagal memuat data provinsi", e);
+      alert("Gagal memuat daftar provinsi. Cek console atau matikan sementara shield/adblocker browser Anda.");
+    }
+
     L = (await import("leaflet")).default;
     await import("leaflet/dist/leaflet.css");
 
-    // Fix default marker icon paths
     delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -29,9 +54,7 @@
       shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
     });
 
-    const startCenter: [number, number] =
-      latitude && longitude ? [latitude, longitude] : DEFAULT_CENTER;
-
+    const startCenter: [number, number] = latitude && longitude ? [latitude, longitude] : DEFAULT_CENTER;
     map = L.map(mapContainer).setView(startCenter, latitude ? 17 : 14);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -59,74 +82,202 @@
     if (map) map.remove();
   });
 
+  // --- Cascading Dropdown Handlers ---
+  async function fetchRegencies() {
+    regencies = []; districts = []; villages = [];
+    selectedReg = ""; selectedDist = ""; selectedVill = "";
+    if (!selectedProv) return;
+    const res = await fetch(`${API_WILAYAH}/regencies/${selectedProv}.json`);
+    regencies = await res.json();
+  }
+
+  async function fetchDistricts() {
+    districts = []; villages = [];
+    selectedDist = ""; selectedVill = "";
+    if (!selectedReg) return;
+    const res = await fetch(`${API_WILAYAH}/districts/${selectedReg}.json`);
+    districts = await res.json();
+  }
+
+  async function fetchVillages() {
+    villages = [];
+    selectedVill = "";
+    if (!selectedDist) return;
+    const res = await fetch(`${API_WILAYAH}/villages/${selectedDist}.json`);
+    villages = await res.json();
+  }
+
+  async function handleVillageSelect() {
+    if (!selectedVill) return;
+
+    const provName = provinces.find(p => p.id === selectedProv)?.name;
+    const regName = regencies.find(r => r.id === selectedReg)?.name;
+    const distName = districts.find(d => d.id === selectedDist)?.name;
+    const villName = villages.find(v => v.id === selectedVill)?.name;
+
+    if (provName && regName && distName && villName) {
+      const areaString = `${villName}, ${distName}, ${regName}, ${provName}`;
+      // reset instead of appending, otherwise picking a region twice
+      // mangles the query string and geocoding silently fails
+      address = areaString;
+
+      isGeocoding = true;
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(areaString)}&limit=1`);
+        const data = await res.json();
+        if (data?.[0]) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          latitude = lat; longitude = lng;
+          if (map && marker) {
+            map.setView([lat, lng], 15);
+            marker.setLatLng([lat, lng]);
+          }
+        }
+      } catch {} finally {
+        isGeocoding = false;
+      }
+    }
+  }
+
+  // --- Map Handlers ---
   async function reverseGeocode(lat: number, lng: number) {
     isGeocoding = true;
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
-      );
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`);
       const data = await res.json();
       if (data?.display_name) {
         address = data.display_name;
+        showSuggestions = false;
       }
-    } catch {
-      // Silent fail, user can still type address manually
-    } finally {
+    } catch {} finally {
       isGeocoding = false;
     }
   }
 
   function handleAddressInput() {
+    showSuggestions = true;
     clearTimeout(geocodeTimeout);
+
     geocodeTimeout = setTimeout(async () => {
-      if (!address || address.trim().length < 5) return;
+      if (!address || address.trim().length < 4) {
+        suggestions = [];
+        return;
+      }
       isGeocoding = true;
       try {
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
-        );
-        const results = await res.json();
-        if (results?.[0]) {
-          const lat = parseFloat(results[0].lat);
-          const lng = parseFloat(results[0].lon);
-          latitude = lat;
-          longitude = lng;
-          if (map && marker) {
-            map.setView([lat, lng], 17);
-            marker.setLatLng([lat, lng]);
-          }
-        }
-      } catch {
-        // Silent fail
-      } finally {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=5&countrycodes=id`);
+        suggestions = await res.json();
+      } catch {} finally {
         isGeocoding = false;
       }
     }, 1000);
   }
+
+  function selectSuggestion(place: any) {
+    const lat = parseFloat(place.lat);
+    const lng = parseFloat(place.lon);
+
+    latitude = lat;
+    longitude = lng;
+    address = place.display_name;
+
+    suggestions = [];
+    showSuggestions = false;
+
+    if (map && marker) {
+      map.setView([lat, lng], 17);
+      marker.setLatLng([lat, lng]);
+    }
+  }
 </script>
 
-<div class="flex flex-col gap-3">
-  <div class="relative">
+<div class="flex flex-col gap-4">
+  <!-- Cascading Wilayah Dropdowns with limited suggestion list height wrapper -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    <div class="relative">
+      <select bind:value={selectedProv} onchange={fetchRegencies} class="w-full appearance-none rounded-2xl bg-light-darker pl-4 pr-10 py-3 text-[15px] outline-none focus:ring-2 focus:ring-brand/40 max-h-48">
+        <option value="">Pilih Provinsi</option>
+        {#each provinces as prov}
+          <option value={prov.id}>{prov.name}</option>
+        {/each}
+      </select>
+      <CaretDown weight="bold" class="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-dark/40 pointer-events-none" />
+    </div>
+
+    <div class="relative">
+      <select bind:value={selectedReg} onchange={fetchDistricts} disabled={!selectedProv} class="w-full appearance-none rounded-2xl bg-light-darker pl-4 pr-10 py-3 text-[15px] outline-none focus:ring-2 focus:ring-brand/40 disabled:opacity-50 max-h-48">
+        <option value="">Pilih Kota/Kabupaten</option>
+        {#each regencies as reg}
+          <option value={reg.id}>{reg.name}</option>
+        {/each}
+      </select>
+      <CaretDown weight="bold" class="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-dark/40 pointer-events-none" />
+    </div>
+
+    <div class="relative">
+      <select bind:value={selectedDist} onchange={fetchVillages} disabled={!selectedReg} class="w-full appearance-none rounded-2xl bg-light-darker pl-4 pr-10 py-3 text-[15px] outline-none focus:ring-2 focus:ring-brand/40 disabled:opacity-50 max-h-48">
+        <option value="">Pilih Kecamatan</option>
+        {#each districts as dist}
+          <option value={dist.id}>{dist.name}</option>
+        {/each}
+      </select>
+      <CaretDown weight="bold" class="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-dark/40 pointer-events-none" />
+    </div>
+
+    <div class="relative">
+      <select bind:value={selectedVill} onchange={handleVillageSelect} disabled={!selectedDist} class="w-full appearance-none rounded-2xl bg-light-darker pl-4 pr-10 py-3 text-[15px] outline-none focus:ring-2 focus:ring-brand/40 disabled:opacity-50 max-h-48">
+        <option value="">Pilih Kelurahan/Desa</option>
+        {#each villages as vill}
+          <option value={vill.id}>{vill.name}</option>
+        {/each}
+      </select>
+      <CaretDown weight="bold" class="absolute right-4 top-1/2 -translate-y-1/2 size-4 text-dark/40 pointer-events-none" />
+    </div>
+  </div>
+
+  <!-- Detail Address & Autocomplete -->
+  <div class="relative z-[9999]">
     <textarea
       bind:value={address}
       oninput={handleAddressInput}
-      placeholder="Ketik alamat lengkap, atau geser pin di peta..."
+      placeholder="Ketik alamat detail (Nama jalan, RT/RW, No Rumah)..."
       rows="2"
-      class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40 resize-y"
+      class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40 resize-y relative z-10"
     ></textarea>
+
     {#if isGeocoding}
-      <span class="absolute right-4 top-3.5 text-[13px] text-dark/40">Mencari...</span>
+      <span class="absolute right-4 top-3.5 text-[13px] text-dark/40 animate-pulse z-20">Mencari...</span>
+    {/if}
+
+    {#if showSuggestions && suggestions.length > 0}
+      <ul class="absolute top-full mt-1 left-0 w-full bg-white border border-dark/10 rounded-2xl shadow-2xl overflow-hidden max-h-64 overflow-y-auto z-[10000]">
+        {#each suggestions as place}
+          <li>
+            <button
+              type="button"
+              onclick={() => selectSuggestion(place)}
+              class="w-full text-left px-5 py-3 hover:bg-light-darker border-b border-dark/5 transition flex items-start gap-3"
+            >
+              <MagnifyingGlass class="size-4.5 text-dark/40 mt-0.5 shrink-0" />
+              <span class="text-[14px] text-dark leading-snug">{place.display_name}</span>
+            </button>
+          </li>
+        {/each}
+      </ul>
     {/if}
   </div>
 
-  <div bind:this={mapContainer} class="w-full h-64 rounded-3xl overflow-hidden bg-light-darker"></div>
+  <!-- Leaflet Map -->
+  <div bind:this={mapContainer} class="w-full h-64 rounded-3xl overflow-hidden bg-light-darker relative z-0 isolate border border-dark/5"></div>
 
+  <!-- Coordinates Note -->
   <div class="flex items-center gap-2 text-dark/50">
     <MapPin weight="fill" class="size-4.5 shrink-0" />
     <p class="text-[13px]">
       {latitude && longitude
         ? `Koordinat: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
-        : "Geser pin atau ketik alamat untuk menandai lokasi"}
+        : "Pilih kelurahan atau geser pin untuk menandai lokasi"}
     </p>
   </div>
 </div>

@@ -23,7 +23,7 @@ interface VisitFormData {
   };
 }
 
-const data = await apiFetchPublic<VisitFormData>(`/api/visits/${token}/form`);
+const data = await apiFetchPublic<VisitFormData>(`/api/visits/form/${token}`);
 ---
 
 <!doctype html>
@@ -45,7 +45,6 @@ const data = await apiFetchPublic<VisitFormData>(`/api/visits/${token}/form`);
               <p class="text-[15px]">{data.elderly.address}</p>
             </div>
           </div>
-
           <VisitReportForm client:load token={token} medications={data.medications} />
         </>
       ) : (

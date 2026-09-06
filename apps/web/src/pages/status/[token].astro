@@ -1,7 +1,8 @@
 ---
 import "../../styles/global.css";
+import StatusPage from "../../components/svelte/status-page.svelte";
 import { apiFetchPublic } from "../../lib/api-fetch-public";
-import { Phone, Pill, MapPin, Ambulance, Stethoscope, UserCircle } from "phosphor-svelte";
+import { Phone, Pill } from "phosphor-svelte";
 
 export const prerender = false;
 
@@ -25,27 +26,17 @@ interface FamilyStatusData {
     healthFacilityPhone: string | null;
     ambulancePhone: string | null;
   };
-  medications: {
-    id: string;
-    conditionName: string;
-    medicationName: string;
-    dosage: string;
-    frequency: string;
-    reminderTime: string;
-    timingInstruction: string;
-    isActive: boolean;
-  }[];
+  medications: { id: string; medicationName: string; dosage: string; reminderTime: string }[];
   assignedVolunteer: { name: string; phone: string } | null;
 }
 
-const response = await apiFetchPublic<FamilyStatusData>(`/api/family/status/${token}`);
-const data = response?.success ? response.data : null;
+const data = await apiFetchPublic<FamilyStatusData>(`/api/family/status/${token}`);
 
 const statusConfig = {
-  green: { label: "Aman Terverifikasi", text: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20", dot: "bg-emerald-400" },
-  yellow: { label: "Butuh Perhatian", text: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", dot: "bg-amber-400" },
-  red: { label: "Eskalasi Darurat", text: "text-rose-500", bg: "bg-rose-500/10", border: "border-rose-500/20", dot: "bg-rose-500" },
-  grey: { label: "Belum Terjadwal", text: "text-[#a1a1aa]", bg: "bg-white/5", border: "border-white/10", dot: "bg-[#52525b]" },
+  green: { label: "Aman", color: "text-green-600", bg: "bg-green-500/10" },
+  yellow: { label: "Perhatian", color: "text-yellow-600", bg: "bg-yellow-500/10" },
+  red: { label: "Darurat", color: "text-red-600", bg: "bg-red-500/10" },
+  grey: { label: "Belum Terjadwal", color: "text-dark/40", bg: "bg-dark/5" },
 };
 ---
 
@@ -54,116 +45,91 @@ const statusConfig = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Status Pemantauan - Kabarin</title>
+    <title>Status Kabarin</title>
   </head>
-  <body class="bg-[#0a0a0a] text-[#f4f3ee] min-h-dvh antialiased selection:bg-[#f4f3ee] selection:text-[#0a0a0a]">
-    <div class="max-w-lg mx-auto px-6 py-12 flex flex-col gap-8">
-      
-      {#if data}
-        {@const status = statusConfig[data.elderly.currentStatus]}
-        
-        <header class="text-center space-y-1 mt-4">
-          <p class="text-[14px] font-medium text-[#a1a1aa]">Halo, {data.familyMember.name}</p>
-          <h1 class="text-[28px] font-semibold tracking-tight text-white">{data.elderly.name}</h1>
-          <p class="text-[#a1a1aa] text-[15px]">
-            Usia {data.elderly.age} th · RT {data.elderly.rt}/RW {data.elderly.rw}
-          </p>
-        </header>
-
-        <!-- Status Card -->
-        <section class={`rounded-[32px] p-8 flex flex-col items-center gap-3 border ${status.bg} ${status.border} backdrop-blur-xl relative overflow-hidden`}>
-          <div class="flex items-center justify-center w-12 h-12 rounded-full bg-black/40 border border-white/5 mb-2">
-            <span class={`w-4 h-4 rounded-full ${status.dot} shadow-[0_0_12px_currentColor]`}></span>
-          </div>
-          <p class={`text-[15px] font-medium ${status.text}`}>Status Hari Ini</p>
-          <p class={`text-[32px] font-bold tracking-tight ${status.text}`}>
-            {status.label}
-          </p>
-          <p class="text-[13px] text-[#a1a1aa] mt-2">
-            Diperbarui {new Date(data.elderly.updatedAt).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} WIB
-          </p>
-        </section>
-
-        <!-- Relawan Pendamping -->
-        <section class="rounded-[28px] bg-white/[0.03] border border-white/5 p-6 flex items-center gap-5">
-          <div class="flex items-center justify-center w-14 h-14 rounded-[20px] bg-white/5 border border-white/5 shrink-0">
-            <UserCircle weight="fill" class="size-7 text-[#a1a1aa]" />
-          </div>
+  <body class="bg-light text-dark min-h-dvh">
+    <div class="max-w-lg mx-auto px-6 py-10 flex flex-col gap-8">
+      {data ? (
+        <>
           <div>
-            <p class="text-[14px] font-medium text-[#a1a1aa] mb-1">Relawan Pendamping</p>
-            {#if data.assignedVolunteer}
-              <p class="text-[17px] font-semibold text-white">{data.assignedVolunteer.name}</p>
-              <p class="text-[14px] text-[#a1a1aa] mt-0.5">{data.assignedVolunteer.phone}</p>
-            {:else}
-              <p class="text-[15px] italic text-[#a1a1aa]">Belum ditugaskan</p>
-            {/if}
-          </div>
-        </section>
-
-        <!-- Jadwal Obat -->
-        {#if data.medications.length > 0}
-          <section class="flex flex-col gap-4 mt-2">
-            <div class="flex items-center gap-2.5 px-2">
-              <Pill weight="fill" class="size-5 text-[#f4f3ee]" />
-              <h2 class="text-[18px] font-semibold text-white">Jadwal Obat Harian</h2>
-            </div>
-            
-            <div class="flex flex-col gap-3">
-              {#each data.medications as med}
-                <div class="rounded-[24px] bg-white/[0.03] border border-white/5 p-5 flex items-center justify-between">
-                  <div>
-                    <p class="text-[16px] font-medium text-white">{med.medicationName}</p>
-                    <p class="text-[13px] text-[#a1a1aa] mt-1">{med.dosage} · {med.timingInstruction}</p>
-                  </div>
-                  <span class="rounded-full bg-white/10 px-3 py-1 text-[14px] font-medium text-white">
-                    {med.reminderTime}
-                  </span>
-                </div>
-              {/each}
-            </div>
-          </section>
-        {/if}
-
-        <!-- Kontak Darurat Faskes -->
-        {#if data.community.healthFacilityPhone || data.community.ambulancePhone}
-          <section class="rounded-[28px] bg-rose-500/5 border border-rose-500/10 p-6 flex flex-col gap-4 mt-2">
-            <div class="flex items-center gap-2.5">
-              <Ambulance weight="fill" class="size-5 text-rose-500" />
-              <p class="text-[16px] font-semibold text-rose-500">Kontak Darurat Wilayah</p>
-            </div>
-            
-            <div class="space-y-3">
-              {#if data.community.healthFacilityName}
-                <div class="flex items-center justify-between border-b border-rose-500/10 pb-3">
-                  <span class="text-[14px] text-[#a1a1aa]">{data.community.healthFacilityName}</span>
-                  <span class="text-[15px] font-medium text-white">{data.community.healthFacilityPhone}</span>
-                </div>
-              {/if}
-              {#if data.community.ambulancePhone}
-                <div class="flex items-center justify-between">
-                  <span class="text-[14px] text-[#a1a1aa]">Ambulans Siaga</span>
-                  <span class="text-[15px] font-medium text-white">{data.community.ambulancePhone}</span>
-                </div>
-              {/if}
-            </div>
-          </section>
-        {/if}
-
-      {#else}
-        <!-- Error State -->
-        <div class="rounded-[32px] bg-rose-500/10 border border-rose-500/20 p-10 text-center mt-12 flex flex-col items-center gap-4">
-          <div class="w-16 h-16 rounded-full bg-rose-500/20 flex items-center justify-center">
-            <span class="text-2xl">⚠️</span>
-          </div>
-          <div>
-            <p class="text-[20px] font-semibold text-rose-500">Tautan Tidak Valid</p>
-            <p class="text-[15px] text-[#a1a1aa] mt-2 leading-relaxed">
-              Tautan pemantauan ini mungkin sudah kedaluwarsa atau akses telah dicabut. Silakan hubungi Kader RT setempat.
+            <p class="text-[14px] font-medium text-brand">Halo, {data.familyMember.name}</p>
+            <h1 class="text-[28px] font-semibold tracking-[-0.03em] mt-1">{data.elderly.name}</h1>
+            <p class="text-dark/50 text-[15px] mt-1">
+              {data.elderly.age} tahun · RT {data.elderly.rt}/RW {data.elderly.rw}
             </p>
           </div>
-        </div>
-      {/if}
 
+          <div class={`rounded-[28px] p-7 flex flex-col items-center gap-2 ${statusConfig[data.elderly.currentStatus].bg}`}>
+            <p class={`text-[15px] font-medium ${statusConfig[data.elderly.currentStatus].color}`}>Status Hari Ini</p>
+            <p class={`text-[32px] font-bold ${statusConfig[data.elderly.currentStatus].color}`}>
+              {statusConfig[data.elderly.currentStatus].label}
+            </p>
+            <p class="text-[13px] text-dark/40">
+              Diperbarui {new Date(data.elderly.updatedAt).toLocaleString("id-ID", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          </div>
+
+          <StatusPage
+            client:load
+            token={token}
+            elderlyName={data.elderly.name}
+            age={data.elderly.age}
+            currentStatus={data.elderly.currentStatus}
+            rt={data.elderly.rt}
+            rw={data.elderly.rw}
+            updatedAt={data.elderly.updatedAt}
+            volunteerName={data.assignedVolunteer?.name}
+            volunteerPhone={data.assignedVolunteer?.phone}
+          />
+
+          {data.assignedVolunteer && (
+            <section class="rounded-3xl bg-light-darker px-6 py-5 flex items-center gap-4">
+              <div class="flex items-center justify-center size-12 rounded-full bg-brand/10 shrink-0">
+                <Phone weight="fill" class="size-5 text-brand" />
+              </div>
+              <div>
+                <p class="text-[14px] text-dark/50">Relawan Pendamping</p>
+                <p class="text-[16px] font-semibold text-dark">{data.assignedVolunteer.name}</p>
+                <p class="text-[14px] text-dark/60">{data.assignedVolunteer.phone}</p>
+              </div>
+            </section>
+          )}
+
+          {data.medications.length > 0 && (
+            <section class="flex flex-col gap-3">
+              <div class="flex items-center gap-2.5">
+                <Pill weight="fill" class="size-5 text-brand" />
+                <h2 class="text-[18px] font-semibold text-dark">Jadwal Obat</h2>
+              </div>
+              {data.medications.map((med) => (
+                <div class="rounded-2xl bg-light-darker px-5 py-3.5 flex items-center justify-between">
+                  <p class="text-[15px] font-medium text-dark">{med.medicationName}</p>
+                  <span class="text-[14px] text-brand font-medium">{med.reminderTime}</span>
+                </div>
+              ))}
+            </section>
+          )}
+
+          {(data.community.healthFacilityPhone || data.community.ambulancePhone) && (
+            <section class="rounded-3xl bg-red-500/5 px-6 py-5 flex flex-col gap-2">
+              <p class="text-[14px] font-semibold text-dark/60">Kontak Darurat</p>
+              {data.community.healthFacilityName && (
+                <p class="text-[15px] text-dark">{data.community.healthFacilityName}: {data.community.healthFacilityPhone}</p>
+              )}
+              {data.community.ambulancePhone && (
+                <p class="text-[15px] text-dark">Ambulans: {data.community.ambulancePhone}</p>
+              )}
+            </section>
+          )}
+        </>
+      ) : (
+        <div class="rounded-[28px] bg-red-500/10 p-7 text-center">
+          <p class="text-[18px] font-semibold text-red-600">Link Tidak Valid</p>
+          <p class="text-[15px] text-dark/60 mt-2">
+            Link status ini sudah tidak tersedia. Hubungi Kader RT untuk bantuan.
+          </p>
+        </div>
+      )}
     </div>
   </body>
 </html>

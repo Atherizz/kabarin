@@ -1,6 +1,6 @@
 <script lang="ts">
   import { apiPostPublic } from "../../lib/api-post-public";
-  import { CheckCircle, Warning, SmileyMeh, Camera } from "phosphor-svelte";
+  import { CheckCircle, Warning, SmileyMeh } from "phosphor-svelte";
 
   interface Medication {
     id: string;

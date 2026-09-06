@@ -8,10 +8,10 @@ interface Props {
   visitType: "routine" | "escalation";
   status: "pending" | "completed";
   createdAt: string;
-  accessToken: string;
+  formToken: string;
 }
 
-const { elderlyName, visitType, status, createdAt, accessToken } = Astro.props;
+const { elderlyName, visitType, status, createdAt, formToken } = Astro.props;
 
 const formattedDate = new Date(createdAt).toLocaleString("id-ID", {
   day: "numeric",
@@ -20,7 +20,7 @@ const formattedDate = new Date(createdAt).toLocaleString("id-ID", {
   minute: "2-digit",
 });
 
-const href = status === "pending" ? `/lapor/${accessToken}` : "#";
+const href = status === "pending" ? `/lapor/${formToken}` : "#";
 ---
 
 <a

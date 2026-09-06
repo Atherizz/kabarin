@@ -10,7 +10,7 @@ interface VolunteerVisit {
   visitType: "routine" | "escalation";
   status: "pending" | "completed";
   createdAt: string;
-  accessToken: string;
+  formToken: string;
 }
 
 interface AssignmentsResponse {
@@ -68,7 +68,7 @@ const statusFilters = [
             visitType={v.visitType}
             status={v.status}
             createdAt={v.createdAt}
-            accessToken={v.accessToken}
+            formToken={v.formToken}
           />
         ))
       ) : (
