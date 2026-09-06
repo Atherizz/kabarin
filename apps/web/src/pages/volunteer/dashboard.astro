@@ -1,0 +1,82 @@
+---
+import Layout from "../../layouts/layout.astro";
+import AssignedElderlyCard from "../../components/astro/volunteer/assigned-elderly-card.astro";
+import { apiFetch } from "../../lib/api-fetch";
+import { ClipboardText } from "phosphor-svelte";
+
+interface VolunteerAssignmentsResponse {
+  volunteer: {
+    name: string;
+    assignedElderlyCount: number;
+    maxCapacity: number;
+  };
+  assignments: {
+    id: string;
+    isPrimary: boolean;
+    elderly: {
+      id: string;
+      name: string;
+      age: number;
+      address: string;
+      currentStatus: "green" | "yellow" | "red" | "grey";
+    };
+  }[];
+  pendingVisitsCount: number;
+}
+
+const data = await apiFetch<VolunteerAssignmentsResponse>(
+  Astro.request,
+  "/api/volunteers/me/assignments"
+);
+---
+
+<Layout title="Dashboard Relawan" description="Lansia binaan dan tugas kunjungan Anda.">
+  <div class="flex flex-col gap-8 max-w-2xl">
+    <div>
+      <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">
+        Halo, {data?.volunteer.name ?? "Relawan"}
+      </h1>
+      <p class="text-dark/50 text-[16px] mt-1">
+        {data?.volunteer.assignedElderlyCount ?? 0} dari {data?.volunteer.maxCapacity ?? 5} lansia binaan
+      </p>
+    </div>
+
+    {data && data.pendingVisitsCount > 0 && (
+      <a
+        href="/volunteer/visits"
+        class="flex items-center gap-4 rounded-[28px] bg-accent/10 px-6 py-5 hover:bg-accent/15 transition-colors"
+      >
+        <ClipboardText weight="fill" class="size-6 text-accent shrink-0" />
+        <div>
+          <p class="font-semibold text-[17px] text-dark">
+            {data.pendingVisitsCount} Tugas Kunjungan Menunggu
+          </p>
+          <p class="text-[14px] text-dark/50">Ketuk untuk melihat dan melapor</p>
+        </div>
+      </a>
+    )}
+
+    <section class="flex flex-col gap-4">
+      <h2 class="text-[20px] font-semibold text-dark">Lansia Binaan</h2>
+
+      {data && data.assignments.length > 0 ? (
+        <div class="flex flex-col gap-3.5">
+          {data.assignments.map((a) => (
+            <AssignedElderlyCard
+              id={a.elderly.id}
+              name={a.elderly.name}
+              age={a.elderly.age}
+              address={a.elderly.address}
+              currentStatus={a.elderly.currentStatus}
+              isPrimary={a.isPrimary}
+            />
+          ))}
+        </div>
+      ) : (
+        <p class="text-center text-dark/40 text-[16px] py-14">
+          Belum ada lansia yang ditugaskan kepada Anda.
+        </p>
+      )}
+    </section>
+  </div>
+</Layout>

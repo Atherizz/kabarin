@@ -1,0 +1,40 @@
+---
+import { MapPin } from "phosphor-svelte";
+
+interface Props {
+  id: string;
+  name: string;
+  age: number;
+  address: string;
+  currentStatus: "green" | "yellow" | "red" | "grey";
+  isPrimary: boolean;
+}
+
+const { id, name, age, address, currentStatus, isPrimary } = Astro.props;
+
+const statusDot = {
+  green: "bg-green-500",
+  yellow: "bg-yellow-500",
+  red: "bg-red-500",
+  grey: "bg-dark/25",
+};
+---
+
+<a
+  href={`/volunteer/elderly/${id}`}
+  class="flex items-center gap-5 rounded-[28px] bg-light-darker px-6 py-5 transition-transform duration-200 hover:-translate-y-0.5"
+>
+  <span class={`size-3.5 shrink-0 rounded-full ${statusDot[currentStatus]}`}></span>
+
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center gap-2.5">
+      <p class="font-semibold text-[18px] truncate">{name}</p>
+      <span class="text-[14px] text-dark/40 shrink-0">{age} th</span>
+      {isPrimary && <span class="text-[12px] font-medium text-brand shrink-0">Utama</span>}
+    </div>
+    <div class="flex items-center gap-2 mt-1 text-dark/50">
+      <MapPin weight="fill" class="size-4.5 shrink-0" />
+      <p class="text-[15px] truncate">{address}</p>
+    </div>
+  </div>
+</a>
