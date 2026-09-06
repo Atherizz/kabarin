@@ -1,15 +1,18 @@
 import { z, ElderlySchema } from "@kabarin/types";
-import { eq, and, elderly } from "@kabarin/db";
+import { eq, elderly } from "@kabarin/db";
 import type { Context } from "hono";
 import { ApiRoute } from "../../lib/api-route";
 import type { AppEnv } from "../../types/app-env";
-import { assertRole, assertCommunity } from "../../lib/auth-guard";
+import { assertRole } from "../../lib/auth-guard";
+import { assertElderlyAccess } from "../../lib/policies/elderly.policy";
 
 export class GetElderlyEndpoint extends ApiRoute {
   schema = {
     tags: ["Elderly Management"],
     summary: "Get single elderly profile",
-    description: "Returns the full profile of a single elderly individual with active medications and family contacts. Scoped to the cadre's RT.",
+    description:
+      "Returns the full profile of a single elderly individual with active medications, family contacts, and assigned volunteers. " +
+      "Accessible by RT Cadre (same RT), registered Family (linked via elderlyFamily), or Admin.",
     request: {
       params: z.object({
         id: z.string(),
@@ -28,7 +31,7 @@ export class GetElderlyEndpoint extends ApiRoute {
         },
       },
       "404": {
-        description: "Elderly not found in this RT",
+        description: "Elderly not found or access denied",
         content: {
           "application/json": {
             schema: z.object({ success: z.literal(false), error: z.string() }),
@@ -39,14 +42,14 @@ export class GetElderlyEndpoint extends ApiRoute {
   };
 
   async handle(c: Context<AppEnv>) {
-    const session = assertRole(c, "cadre", "admin");
-    const communityUnitId = assertCommunity(session);
+    const session = assertRole(c, "cadre", "family", "admin");
     const db = c.get("db");
-
     const { id } = c.req.param();
 
+    await assertElderlyAccess(db, session, id);
+
     const record = await db.query.elderly.findFirst({
-      where: and(eq(elderly.id, id), eq(elderly.communityUnitId, communityUnitId)),
+      where: eq(elderly.id, id),
       with: {
         familyMembers: true,
         medications: true,
