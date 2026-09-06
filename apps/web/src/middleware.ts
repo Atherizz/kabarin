@@ -11,8 +11,15 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   const apiBase = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
 
+  const cookieHeader = context.request.headers.get("cookie") ?? "";
+  const tokenMatch = cookieHeader.match(/better-auth\.session_token=([^;]+)/);
+  const token = tokenMatch ? tokenMatch[1] : null;
+
   const res = await fetch(`${apiBase}/api/auth/get-session`, {
-    headers: { cookie: context.request.headers.get("cookie") ?? "" },
+    headers: {
+      cookie: cookieHeader,
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
+    },
   });
   
   const data = res.ok ? await res.json() : null;

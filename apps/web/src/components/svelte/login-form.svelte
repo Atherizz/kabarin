@@ -25,6 +25,12 @@
         errorMessage = data.message ?? "Invalid email or password.";
         return;
       }
+
+      if (data?.token) {
+        const isSecure = window.location.protocol === "https:";
+        document.cookie = `better-auth.session_token=${data.token}; path=/; ${isSecure ? "Secure; SameSite=Lax;" : "SameSite=Lax;"} max-age=2592000`;
+      }
+
       window.location.href = "/";
     } catch {
       errorMessage = "Something went wrong. Please try again.";

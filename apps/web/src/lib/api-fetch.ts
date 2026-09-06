@@ -5,8 +5,15 @@ export async function apiFetch<T>(
   const apiBase = import.meta.env.PUBLIC_API_URL ?? "http://localhost:8787";
 
   try {
+they can do catch cookie service    const cookie = request.headers.get("cookie") ?? "";
+    const tokenMatch = cookie.match(/better-auth\.session_token=([^;]+)/);
+    const token = tokenMatch ? tokenMatch[1] : null;
+
     const res = await fetch(`${apiBase}${path}`, {
-      headers: { cookie: request.headers.get("cookie") ?? "" },
+      headers: {
+        cookie,
+        ...(token ? { authorization: `Bearer ${token}` } : {}),
+      },
     });
 
     if (!res.ok) return null;
