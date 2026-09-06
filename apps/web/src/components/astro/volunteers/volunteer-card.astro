@@ -1,0 +1,54 @@
+---
+import { Phone, MapPin } from "phosphor-svelte";
+
+interface Props {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  assignedElderlyCount: number;
+  maxCapacity: number;
+  isActive: boolean;
+}
+
+const { id, name, phone, address, assignedElderlyCount, maxCapacity, isActive } = Astro.props;
+
+const isFull = assignedElderlyCount >= maxCapacity;
+const isOverloaded = assignedElderlyCount > 5;
+---
+
+<a
+  href={`/volunteers/${id}`}
+  class="flex items-center gap-5 rounded-[28px] bg-light-darker px-6 py-5 transition-transform duration-200 hover:-translate-y-0.5"
+>
+  <span class={`size-3.5 shrink-0 rounded-full ${isActive ? "bg-green-500" : "bg-dark/25"}`}></span>
+
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center gap-2.5">
+      <p class="font-semibold text-[18px] truncate">{name}</p>
+      {!isActive && <span class="text-[13px] font-medium text-dark/40 shrink-0">Non-aktif</span>}
+    </div>
+    <div class="flex items-center gap-4 mt-1 text-dark/50">
+      <div class="flex items-center gap-1.5">
+        <Phone weight="fill" class="size-4" />
+        <p class="text-[14px]">{phone}</p>
+      </div>
+      <div class="flex items-center gap-1.5 min-w-0">
+        <MapPin weight="fill" class="size-4 shrink-0" />
+        <p class="text-[14px] truncate">{address}</p>
+      </div>
+    </div>
+  </div>
+
+  <span
+    class={`shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold ${
+      isOverloaded
+        ? "text-red-600 bg-red-500/10"
+        : isFull
+        ? "text-yellow-600 bg-yellow-500/10"
+        : "text-brand bg-brand/10"
+    }`}
+  >
+    {assignedElderlyCount}/{maxCapacity} binaan
+  </span>
+</a>

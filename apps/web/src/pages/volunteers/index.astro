@@ -1,0 +1,49 @@
+---
+import Layout from "../../layouts/layout.astro";
+import VolunteerCard from "../../components/astro/volunteers/volunteer-card.astro";
+import { apiFetch } from "../../lib/api-fetch";
+import type { Volunteer } from "@kabarin/types";
+import { Plus, ArrowLeft } from "phosphor-svelte";
+
+const volunteerList = await apiFetch<Volunteer[]>(Astro.request, "/api/volunteers");
+---
+
+<Layout title="Direktori Relawan" description="Daftar relawan tetangga RT.">
+  <div class="flex flex-col gap-8 max-w-3xl">
+    <a href="/dashboard" class="self-end flex items-center gap-2 text-brand text-[15px] font-medium">
+      <ArrowLeft weight="bold" class="size-5" />
+      <span>Kembali ke dasbor</span>
+    </a>
+
+    <div class="flex items-center justify-between">
+      <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Direktori Relawan</h1>
+      <a
+        href="/volunteers/new"
+        class="flex items-center gap-2 rounded-full bg-brand text-white px-5 py-3 text-[15px] font-medium hover:bg-brand/90 transition-colors"
+      >
+        <Plus weight="bold" class="size-5" />
+        Tambah Relawan
+      </a>
+    </div>
+
+    <div class="flex flex-col gap-3.5">
+      {volunteerList && volunteerList.length > 0 ? (
+        volunteerList.map((v) => (
+          <VolunteerCard
+            id={v.id}
+            name={v.name}
+            phone={v.phone}
+            address={v.address}
+            assignedElderlyCount={v.assignedElderlyCount}
+            maxCapacity={v.maxCapacity}
+            isActive={v.isActive}
+          />
+        ))
+      ) : (
+        <p class="text-center text-dark/40 text-[16px] py-14">
+          Belum ada relawan yang terdaftar.
+        </p>
+      )}
+    </div>
+  </div>
+</Layout>
