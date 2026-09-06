@@ -11,7 +11,7 @@ dist
 .prod.vars
 !.prod.vars.example
 .wrangler
-bun.lock
+
 
 docs
 
