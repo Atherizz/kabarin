@@ -20,9 +20,13 @@
     "@kabarin/types": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.2.2",
+    "leaflet": "^1.9.4",
     "svelte": "^5.56.9",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "wrangler": "^4.127.1"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.22"
   }
 }

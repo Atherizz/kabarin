@@ -1,6 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 
-const PUBLIC_ROUTES = ["/login", "/register", "/lapor", "/api"];
+const PUBLIC_ROUTES = ["/login", "/register", "/register/family", "/lapor", "/"];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
@@ -26,9 +26,9 @@ export const onRequest = defineMiddleware(async (context, next) => {
       ...(token ? { authorization: `Bearer ${token}` } : {}),
     },
   });
-  
+
   const data = res.ok ? await res.json() : null;
-  
+
   if (!data?.session) {
     return context.redirect("/login");
   }

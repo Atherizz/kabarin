@@ -13,14 +13,11 @@ export async function apiPost<T>(path: string, body: unknown): Promise<{ ok: boo
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-
     const json = await res.json();
-
     if (!res.ok || json.success === false) {
-      return { ok: false, error: json.error ?? "Terjadi kesalahan." };
+      return { ok: false, error: json.error ?? json.message ?? "Terjadi kesalahan." };
     }
-
-    return { ok: true, data: json.data };
+    return { ok: true, data: json.data ?? json };
   } catch {
     return { ok: false, error: "Koneksi ke server gagal." };
   }
