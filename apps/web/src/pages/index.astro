@@ -14,12 +14,15 @@ const { user } = Astro.locals;
 
 if (user) {
   switch (user.role) {
+    case "admin":
     case "cadre":
       return Astro.redirect("/dashboard");
     case "volunteer":
       return Astro.redirect("/volunteer/dashboard");
     case "family":
       return Astro.redirect("/family/dashboard");
+    default:
+      return Astro.redirect("/dashboard");
   }
 }
 ---

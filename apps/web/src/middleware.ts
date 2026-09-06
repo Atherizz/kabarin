@@ -1,7 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 
 const GUEST_ONLY_ROUTES = ["/login", "/register", "/register/family"];
-const PUBLIC_ROUTES = ["/lapor"];
+const PUBLIC_ROUTES = ["/lapor", "/"];
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
@@ -13,7 +13,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Extract session token from cookies
   const cookieHeader = context.request.headers.get("cookie") ?? "";
   const tokenMatch = cookieHeader.match(/(?:__Secure-)?better-auth\.session_token=([^;]+)/);
   const token = tokenMatch ? tokenMatch[1] : null;
@@ -21,12 +20,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   let session = null;
   let user = null;
 
-  // Only check session with backend if a cookie exists
   if (token) {
     const apiBase = import.meta.env.BETTER_AUTH_URL ?? "https://kabarin-api.atherizz.dev";
 
     let forwardedCookie = cookieHeader;
-    if (token && !forwardedCookie.includes("__Secure-better-auth.session_token=")) {
+    if (!forwardedCookie.includes("__Secure-better-auth.session_token=")) {
       forwardedCookie = `${forwardedCookie ? forwardedCookie + "; " : ""}__Secure-better-auth.session_token=${token}`;
     }
 
@@ -48,23 +46,20 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // if authenticated and attempting to visit guest routes, redirect
+  context.locals.session = session;
+  context.locals.user = user;
+
   if (session && isGuestOnly) {
     return context.redirect("/");
   }
 
-  // allow public routes
   if (isGuestOnly || isPublic) {
     return next();
   }
 
-  // redirect unauthenticated users to login
   if (!session) {
     return context.redirect("/login");
   }
-
-  context.locals.session = session;
-  context.locals.user = user;
 
   return next();
 });

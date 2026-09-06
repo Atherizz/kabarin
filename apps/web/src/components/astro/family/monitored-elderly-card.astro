@@ -1,0 +1,110 @@
+---
+import { Pill, MapPin, Clock } from "phosphor-svelte";
+import FamilySosButton from "../../svelte/family-sos-button.svelte";
+
+interface Props {
+  id: string;
+  name: string;
+  age: number;
+  address: string;
+  communityName: string;
+  currentStatus: "green" | "yellow" | "red" | "grey";
+  verificationStatus: "verified" | "pending_verification" | "rejected";
+  relationship: string;
+  activeMedicationsCount: number;
+  accessToken: string;
+  updatedAt: string;
+}
+
+const {
+  id,
+  name,
+  age,
+  address,
+  communityName,
+  currentStatus,
+  verificationStatus,
+  relationship,
+  activeMedicationsCount,
+  accessToken,
+  updatedAt,
+} = Astro.props;
+
+const statusConfig: Record<
+  Props["currentStatus"],
+  { label: string; dot: string; bg: string; text: string }
+> = {
+  green: { label: "Aman", dot: "bg-emerald-500", bg: "bg-emerald-500/10", text: "text-emerald-600" },
+  yellow: { label: "Perlu Perhatian", dot: "bg-amber-500", bg: "bg-amber-500/10", text: "text-amber-600" },
+  red: { label: "Darurat", dot: "bg-red-500", bg: "bg-red-500/10", text: "text-red-600" },
+  grey: { label: "Belum Terpantau", dot: "bg-dark/30", bg: "bg-dark/5", text: "text-dark/50" },
+};
+
+const status = statusConfig[currentStatus];
+
+const relativeTime = (iso: string) => {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffHours < 1) return "Baru saja";
+  if (diffHours < 24) return `${diffHours} jam lalu`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} hari lalu`;
+};
+---
+
+<a
+  href={`/family/elderly/${id}`}
+  class="flex flex-col gap-4 rounded-[28px] bg-white border border-dark/5 px-6 py-5 hover:border-dark/10 transition-colors"
+>
+  <div class="flex items-start justify-between gap-3">
+    <div>
+      <p class="font-semibold text-[17px] text-dark">
+        {name} <span class="text-dark/40 font-normal">· {age} th</span>
+      </p>
+      <p class="text-[14px] text-dark/50 mt-0.5">{relationship} · {communityName}</p>
+    </div>
+    <span
+      class={`flex items-center gap-1.5 rounded-full ${status.bg} px-3 py-1.5 shrink-0`}
+    >
+      <span class={`size-1.5 rounded-full ${status.dot}`}></span>
+      <span class={`text-[12px] font-semibold ${status.text}`}>{status.label}</span>
+    </span>
+  </div>
+
+  {verificationStatus === "pending_verification" && (
+    <p class="text-[13px] text-amber-600 bg-amber-500/10 rounded-xl px-3 py-2">
+      Menunggu verifikasi Kader RT. Sapaan bot belum aktif.
+    </p>
+  )}
+  {verificationStatus === "rejected" && (
+    <p class="text-[13px] text-red-600 bg-red-500/10 rounded-xl px-3 py-2">
+      Pendaftaran ditolak Kader RT. Hubungi RT setempat untuk info lebih lanjut.
+    </p>
+  )}
+
+  <div class="flex items-center gap-4 text-[13px] text-dark/50">
+    <span class="flex items-center gap-1.5">
+      <MapPin class="size-4" />
+      {address}
+    </span>
+    <span class="flex items-center gap-1.5">
+      <Pill class="size-4" />
+      {activeMedicationsCount} obat aktif
+    </span>
+    <span class="flex items-center gap-1.5">
+      <Clock class="size-4" />
+      {relativeTime(updatedAt)}
+    </span>
+  </div>
+
+  {verificationStatus === "verified" && (
+    <div class="pt-1" onclick="event.stopPropagation()">
+      <FamilySosButton
+        client:load
+        elderlyName={name}
+        accessToken={accessToken}
+        currentStatus={currentStatus}
+      />
+    </div>
+  )}
+</a>

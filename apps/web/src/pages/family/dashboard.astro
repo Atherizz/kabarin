@@ -1,0 +1,125 @@
+---
+import Layout from "../../layouts/layout.astro";
+import MonitoredElderlyCard from "../../components/astro/family/monitored-elderly-card.astro";
+import { apiFetch } from "../../lib/api-fetch";
+import { getServerSession } from "../../lib/get-session";
+import { UsersThree, PlusCircle } from "phosphor-svelte";
+
+interface MonitoredElderly {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  currentStatus: "green" | "yellow" | "red" | "grey";
+  verificationStatus: "verified" | "pending_verification" | "rejected";
+  address: string;
+  rt: string;
+  rw: string;
+  communityUnitId: string;
+  communityName: string;
+  relationship: string;
+  isPrimaryContact: boolean;
+  accessToken: string;
+  activeMedicationsCount: number;
+  preferredCheckinTime: string | null;
+  updatedAt: string;
+}
+
+const session = await getServerSession(Astro.request);
+const familyName = session?.user?.name ?? "Keluarga";
+
+const elderlyList =
+  (await apiFetch<MonitoredElderly[]>(Astro.request, "/api/family/me/elderly")) ?? [];
+
+const statusPriority: Record<MonitoredElderly["currentStatus"], number> = {
+  red: 0,
+  yellow: 1,
+  grey: 2,
+  green: 3,
+};
+const sortedElderly = [...elderlyList].sort(
+  (a, b) => statusPriority[a.currentStatus] - statusPriority[b.currentStatus]
+);
+
+const needsAttentionCount = elderlyList.filter(
+  (e) => e.currentStatus === "red" || e.currentStatus === "yellow"
+).length;
+---
+
+<Layout
+  title="Dashboard Keluarga"
+  description="Pantau kondisi orang tua dan kerabat Anda."
+  role="family"
+>
+  <div class="flex flex-col gap-8 max-w-2xl">
+    <div>
+      <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">
+        Halo, {familyName}
+      </h1>
+      <p class="text-dark/50 text-[16px] mt-1">
+        Memantau {elderlyList.length} {elderlyList.length === 1 ? "kerabat" : "kerabat"}
+      </p>
+    </div>
+
+    {needsAttentionCount > 0 && (
+      <div
+        class="flex items-center gap-4 rounded-[28px] bg-red-500/10 px-6 py-5"
+      >
+        <UsersThree weight="fill" class="size-6 text-red-500 shrink-0" />
+        <div>
+          <p class="font-semibold text-[17px] text-dark">
+            {needsAttentionCount} Kerabat Butuh Perhatian
+          </p>
+          <p class="text-[14px] text-dark/50">
+            Lihat status di bawah atau kirim kabar sekarang
+          </p>
+        </div>
+      </div>
+    )}
+
+    <section class="flex flex-col gap-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-[20px] font-semibold text-dark">Orang Tua & Kerabat</h2>
+        <a
+          href="/family/onboard"
+          class="flex items-center gap-1.5 text-[14px] font-medium text-accent hover:text-accent/80 transition-colors"
+        >
+          <PlusCircle weight="fill" class="size-4" />
+          Daftarkan Baru
+        </a>
+      </div>
+
+      {sortedElderly.length > 0 ? (
+        <div class="flex flex-col gap-3.5">
+          {sortedElderly.map((e) => (
+            <MonitoredElderlyCard
+              id={e.id}
+              name={e.name}
+              age={e.age}
+              address={e.address}
+              communityName={e.communityName}
+              currentStatus={e.currentStatus}
+              verificationStatus={e.verificationStatus}
+              relationship={e.relationship}
+              activeMedicationsCount={e.activeMedicationsCount}
+              accessToken={e.accessToken}
+              updatedAt={e.updatedAt}
+            />
+          ))}
+        </div>
+      ) : (
+        <div class="flex flex-col items-center gap-4 py-14">
+          <p class="text-center text-dark/40 text-[16px]">
+            Anda belum mendaftarkan orang tua atau kerabat.
+          </p>
+          <a
+            href="/family/onboard"
+            class="rounded-full bg-accent px-6 py-3 text-[15px] font-semibold text-white hover:bg-accent/90 transition-colors"
+          >
+            Daftarkan Sekarang
+          </a>
+        </div>
+      )}
+    </section>
+  </div>
+</Layout>

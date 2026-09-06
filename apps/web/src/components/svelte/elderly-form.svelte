@@ -213,9 +213,15 @@
     </select>
 
     <div>
-      <label class="text-[14px] text-dark/50 mb-1.5 block">Jam Sapaan Harian</label>
-      <input bind:value={preferredCheckinTime} type="time"
-        class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40" />
+      <label for="preferred-checkin-time" class="text-[14px] text-dark/50 mb-1.5 block">
+        Jam Sapaan Harian
+      </label>
+      <input
+        id="preferred-checkin-time"
+        bind:value={preferredCheckinTime}
+        type="time"
+        class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40"
+      />
     </div>
   </section>
 
