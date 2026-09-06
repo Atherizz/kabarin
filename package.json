@@ -11,6 +11,7 @@
     "check": "turbo check",
     "dev:api": "bun run --cwd apps/api dev",
     "dev:bot": "bun run --cwd apps/bot dev",
+    "start:bot": "bun run --cwd apps/bot start",
     "deploy:api": "bun run --cwd apps/api deploy",
     "db:generate": "bun run --cwd packages/db generate",
     "db:migrate": "bun run --cwd packages/db migrate",

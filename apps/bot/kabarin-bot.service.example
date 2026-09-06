@@ -1,0 +1,31 @@
+[Unit]
+Description=Kabarin WhatsApp Baileys Bot & Webhook Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+Group=ubuntu
+WorkingDirectory=/home/ubuntu/kabarin
+
+# Environment file & timezone WIB
+EnvironmentFile=/home/ubuntu/kabarin/.env
+Environment=NODE_ENV=production
+Environment=TZ=Asia/Jakarta
+
+# Bun binary location
+ExecStart=/home/ubuntu/.bun/bin/bun run start:bot
+
+# Auto restart if crash happen
+Restart=always
+RestartSec=5s
+
+# Graceful shutdown & file descriptors
+KillSignal=SIGINT
+LimitNOFILE=65536
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
