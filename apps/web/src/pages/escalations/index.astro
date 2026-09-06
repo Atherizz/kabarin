@@ -1,0 +1,66 @@
+---
+import Layout from "../../layouts/layout.astro";
+import EscalationCard from "../../components/astro/escalations/escalation-card.astro";
+import { apiFetch } from "../../lib/api-fetch";
+import type { EscalationLog } from "@kabarin/types";
+import { ArrowLeft } from "phosphor-svelte";
+
+const currentStatus = Astro.url.searchParams.get("status") ?? "open";
+
+const escalations = await apiFetch<EscalationLog[]>(
+  Astro.request,
+  `/api/escalations?status=${currentStatus}`
+);
+
+const statusFilters = [
+  { value: "open", label: "Aktif" },
+  { value: "resolved", label: "Selesai" },
+];
+---
+
+<Layout title="Log Eskalasi" description="Riwayat insiden darurat RT.">
+  <div class="flex flex-col gap-8 max-w-3xl">
+    <a href="/dashboard" class="self-end flex items-center gap-2 text-brand text-[15px] font-medium">
+      <ArrowLeft weight="bold" class="size-5" />
+      <span>Kembali ke dasbor</span>
+    </a>
+
+    <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Log Eskalasi</h1>
+
+    <div class="flex gap-2.5">
+      {statusFilters.map((filter) => (
+        <a
+          href={`/escalations?status=${filter.value}`}
+          class={`rounded-full px-5 py-2.5 text-[14px] font-medium transition-colors ${
+            currentStatus === filter.value
+              ? "bg-brand text-white"
+              : "bg-light-darker text-dark/60 hover:bg-light-darker/70"
+          }`}
+        >
+          {filter.label}
+        </a>
+      ))}
+    </div>
+
+    <div class="flex flex-col gap-3.5">
+      {escalations && escalations.length > 0 ? (
+        escalations.map((esc) => (
+          <EscalationCard
+            id={esc.id}
+            elderlyId={esc.elderlyId}
+            elderlyName={esc.elderlyName}
+            tier={esc.tier}
+            status={esc.status}
+            reason={esc.reason}
+            createdAt={esc.createdAt}
+            resolvedAt={esc.resolvedAt}
+          />
+        ))
+      ) : (
+        <p class="text-center text-dark/40 text-[16px] py-14">
+          Tidak ada eskalasi {currentStatus === "open" ? "aktif" : "yang selesai"} saat ini.
+        </p>
+      )}
+    </div>
+  </div>
+</Layout>
