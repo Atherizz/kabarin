@@ -1,6 +1,7 @@
 <script lang="ts">
   import { apiPost } from "../../lib/api-post";
-  import { Plus, Trash, MapPin, CircleNotch } from "phosphor-svelte";
+  import { Plus, Trash } from "phosphor-svelte";
+  import LocationPicker from "./location-picker.svelte";
 
   interface VolunteerOption {
     id: string;
@@ -52,7 +53,6 @@
     { name: "", phone: "", relationship: "", isPrimaryContact: true },
   ]);
 
-  let isLocating = $state(false);
   let isSubmitting = $state(false);
   let errorMessage = $state("");
 
@@ -73,25 +73,6 @@
 
   function removeFamily(index: number) {
     family = family.filter((_, i) => i !== index);
-  }
-
-  function captureLocation() {
-    if (!navigator.geolocation) {
-      errorMessage = "Perangkat tidak mendukung GPS.";
-      return;
-    }
-    isLocating = true;
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        latitude = pos.coords.latitude;
-        longitude = pos.coords.longitude;
-        isLocating = false;
-      },
-      () => {
-        errorMessage = "Gagal mengambil lokasi. Pastikan izin GPS diaktifkan.";
-        isLocating = false;
-      }
-    );
   }
 
   async function handleSubmit(e: SubmitEvent) {
@@ -166,8 +147,7 @@
     <input bind:value={phone} type="tel" placeholder="Nomor WhatsApp (opsional jika pasif)"
       class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40" />
 
-    <textarea bind:value={address} placeholder="Alamat lengkap" required rows="2"
-      class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40 resize-y"></textarea>
+    <LocationPicker bind:address bind:latitude bind:longitude />
 
     <div class="grid grid-cols-2 gap-4">
       <input bind:value={rt} type="text" placeholder="RT" required
@@ -175,17 +155,6 @@
       <input bind:value={rw} type="text" placeholder="RW" required
         class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
-
-    <button type="button" onclick={captureLocation} disabled={isLocating}
-      class="flex items-center justify-center gap-2 rounded-full bg-brand/10 text-brand px-5 py-3 text-[15px] font-medium hover:bg-brand/15 transition-colors disabled:opacity-60">
-      {#if isLocating}
-        <CircleNotch weight="bold" class="size-5 animate-spin" />
-        Mengambil lokasi...
-      {:else}
-        <MapPin weight="fill" class="size-5" />
-        {latitude ? "Lokasi tersimpan ✓" : "Ambil Titik GPS Rumah"}
-      {/if}
-    </button>
   </section>
 
   <!-- Mode Pemantauan -->
