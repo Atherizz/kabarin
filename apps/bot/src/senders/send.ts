@@ -53,6 +53,7 @@ export async function sendText(
 
     const result = await sock.sendMessage(jid, { text: message.trim() });
     await sock.sendPresenceUpdate("paused", jid).catch(() => {});
+    console.log(`[sender] Sent message to ${jid} (id: ${result?.key?.id})`);
 
     if (options?.db && options?.communityUnitId) {
       const messageId = result?.key?.id || crypto.randomUUID();

@@ -49,12 +49,26 @@ export async function searchHealthInfo(query: string): Promise<string> {
   url.searchParams.set("num", "3");
   url.searchParams.set("api_key", apiKey);
 
+  console.log(`\n[health-search] Executing Google Health Search: "${query}"`);
+
   try {
     const res = await fetch(url.toString());
     const data = (await res.json()) as SerpApiResponse;
 
     if (data.error || !data.organic_results?.length) {
+      console.log(`[health-search] No organic results found for "${query}" (error: ${data.error || "none"})`);
       return "Tidak ditemukan informasi relevan dari sumber kesehatan terpercaya.";
+    }
+
+    console.log(`[health-search] Found ${data.organic_results.length} results from trusted sources:`);
+    for (const [i, r] of data.organic_results.slice(0, 3).entries()) {
+      let domain = "unknown";
+      try {
+        domain = new URL(r.link).hostname.replace(/^www\./, "");
+      } catch {}
+      console.log(`   [${i + 1}] [${domain}] ${r.title}`);
+      console.log(`       URL: ${r.link}`);
+      console.log(`       Cuplikan: ${r.snippet.slice(0, 90)}...`);
     }
 
     const snippets = data.organic_results

@@ -31,7 +31,7 @@ export const AiTriageResultSchema = z
       clinicalReasoning:
         "Lansia merespons sapaan pagi dalam bahasa Jawa santai, mengonfirmasi sudah sarapan dan sudah minum obat Amlodipine.",
       recommendedAction: "Pertahankan status hijau. Sapa kembali pada sesi siang.",
-      toolsExecuted: ["log_medication_compliance", "update_elderly_status"],
+      toolsExecuted: ["search_health_info(\"pantangan makanan hipertensi\")"],
     },
   });
 
