@@ -33,6 +33,7 @@ export function createAuth(db: AppDatabase, config: AuthConfig) {
       "http://localhost:5173",
       "https://kabarin.pages.dev",
       "https://kabarin.atherizz.dev",
+      "https://*.workers.dev",
     ],
     database: drizzleAdapter(db, {
       provider: "pg",

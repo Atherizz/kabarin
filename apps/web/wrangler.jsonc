@@ -2,11 +2,14 @@
 	"$schema": "./node_modules/wrangler/config-schema.json",
 	"compatibility_date": "2026-08-28",
 	"compatibility_flags": ["global_fetch_strictly_public"],
-	"name": "web",
+	"name": "kabarin-web",
 	"main": "@astrojs/cloudflare/entrypoints/server",
 	"assets": {
 		"directory": "./dist",
 		"binding": "ASSETS"
+	},
+	"vars": {
+		"PUBLIC_API_URL": "https://kabarin-api.atherizz.dev"
 	},
 	"observability": {
 		"enabled": true

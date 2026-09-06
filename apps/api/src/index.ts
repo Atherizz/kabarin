@@ -104,7 +104,7 @@ app.use("*", async (c, next) => {
 
   return cors({
     origin: (origin) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".workers.dev") || origin.endsWith(".pages.dev")) {
         return origin || "*";
       }
       return null;

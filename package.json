@@ -15,6 +15,7 @@
     "dev:bot": "bun run --cwd apps/bot dev",
     "start:bot": "bun run --cwd apps/bot start",
     "deploy:api": "bun run --cwd apps/api deploy",
+    "deploy:web": "bun run --cwd apps/web deploy",
     "db:generate": "bun run --cwd packages/db generate",
     "db:migrate": "bun run --cwd packages/db migrate",
     "db:push": "bun run --cwd packages/db push",
