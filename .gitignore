@@ -3,9 +3,13 @@ dist
 .turbo
 *.local
 .env
+.env.prod
 !.env.example
+!.env.prod.example
 .dev.vars
 !.dev.vars.example
+.prod.vars
+!.prod.vars.example
 .wrangler
 bun.lock
 

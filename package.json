@@ -5,10 +5,12 @@
   "packageManager": "bun@1.1.0",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "turbo dev --filter=!@kabarin/bot",
+    "dev:all": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "check": "turbo check",
+    "dev:web": "bun run --cwd apps/web dev",
     "dev:api": "bun run --cwd apps/api dev",
     "dev:bot": "bun run --cwd apps/bot dev",
     "start:bot": "bun run --cwd apps/bot start",

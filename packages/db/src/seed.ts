@@ -113,26 +113,31 @@ async function main() {
   console.log("   DATABASE SEEDING COMPLETED SUCCESSFULLY!");
   console.log("========================================================\n");
 
-  console.log("🔑 TEST USER ACCOUNTS (Password: Kabarin2026!):");
+  console.log("🔑 SEEDED TEST ACCOUNTS (Password: Kabarin2026!):");
   console.log("┌─────────────────────┬───────────────────┬──────────────┬───────────────────────────────┬────────────────┐");
   console.log("│ Role                │ Email             │ Password     │ Name                          │ Phone (WA)     │");
   console.log("├─────────────────────┼───────────────────┼──────────────┼───────────────────────────────┼────────────────┤");
-  console.log("│ 🏢 Cadre (Kader RT) │ kader@gmail.com   │ Kabarin2026! │ Ibu Endang Astuti (RT 01)     │ 085648907716   │");
-  console.log("│ 🤝 Volunteer 1      │ relawan@gmail.com │ Kabarin2026! │ Mas Dimas Prasetyo            │ 087847512517   │");
-  console.log("│ 🤝 Volunteer 2      │ relawan2@gmail.com│ Kabarin2026! │ Mas Dimas Wahyu               │ 081330964079   │");
-  console.log("│ 👨‍👩‍👧 Family 1 (Prim) │ keluarga@gmail.com│ Kabarin2026! │ Budi Hidayat (Anak Soepardi)  │ 085840625208   │");
-  console.log("│ 👨‍👩‍👧 Family 2        │ keluarga2@gmail.com│Kabarin2026! │ Siti Rahma (Anak Soepardi)    │ 088237348303   │");
-  console.log("│ 👨‍👩‍👧 Family 3        │ keluarga3@gmail.com│Kabarin2026! │ Rian Hidayat (Anak Soepardi)  │ 085738183231   │");
+  console.log("│ 🏢 Cadre (Kader RT) │ kader@gmail.com   │ Kabarin2026! │ Ibu Endang Astuti (RT 01)     │ 081330964079   │");
+  console.log("│ 🤝 Volunteer        │ relawan@gmail.com │ Kabarin2026! │ Mas Dimas Prasetyo            │ 087847512517   │");
+  console.log("│ 👨‍👩‍👧 Family (Prim)  │ keluarga@gmail.com│ Kabarin2026! │ Budi Hidayat (Anak Soepardi)  │ 085840625208   │");
   console.log("├─────────────────────┼───────────────────┼──────────────┼───────────────────────────────┼────────────────┤");
-  console.log("│ 👴 Lansia (Elderly) │ (WhatsApp Only)   │ -            │ Mbah Soepardi                 │ 085235342960   │");
+  console.log("│ 👴 Lansia (Elderly) │ (WhatsApp Only)   │ -            │ Mbah Soepardi                 │ 085648907716   │");
   console.log("└─────────────────────┴───────────────────┴──────────────┴───────────────────────────────┴────────────────┘\n");
+
+  console.log("📱 WHITELIST NOMOR UNTUK SIMULASI MANUAL USER:");
+  console.log("┌─────────────────────┬───────────────────────────────┬────────────────┬────────────────────────────────────────────────────────┐");
+  console.log("│ Tipe Simulasi       │ Target Entitas                │ Nomor WA       │ Aksi Tes                                               │");
+  console.log("├─────────────────────┼───────────────────────────────┼────────────────┼────────────────────────────────────────────────────────┤");
+  console.log("│ 👴 Lansia Baru      │ Input Lansia via Form Kader   │ 085235342960   │ Terima notif WA sambutan onboarding lansia             │");
+  console.log("│ 🤝 Relawan Baru     │ Tambah Relawan via Form Kader │ 085738183231   │ Terima notif WA kredensial akun relawan baru           │");
+  console.log("│ 👨‍👩‍👧 Keluarga Baru    │ Tambah Kontak Keluarga Lansia │ 088237348303   │ Terima notif WA link status lansia                     │");
+  console.log("└─────────────────────┴───────────────────────────────┴────────────────┴────────────────────────────────────────────────────────┘\n");
 
   console.log("🔗 LIVE ZERO-LOGIN TEST TOKENS & URLs:");
   console.log("┌──────────────────────────────────────────┬──────────────────────────────────────────────────────────┐");
   console.log("│ Target Surface                           │ Live URL / Token                                         │");
   console.log("├──────────────────────────────────────────┼──────────────────────────────────────────────────────────┤");
   console.log(`│ 👨‍👩‍👧 Public Status Mbah Soepardi (Budi)    │ http://localhost:8787/api/family/status/${familyTokens.tokenSoepardiFamily.slice(0, 16)}... │`);
-  console.log(`│ 👨‍👩‍👧 Public Status Mbah Soepardi (Rahma)   │ http://localhost:8787/api/family/status/${familyTokens.tokenRahmaFamily.slice(0, 16)}... │`);
   console.log(`│ 📱 1-Tap Mobile Visit Form Mbah Soepardi │ http://localhost:8787/api/visits/form/${visitTokens.tokenVisitSoepardi.slice(0, 16)}...   │`);
   console.log("└──────────────────────────────────────────┴──────────────────────────────────────────────────────────┘");
   console.log(`\nFull Visit Form Token: ${visitTokens.tokenVisitSoepardi}`);

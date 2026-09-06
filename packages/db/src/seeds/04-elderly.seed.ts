@@ -16,7 +16,7 @@ export async function seedElderly(db: AppDatabase, authUsers: Record<string, any
       id: ELD_SOEPARDI_ID,
       communityUnitId: COMMUNITY_RT01_ID,
       name: "Mbah Soepardi",
-      phone: "085235342960",
+      phone: "085648907716",
       age: 76,
       gender: "male",
       address: "Jl. Kalpataru No. 45",

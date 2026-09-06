@@ -10,7 +10,7 @@ export async function seedAuthUsers(auth: any, db: AppDatabase) {
       name: "Ibu Endang Astuti",
       role: "cadre" as const,
       communityUnitId: COMMUNITY_RT01_ID,
-      phone: "085648907716",
+      phone: "081330964079",
     },
     {
       email: "relawan@gmail.com",
@@ -21,36 +21,12 @@ export async function seedAuthUsers(auth: any, db: AppDatabase) {
       phone: "087847512517",
     },
     {
-      email: "relawan2@gmail.com",
-      password: "Kabarin2026!",
-      name: "Mas Dimas Wahyu",
-      role: "volunteer" as const,
-      communityUnitId: COMMUNITY_RT01_ID,
-      phone: "081330964079",
-    },
-    {
       email: "keluarga@gmail.com",
       password: "Kabarin2026!",
       name: "Budi Hidayat",
       role: "family" as const,
       communityUnitId: COMMUNITY_RT01_ID,
       phone: "085840625208",
-    },
-    {
-      email: "keluarga2@gmail.com",
-      password: "Kabarin2026!",
-      name: "Siti Rahma",
-      role: "family" as const,
-      communityUnitId: COMMUNITY_RT01_ID,
-      phone: "088237348303",
-    },
-    {
-      email: "keluarga3@gmail.com",
-      password: "Kabarin2026!",
-      name: "Rian Hidayat",
-      role: "family" as const,
-      communityUnitId: COMMUNITY_RT01_ID,
-      phone: "085738183231",
     },
   ];
 

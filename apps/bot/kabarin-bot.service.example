@@ -12,6 +12,7 @@ WorkingDirectory=/home/ubuntu/kabarin
 EnvironmentFile=/home/ubuntu/kabarin/.env
 Environment=NODE_ENV=production
 Environment=TZ=Asia/Jakarta
+Environment=PATH=/home/ubuntu/.bun/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Bun binary location
 ExecStart=/home/ubuntu/.bun/bin/bun run start:bot
