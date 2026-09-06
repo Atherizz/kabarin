@@ -40,6 +40,15 @@ export class ChangePasswordEndpoint extends ApiRoute {
 
   async handle(c: Context<AppEnv>) {
     const auth = c.get("auth");
-    return auth.handler(c.req.raw);
+    try {
+      const data = await this.getValidatedData<{ body: typeof ChangePasswordSchema._type }>();
+      return await auth.api.changePassword({
+        body: data.body,
+        headers: c.req.raw.headers,
+        asResponse: true,
+      });
+    } catch {
+      return auth.handler(c.req.raw);
+    }
   }
 }

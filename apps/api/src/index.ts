@@ -127,6 +127,9 @@ app.use("/api/*", async (c, next) => {
   return requireAuth(c, next);
 });
 
+// Direct Better Auth handler at Hono level to prevent Chanfana stream-draining on Cloudflare Workers
+app.all("/api/auth/*", (c) => c.get("auth").handler(c.req.raw));
+
 // OpenAPI
 const openapi = fromHono(app, {
   docs_url: null,

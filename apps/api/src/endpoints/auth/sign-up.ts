@@ -40,6 +40,15 @@ export class SignUpEndpoint extends ApiRoute {
 
   async handle(c: Context<AppEnv>) {
     const auth = c.get("auth");
-    return auth.handler(c.req.raw);
+    try {
+      const data = await this.getValidatedData<{ body: typeof SignUpSchema._type }>();
+      return await auth.api.signUpEmail({
+        body: data.body,
+        headers: c.req.raw.headers,
+        asResponse: true,
+      });
+    } catch {
+      return auth.handler(c.req.raw);
+    }
   }
 }
