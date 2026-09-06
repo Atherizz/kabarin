@@ -1,5 +1,5 @@
 export async function apiPostPublic<T>(path: string, body: unknown): Promise<{ ok: boolean; data?: T; error?: string }> {
-  const apiBase = import.meta.env.BETTER_AUTH_URL ?? "https://kabarin-api.atherizz.dev";
+  const apiBase = import.meta.env.PUBLIC_API_URL ?? "https://kabarin-api.atherizz.dev";
 
   try {
     const res = await fetch(`${apiBase}${path}`, {

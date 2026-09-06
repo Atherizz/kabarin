@@ -31,7 +31,7 @@
     isTriggering = true;
     sosError = "";
 
-    const result = await apiPostPublic<{ status: string }>(`/api/status/${token}/sos`, {
+    const result = await apiPostPublic<{ status: string }>(`/api/family/status/${token}/trigger`, {
       reason: "Ditekan manual dari halaman status keluarga",
     });
 

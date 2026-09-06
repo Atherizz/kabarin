@@ -48,7 +48,7 @@
     isSubmitting = true;
 
     const result = await apiPostPublic<{ elderlyStatus: string }>(
-      `/api/visits/${token}/submit`,
+      `/api/visits/form/${token}/submit`,
       {
         reportedCondition,
         reportedCause: reportedCause ?? undefined,

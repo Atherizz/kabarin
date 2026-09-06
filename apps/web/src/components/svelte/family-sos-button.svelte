@@ -22,7 +22,7 @@
     }
     isTriggering = true;
     sosError = "";
-    const result = await apiPostPublic<{ status: string }>(`/api/status/${accessToken}/sos`, {
+    const result = await apiPostPublic<{ status: string }>(`/api/family/status/${accessToken}/trigger`, {
       reason: "Dikirim dari Dashboard Keluarga",
     });
     isTriggering = false;
