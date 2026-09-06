@@ -1,0 +1,31 @@
+---
+import Layout from "../../../layouts/layout.astro";
+import ElderlyEditForm from "../../../components/svelte/elderly-edit-form.svelte";
+import { apiFetch } from "../../../lib/api-fetch";
+import type { Elderly } from "@kabarin/types";
+import { ArrowLeft } from "phosphor-svelte";
+
+const { id } = Astro.params;
+
+const elderlyData = await apiFetch<Elderly>(Astro.request, `/api/elderly/${id}`);
+
+if (!elderlyData) {
+  return Astro.redirect("/elderly");
+}
+---
+
+<Layout title={`Edit ${elderlyData.name}`} description={`Edit profil lansia ${elderlyData.name}`}>
+  <div class="flex flex-col gap-8 max-w-2xl">
+    <a href={`/elderly/${id}`} class="self-end flex items-center gap-2 text-brand text-[15px] font-medium">
+      <ArrowLeft weight="bold" class="size-5" />
+      <span>Kembali ke profil</span>
+    </a>
+
+    <div>
+      <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Edit Data Lansia</h1>
+      <p class="text-[15px] text-dark/50 mt-1">Perbarui informasi profil dan riwayat medis.</p>
+    </div>
+
+    <ElderlyEditForm client:load initialData={elderlyData} />
+  </div>
+</Layout>

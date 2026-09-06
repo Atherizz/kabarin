@@ -1,16 +1,27 @@
 ---
-import Layout from "../../layouts/layout.astro";
-import StatusBadge from "../../components/astro/elderly/status-badge.astro";
-import { apiFetch } from "../../lib/api-fetch";
+import Layout from "../../../layouts/layout.astro";
+import StatusBadge from "../../../components/astro/elderly/status-badge.astro";
+import RiskScoreCard from "../../../components/svelte/risk-score-card.svelte";
+import { apiFetch } from "../../../lib/api-fetch";
 import type { Elderly, EscalationLog, CheckinSession } from "@kabarin/types";
-import { ArrowLeft, MapPin, Phone, Pill, Users, Clock } from "phosphor-svelte";
-
+import { ArrowLeft, MapPin, Phone, Pill, Users, Clock, ChartLineUp, PencilSimple } from "phosphor-svelte";
 const { id } = Astro.params;
 
-const [elderlyData, escalations, checkins] = await Promise.all([
+interface RiskScoreResponse {
+  elderlyId: string;
+  elderlyName: string;
+  totalScore: number;
+  category: "rendah" | "sedang" | "tinggi";
+  breakdown: Record<string, { score: number; note: string }>;
+  xaiNarrative: string | null;
+  computedAt: string;
+}
+
+const [elderlyData, escalations, checkins, riskScore] = await Promise.all([
   apiFetch<Elderly>(Astro.request, `/api/elderly/${id}`),
   apiFetch<EscalationLog[]>(Astro.request, `/api/escalations?elderlyId=${id}`),
   apiFetch<CheckinSession[]>(Astro.request, `/api/checkins/${id}?limit=10`),
+  apiFetch<RiskScoreResponse>(Astro.request, `/api/elderly/${id}/risk-score`),
 ]);
 
 if (!elderlyData) {
@@ -31,11 +42,24 @@ const monitoringLabel = {
 
 <Layout title={elderlyData.name} description={`Profil lansia ${elderlyData.name}`}>
   <div class="flex flex-col gap-8 max-w-2xl">
-    <a href="/elderly" class="self-end flex items-center gap-2 text-brand text-[15px] font-medium">
-      <ArrowLeft weight="bold" class="size-5" />
-      <span>Kembali ke direktori</span>
-    </a>
+    
+    <!-- Top Navigation Actions -->
+    <div class="flex items-center justify-between">
+      <a href="/elderly" class="flex items-center gap-2 text-brand text-[15px] font-medium hover:opacity-80 transition-opacity">
+        <ArrowLeft weight="bold" class="size-5" />
+        <span>Kembali ke direktori</span>
+      </a>
+      
+      <a 
+        href={`/elderly/${id}/edit`} 
+        class="flex items-center gap-1.5 rounded-full bg-brand/10 px-4 py-2 text-[14px] font-semibold text-brand hover:bg-brand/20 transition-colors"
+      >
+        <PencilSimple weight="bold" class="size-4" />
+        Edit Profil
+      </a>
+    </div>
 
+    <!-- Header -->
     <div class="flex items-start justify-between gap-4">
       <div>
         <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">{elderlyData.name}</h1>
@@ -80,6 +104,18 @@ const monitoringLabel = {
         </div>
       )}
     </section>
+
+    <!-- Analisis Risiko -->
+    {riskScore && (
+      <section class="flex flex-col gap-4">
+        <div class="flex items-center gap-2.5">
+          <ChartLineUp weight="fill" class="size-5 text-brand" />
+          <h2 class="text-[20px] font-semibold text-dark">Analisis Risiko</h2>
+        </div>
+        
+        <RiskScoreCard data={riskScore} client:visible />
+      </section>
+    )}
 
     <!-- Obat -->
     <section class="flex flex-col gap-4">

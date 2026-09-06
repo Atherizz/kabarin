@@ -97,14 +97,14 @@ const relativeTime = (iso: string) => {
     </span>
   </div>
 
-  {verificationStatus === "verified" && (
-    <div class="pt-1" onclick="event.stopPropagation()">
-      <FamilySosButton
-        client:load
-        elderlyName={name}
-        accessToken={accessToken}
-        currentStatus={currentStatus}
-      />
-    </div>
-  )}
+    {verificationStatus === "verified" && (
+      <div class="relative z-10 pt-1">
+        <FamilySosButton
+          client:load
+          elderlyId={id}
+          elderlyName={name}
+          currentStatus={currentStatus}
+        />
+      </div>
+    )}
 </a>

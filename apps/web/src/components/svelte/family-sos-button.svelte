@@ -1,14 +1,14 @@
 <script lang="ts">
-  import { apiPostPublic } from "../../lib/api-post-public";
+  import { apiPost } from "../../lib/api-post";
   import { Warning } from "phosphor-svelte";
 
   interface Props {
+    elderlyId: string;
     elderlyName: string;
-    accessToken: string;
     currentStatus: "green" | "yellow" | "red" | "grey";
   }
 
-  let { elderlyName, accessToken, currentStatus: initialStatus }: Props = $props();
+  let { elderlyId, elderlyName, currentStatus: initialStatus }: Props = $props();
 
   let currentStatus = $state(initialStatus);
   let isTriggering = $state(false);
@@ -20,16 +20,22 @@
       sosMessage = "Status darurat sudah aktif. Relawan sedang dalam perjalanan.";
       return;
     }
+    
     isTriggering = true;
     sosError = "";
-    const result = await apiPostPublic<{ status: string }>(`/api/family/status/${accessToken}/trigger`, {
+    
+    const result = await apiPost<{ status: string }>('/api/family/trigger-sos', {
+      elderlyId: elderlyId,
       reason: "Dikirim dari Dashboard Keluarga",
     });
+    
     isTriggering = false;
-    if (!result.ok) {
-      sosError = result.error ?? "Gagal mengirim sinyal darurat.";
+    
+    if (!result || !result.success) {
+      sosError = result?.error ?? "Gagal mengirim sinyal darurat.";
       return;
     }
+    
     currentStatus = "red";
     sosMessage = `Sinyal darurat untuk ${elderlyName} berhasil dikirim! Relawan dan Kader RT segera menerima notifikasi.`;
   }
