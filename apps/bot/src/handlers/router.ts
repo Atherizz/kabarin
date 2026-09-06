@@ -230,6 +230,7 @@ export async function handleInboundMessage(
     })
     .where(eq(checkinSessions.id, todaySession.id));
 
+
   // Reply back directly to sender's active JID thread (whether LID or phone JID)
   await sendText(sock, remoteJid, triageResult.replyMessage, {
     communityUnitId: elderlyRecord.communityUnitId,

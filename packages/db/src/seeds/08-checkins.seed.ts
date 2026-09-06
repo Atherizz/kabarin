@@ -38,7 +38,7 @@ export async function seedCheckins(db: AppDatabase) {
         clinicalReasoning:
           "Lansia mengonfirmasi sudah sarapan bubur dan meminum obat anti-hipertensi secara rutin. Suara jernih dan bersemangat.",
         recommendedAction: "Pertahankan pemantauan sapaan rutin esok hari pukul 07:00.",
-        toolsExecuted: ["whisper_stt", "triage_classifier", "update_elderly_status"],
+        toolsExecuted: [],
       },
     },
     // Mbah Kartowijoyo
@@ -58,7 +58,7 @@ export async function seedCheckins(db: AppDatabase) {
         clinicalReasoning:
           "Lansia kategori homebound pasca stroke tidak merespons pengingat dan tidak memiliki HP mandiri.",
         recommendedAction: "Dispatch kunjungan fisik darurat oleh relawan terdekat.",
-        toolsExecuted: ["timeout_escalator", "dispatch_volunteer_visit"],
+        toolsExecuted: [],
       },
     },
   ]);
