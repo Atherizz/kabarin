@@ -1,0 +1,18 @@
+---
+import Layout from "../../layouts/layout.astro";
+import VolunteerCreateForm from "../../components/svelte/volunteer-form.svelte";
+import { ArrowLeft } from "phosphor-svelte";
+---
+
+<Layout title="Tambah Relawan" description="Daftarkan relawan baru untuk RT.">
+  <div class="flex flex-col gap-8 max-w-2xl">
+    <a href="/volunteers" class="self-end flex items-center gap-2 text-brand text-[15px] font-medium">
+      <ArrowLeft weight="bold" class="size-5" />
+      <span>Kembali ke direktori</span>
+    </a>
+
+    <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Tambah Relawan</h1>
+
+    <VolunteerCreateForm client:load />
+  </div>
+</Layout>
