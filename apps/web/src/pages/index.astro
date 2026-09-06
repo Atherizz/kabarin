@@ -1,15 +1,161 @@
 ---
+import Layout from "../layouts/layout.astro";
+import { 
+  House, 
+  Users, 
+  HandsClapping, 
+  ArrowRight, 
+  Heartbeat, 
+  ShieldCheck, 
+  BellRinging 
+} from "phosphor-svelte";
+
 const { user } = Astro.locals;
 
-switch (user?.role) {
-  case "cadre":
-  case "admin":
-    return Astro.redirect("/dashboard");
-  case "volunteer":
-    return Astro.redirect("/volunteer/dashboard");
-  case "family":
-    return Astro.redirect("/family/dashboard");
-  default:
-    return Astro.redirect("/login");
+if (user) {
+  switch (user.role) {
+    case "cadre":
+      return Astro.redirect("/dashboard");
+    case "volunteer":
+      return Astro.redirect("/volunteer/dashboard");
+    case "family":
+      return Astro.redirect("/family/dashboard");
+  }
 }
 ---
+
+<Layout
+  title="Kabarin - Kepedulian Komunitas untuk Lansia Sejahtera"
+  description="Platform pemantauan dan kepedulian terintegrasi bagi kader RT, keluarga, dan relawan lansia."
+>
+  <header class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
+    <span class="text-2xl font-bold tracking-tight text-dark">Kabarin.</span>
+  </header>
+
+  <main class="flex flex-col gap-24 py-12 px-6">
+    <section class="max-w-3xl mx-auto text-center flex flex-col items-center gap-6">
+      <span class="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand bg-brand/10 rounded-full">
+        <Heartbeat weight="bold" class="size-4" /> Platform Komunitas Lansia
+      </span>
+      <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-dark leading-tight">
+        Menjaga Lansia Bersama, Dari Tingkat RT Hingga Keluarga.
+      </h1>
+      <p class="text-lg text-dark/60 max-w-2xl">
+        Kabarin menghubungkan pengurus RT, anggota keluarga, dan relawan lokal dalam satu sistem tanggap untuk memastikan setiap lansia terpantau aman, sehat, dan tidak terabaikan.
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+        <a 
+          href="#pilih-peran" 
+          class="px-6 py-3 rounded-full bg-brand text-white font-semibold hover:bg-brand/90 transition"
+        >
+          Pilih Peran Anda
+        </a>
+        <a 
+          href="/login" 
+          class="px-6 py-3 rounded-full bg-light-darker text-dark font-medium hover:bg-light-darker/80 transition"
+        >
+          Masuk ke Akun
+        </a>
+      </div>
+    </section>
+
+    <section class="max-w-5xl mx-auto w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="p-6 rounded-3xl bg-light-darker/40 border border-dark/5 flex flex-col gap-3">
+        <div class="size-11 rounded-2xl bg-brand/10 text-brand flex items-center justify-center">
+          <ShieldCheck weight="duotone" class="size-6" />
+        </div>
+        <h2 class="text-lg font-semibold text-dark">Pendataan Terpusat RT</h2>
+        <p class="text-sm text-dark/60 leading-relaxed">
+          Kader RT dapat memvalidasi data domisili, kondisi kesehatan awal, dan penanggung jawab lansia di lingkungannya.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-light-darker/40 border border-dark/5 flex flex-col gap-3">
+        <div class="size-11 rounded-2xl bg-accent/15 text-accent flex items-center justify-center">
+          <BellRinging weight="duotone" class="size-6" />
+        </div>
+        <h2 class="text-lg font-semibold text-dark">Laporan Rutin & Darurat</h2>
+        <p class="text-sm text-dark/60 leading-relaxed">
+          Keluarga menerima kabar langsung jika ada jadwal posyandu, kunjungan kesehatan, atau kondisi darurat.
+        </p>
+      </div>
+
+      <div class="p-6 rounded-3xl bg-light-darker/40 border border-dark/5 flex flex-col gap-3">
+        <div class="size-11 rounded-2xl bg-dark/10 text-dark/70 flex items-center justify-center">
+          <HandsClapping weight="duotone" class="size-6" />
+        </div>
+        <h2 class="text-lg font-semibold text-dark">Aksi Gotong Royong</h2>
+        <p class="text-sm text-dark/60 leading-relaxed">
+          Membagi beban kunjungan fisik kepada relawan terverifikasi agar perhatian terdistribusi merata.
+        </p>
+      </div>
+    </section>
+
+    <section id="pilih-peran" class="max-w-2xl mx-auto w-full flex flex-col gap-8 scroll-mt-12">
+      <div class="text-center">
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-dark">Siapa Anda?</h2>
+        <p class="text-dark/50 text-base mt-2">
+          Pilih akses portal yang paling relevan dengan peran Anda di lingkungan.
+        </p>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <a
+          href="/register"
+          class="group flex items-center gap-5 rounded-[28px] bg-brand/10 px-7 py-6 hover:bg-brand/15 transition-all duration-200 border border-brand/10 hover:border-brand/25"
+        >
+          <div class="flex items-center justify-center size-14 shrink-0 rounded-full bg-brand/20">
+            <House weight="fill" class="size-7 text-brand" />
+          </div>
+          <div class="flex-1">
+            <p class="font-semibold text-lg text-dark">Kader / Ketua RT</p>
+            <p class="text-sm text-dark/60 mt-0.5">
+              Daftarkan wilayah RT Anda dan mulai memantau lansia binaan.
+            </p>
+          </div>
+          <ArrowRight weight="bold" class="size-5 text-brand shrink-0 group-hover:translate-x-1 transition-transform" />
+        </a>
+
+        <a
+          href="/register/family"
+          class="group flex items-center gap-5 rounded-[28px] bg-accent/10 px-7 py-6 hover:bg-accent/15 transition-all duration-200 border border-accent/10 hover:border-accent/25"
+        >
+          <div class="flex items-center justify-center size-14 shrink-0 rounded-full bg-accent/20">
+            <Users weight="fill" class="size-7 text-accent" />
+          </div>
+          <div class="flex-1">
+            <p class="font-semibold text-lg text-dark">Keluarga</p>
+            <p class="text-sm text-dark/60 mt-0.5">
+              Daftarkan orang tua atau kerabat lansia Anda ke sistem RT.
+            </p>
+          </div>
+          <ArrowRight weight="bold" class="size-5 text-accent shrink-0 group-hover:translate-x-1 transition-transform" />
+        </a>
+
+        <a
+          href="/login"
+          class="group flex items-center gap-5 rounded-[28px] bg-light-darker px-7 py-6 hover:bg-light-darker/70 transition-all duration-200 border border-dark/5"
+        >
+          <div class="flex items-center justify-center size-14 shrink-0 rounded-full bg-dark/10">
+            <HandsClapping weight="fill" class="size-7 text-dark/60" />
+          </div>
+          <div class="flex-1">
+            <p class="font-semibold text-lg text-dark">Relawan</p>
+            <p class="text-sm text-dark/60 mt-0.5">
+              Sudah didaftarkan oleh Kader RT? Masuk dengan akun Anda.
+            </p>
+          </div>
+          <ArrowRight weight="bold" class="size-5 text-dark/40 shrink-0 group-hover:translate-x-1 transition-transform" />
+        </a>
+      </div>
+
+      <p class="text-center text-sm text-dark/50">
+        Sudah punya akun sebelumnya? <a href="/login" class="text-brand font-medium hover:underline">Masuk di sini</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="border-t border-dark/5 mt-16 py-8 text-center text-xs text-dark/40">
+    <p>&copy; {new Date().getFullYear()} Kabarin. Sistem Terintegrasi Pemantauan Lansia.</p>
+  </footer>
+</Layout>

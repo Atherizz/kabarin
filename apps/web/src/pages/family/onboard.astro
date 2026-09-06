@@ -1,0 +1,20 @@
+---
+import Layout from "../../layouts/layout.astro";
+import FamilyElderlyForm from "../../components/svelte/family-elderly-form.svelte";
+import { ArrowLeft } from "phosphor-svelte";
+
+const { user } = Astro.locals;
+---
+
+<Layout title="Daftarkan Orang Tua" description="Formulir pendaftaran lansia oleh keluarga.">
+  <div class="flex flex-col gap-8 max-w-2xl">
+    <a href="/family/dashboard" class="self-end flex items-center gap-2 text-brand text-[15px] font-medium">
+      <ArrowLeft weight="bold" class="size-5" />
+      <span>Kembali ke dasbor</span>
+    </a>
+
+    <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Daftarkan Orang Tua</h1>
+
+    <FamilyElderlyForm client:load userPhone={user?.phone ?? ""} />
+  </div>
+</Layout>

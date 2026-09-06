@@ -1,5 +1,5 @@
 export async function getServerSession(request: Request) {
-  const apiBase = import.meta.env.PUBLIC_API_URL ?? "https://kabarin-api.atherizz.dev";
+  const apiBase = import.meta.env.BETTER_AUTH_URL ?? "https://kabarin-api.atherizz.dev";
 
   try {
     const cookie = request.headers.get("cookie") ?? "";
