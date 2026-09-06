@@ -1,6 +1,6 @@
 ---
 import Layout from "../../layouts/layout.astro";
-import FamilyElderlyForm from "../../components/svelte/family-elderly-form.svelte";
+import FamilyRegisterForm from "../../components/svelte/family-register-form.svelte";
 import { ArrowLeft } from "phosphor-svelte";
 
 const { user } = Astro.locals;
@@ -15,6 +15,6 @@ const { user } = Astro.locals;
 
     <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Daftarkan Orang Tua</h1>
 
-    <FamilyElderlyForm client:load userPhone={user?.phone ?? ""} />
+    <FamilyRegisterForm client:load userPhone={user?.phone ?? ""} />
   </div>
 </Layout>
