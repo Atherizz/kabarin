@@ -1,0 +1,210 @@
+---
+import Layout from "../../../layouts/layout.astro";
+import AddFamilyContactForm from "../../../components/svelte/add-family-contact-form.svelte";
+import FamilySosButton from "../../../components/svelte/family-sos-button.svelte";
+import { apiFetch } from "../../../lib/api-fetch";
+import { getServerSession } from "../../../lib/get-session";
+import { Pill, Phone, MapPin, Users } from "phosphor-svelte";
+
+interface FamilyMember {
+  id: string;
+  elderlyId: string;
+  userId: string | null;
+  name: string;
+  phone: string;
+  relationship: string;
+  isPrimaryContact: boolean;
+  accessToken: string;
+  notifyViaWhatsapp: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Medication {
+  id: string;
+  conditionName: string;
+  medicationName: string;
+  dosage: string;
+  frequency: string;
+  reminderTime: string;
+  timingInstruction: string;
+  isActive: boolean;
+}
+
+interface VolunteerAssignment {
+  isPrimary: boolean;
+  volunteer: {
+    name: string;
+    phone: string;
+  };
+}
+
+interface ElderlyDetail {
+  id: string;
+  name: string;
+  age: number;
+  gender: string;
+  address: string;
+  rt: string;
+  rw: string;
+  currentStatus: "green" | "yellow" | "red" | "grey";
+  verificationStatus: "verified" | "pending_verification" | "rejected";
+  mobilityStatus: "independent" | "needs_assistance" | "homebound";
+  medicalHistory: string | null;
+  preferredCheckinTime: string | null;
+  updatedAt: string;
+  familyMembers: FamilyMember[];
+  medications: Medication[];
+  volunteerAssignments: VolunteerAssignment[];
+}
+
+const { id } = Astro.params;
+const session = await getServerSession(Astro.request);
+
+const elderlyData = await apiFetch<ElderlyDetail>(Astro.request, `/api/elderly/${id}`);
+
+if (!elderlyData) {
+  return Astro.redirect("/family/dashboard");
+}
+
+const myFamilyLink = elderlyData.familyMembers.find(
+  (f) => f.userId === session?.user?.id || (session?.user?.phone && f.phone === session.user.phone)
+);
+
+const activeMedications = elderlyData.medications.filter((m) => m.isActive);
+const inactiveMedications = elderlyData.medications.filter((m) => !m.isActive);
+const primaryVolunteer = elderlyData.volunteerAssignments.find((a) => a.isPrimary)?.volunteer;
+
+const statusConfig = {
+  green: { label: "Aman", bg: "bg-emerald-500/10", text: "text-emerald-600", dot: "bg-emerald-500" },
+  yellow: { label: "Perlu Perhatian", bg: "bg-amber-500/10", text: "text-amber-600", dot: "bg-amber-500" },
+  red: { label: "Darurat", bg: "bg-red-500/10", text: "text-red-600", dot: "bg-red-500" },
+  grey: { label: "Belum Terpantau", bg: "bg-dark/5", text: "text-dark/50", dot: "bg-dark/30" },
+} as const;
+const status = statusConfig[elderlyData.currentStatus];
+
+const mobilityLabel = {
+  independent: "Mandiri",
+  needs_assistance: "Butuh Bantuan",
+  homebound: "Homebound",
+}[elderlyData.mobilityStatus];
+---
+
+<Layout title={elderlyData.name} description={`Status dan riwayat perawatan ${elderlyData.name}.`} role="family">
+  <div class="flex flex-col gap-8 max-w-2xl">
+    <div class="flex flex-col gap-4">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h1 class="text-[28px] font-semibold tracking-[-0.03em] text-dark">
+            {elderlyData.name}
+          </h1>
+          <p class="text-dark/50 text-[15px] mt-0.5">
+            {elderlyData.age} th · {mobilityLabel} · RT {elderlyData.rt}/RW {elderlyData.rw}
+          </p>
+        </div>
+        <span class={`flex items-center gap-1.5 rounded-full ${status.bg} px-3 py-1.5 shrink-0`}>
+          <span class={`size-1.5 rounded-full ${status.dot}`}></span>
+          <span class={`text-[12px] font-semibold ${status.text}`}>{status.label}</span>
+        </span>
+      </div>
+
+      <p class="flex items-center gap-1.5 text-[14px] text-dark/50">
+        <MapPin class="size-4" />
+        {elderlyData.address}
+      </p>
+
+      {elderlyData.verificationStatus === "verified" && myFamilyLink && (
+        <FamilySosButton
+          client:load
+          elderlyName={elderlyData.name}
+          accessToken={myFamilyLink.accessToken}
+          currentStatus={elderlyData.currentStatus}
+        />
+      )}
+      {elderlyData.verificationStatus === "pending_verification" && (
+        <p class="text-[13px] text-amber-600 bg-amber-500/10 rounded-xl px-3 py-2">
+          Menunggu verifikasi Kader RT. Sapaan bot belum aktif.
+        </p>
+      )}
+    </div>
+
+    {elderlyData.medicalHistory && (
+      <section class="flex flex-col gap-2">
+        <h2 class="text-[18px] font-semibold text-dark">Riwayat Medis</h2>
+        <p class="text-[15px] text-dark/70 leading-relaxed">{elderlyData.medicalHistory}</p>
+      </section>
+    )}
+
+    <section class="flex flex-col gap-3">
+      <h2 class="text-[18px] font-semibold text-dark">Obat Aktif</h2>
+      {activeMedications.length > 0 ? (
+        <div class="flex flex-col gap-2.5">
+          {activeMedications.map((m) => (
+            <div class="flex items-center gap-3 rounded-2xl bg-white border border-dark/5 px-4 py-3.5">
+              <Pill class="size-5 text-accent shrink-0" />
+              <div class="flex-1">
+                <p class="font-medium text-[15px] text-dark">{m.medicationName}</p>
+                <p class="text-[13px] text-dark/50">
+                  {m.dosage} · {m.frequency} · {m.timingInstruction}
+                </p>
+              </div>
+              <span class="text-[13px] font-medium text-dark/60">{m.reminderTime}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p class="text-[14px] text-dark/40">Belum ada obat aktif tercatat.</p>
+      )}
+      {inactiveMedications.length > 0 && (
+        <details class="text-[13px] text-dark/40">
+          <summary class="cursor-pointer">{inactiveMedications.length} obat nonaktif</summary>
+          <div class="flex flex-col gap-1.5 mt-2">
+            {inactiveMedications.map((m) => (
+              <p>{m.medicationName} — {m.dosage}</p>
+            ))}
+          </div>
+        </details>
+      )}
+    </section>
+
+    {primaryVolunteer && (
+      <section class="flex flex-col gap-2">
+        <h2 class="text-[18px] font-semibold text-dark">Relawan Pendamping</h2>
+        <a
+          href={`https://wa.me/${primaryVolunteer.phone.replace(/^0/, "62")}`}
+          class="flex items-center gap-3 rounded-2xl bg-white border border-dark/5 px-4 py-3.5 hover:border-dark/10 transition-colors"
+        >
+          <Phone class="size-5 text-accent shrink-0" />
+          <div>
+            <p class="font-medium text-[15px] text-dark">{primaryVolunteer.name}</p>
+            <p class="text-[13px] text-dark/50">{primaryVolunteer.phone}</p>
+          </div>
+        </a>
+      </section>
+    )}
+
+    <section class="flex flex-col gap-3">
+      <div class="flex items-center justify-between">
+        <h2 class="text-[18px] font-semibold text-dark">Kontak Keluarga</h2>
+      </div>
+
+      {elderlyData.familyMembers.length > 0 && (
+        <div class="flex flex-col gap-2">
+          {elderlyData.familyMembers.map((f) => (
+            <div class="flex items-center gap-3 rounded-2xl bg-white border border-dark/5 px-4 py-3">
+              <Users class="size-4.5 text-dark/40 shrink-0" />
+              <div class="flex-1">
+                <p class="text-[14px] font-medium text-dark">
+                  {f.name} {f.isPrimaryContact && <span class="text-[11px] text-accent">· Kontak Utama</span>}
+                </p>
+                <p class="text-[13px] text-dark/50">{f.relationship} · {f.phone}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <AddFamilyContactForm client:load elderlyId={elderlyData.id} />
+    </section>
+  </div>
+</Layout>
