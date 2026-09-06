@@ -34,7 +34,7 @@
   }
 </script>
 
-<div class="flex min-h-screen items-center justify-center bg-light px-4">
+<div class="flex min-h-full items-center justify-center bg-light px-4">
   <div class="w-full max-w-sm rounded-4xl bg-brand/25 p-8">
     <h1 class="text-2xl font-semibold">Sign in to Kabarin</h1>
     <p class="mt-1 text-sm text-dark/75">Enter your email and password to continue.</p>
