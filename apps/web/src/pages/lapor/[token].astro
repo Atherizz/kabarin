@@ -1,0 +1,61 @@
+---
+import "../../styles/global.css";
+import VisitReportForm from "../../components/svelte/visit-report-form.svelte";
+import { apiFetchPublic } from "../../lib/api-fetch-public";
+import { MapPin } from "phosphor-svelte";
+
+export const prerender = false;
+
+const { token } = Astro.params;
+
+interface VisitFormData {
+  elderly: {
+    name: string;
+    age: number;
+    address: string;
+    mobilityStatus: string;
+  };
+  medications: { id: string; medicationName: string; dosage: string; reminderTime: string }[];
+  community: {
+    name: string;
+    healthFacilityPhone: string | null;
+    ambulancePhone: string | null;
+  };
+}
+
+const data = await apiFetchPublic<VisitFormData>(`/api/visits/${token}/form`);
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laporan Kunjungan — Kabarin</title>
+  </head>
+  <body class="bg-light text-dark min-h-dvh">
+    <div class="max-w-lg mx-auto px-6 py-10 flex flex-col gap-8">
+      {data ? (
+        <>
+          <div>
+            <p class="text-[14px] font-medium text-brand">Laporan Kunjungan Lapangan</p>
+            <h1 class="text-[28px] font-semibold tracking-[-0.03em] mt-1">{data.elderly.name}</h1>
+            <div class="flex items-center gap-2 mt-2 text-dark/50">
+              <MapPin weight="fill" class="size-4.5 shrink-0" />
+              <p class="text-[15px]">{data.elderly.address}</p>
+            </div>
+          </div>
+
+          <VisitReportForm client:load token={token} medications={data.medications} />
+        </>
+      ) : (
+        <div class="rounded-[28px] bg-red-500/10 p-7 text-center">
+          <p class="text-[18px] font-semibold text-red-600">Link Tidak Valid</p>
+          <p class="text-[15px] text-dark/60 mt-2">
+            Link laporan kunjungan ini sudah kedaluwarsa, tidak ditemukan, atau sudah pernah digunakan.
+          </p>
+        </div>
+      )}
+    </div>
+  </body>
+</html>
