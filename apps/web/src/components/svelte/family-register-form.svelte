@@ -22,7 +22,13 @@
 
   let communityUnitId = $state("");
   let relationship = $state("Anak Kandung");
-  let familyPhone = $state(userPhone);
+  let familyPhone = $state("");
+
+  $effect(() => {
+    if (userPhone) {
+      familyPhone = userPhone;
+    }
+  });
 
   let medications = $state<
     { conditionName: string; medicationName: string; dosage: string; frequency: string; timeOfDay: string; timingInstruction: string; reminderTime: string }[]
@@ -142,10 +148,10 @@
     </div>
 
     <div>
-      <label class="text-[14px] text-dark/50 mb-1.5 block">
+      <label for="community-unit-id" class="text-[14px] text-dark/50 mb-1.5 block">
         Kode Wilayah RT (opsional — isi jika berbeda dari RT domisili akun Anda)
       </label>
-      <input bind:value={communityUnitId} type="text" placeholder="e.g. 3573051007-RW10-RT01"
+      <input id="community-unit-id" bind:value={communityUnitId} type="text" placeholder="e.g. 3573051007-RW10-RT01"
         class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
   </section>
@@ -175,8 +181,8 @@
     </select>
 
     <div>
-      <label class="text-[14px] text-dark/50 mb-1.5 block">Jam Sapaan Harian</label>
-      <input bind:value={preferredCheckinTime} type="time"
+      <label for="preferred-checkin-time" class="text-[14px] text-dark/50 mb-1.5 block">Jam Sapaan Harian</label>
+      <input id="preferred-checkin-time" bind:value={preferredCheckinTime} type="time"
         class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40" />
     </div>
   </section>

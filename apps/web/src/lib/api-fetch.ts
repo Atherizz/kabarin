@@ -2,7 +2,7 @@ export async function apiFetch<T>(
   request: Request,
   path: string
 ): Promise<T | null> {
-  const apiBase = import.meta.env.PUBLIC_API_URL ?? "https://kabarin-api.atherizz.dev";
+  const apiBase = import.meta.env.BETTER_AUTH_URL ?? "https://kabarin-api.atherizz.dev";
 
   try {
     const cookie = request.headers.get("cookie") ?? "";

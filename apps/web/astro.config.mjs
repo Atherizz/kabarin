@@ -10,9 +10,18 @@ export default defineConfig({
   integrations: [svelte()],
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      proxy: {
+        '/api': {
+          target: 'https://kabarin-api.atherizz.dev',
+          changeOrigin: true,
+          secure: true,
+        },
+      },
+    },
     ssr: {
-      noExternal: ['phosphor-svelte']
-    }
+      noExternal: ['phosphor-svelte'],
+    },
   },
   adapter: cloudflare({
     platformProxy: {
