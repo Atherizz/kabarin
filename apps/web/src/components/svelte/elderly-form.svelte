@@ -153,11 +153,12 @@
     <input bind:value={phone} type="tel" placeholder="Nomor WhatsApp (opsional jika pasif)"
       class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40" />
 
-    <!-- Removed invalid autoLocate and prefill props since LocationPicker handles state internally now -->
     <LocationPicker
       bind:address
       bind:latitude
       bind:longitude
+      autoLocate={false} 
+      prefill={communityDefaults ? { subdistrictCode: communityDefaults.subdistrictCode } : undefined}
     />
 
     <div class="grid grid-cols-2 gap-4">
