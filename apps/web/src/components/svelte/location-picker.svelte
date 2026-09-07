@@ -1,11 +1,17 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
-  import { MapPin, MagnifyingGlass, CaretDown } from "phosphor-svelte";
+  import { MapPin, MagnifyingGlass, CaretDown, CircleNotch } from "phosphor-svelte";
+
+  interface Prefill {
+    subdistrictCode?: string;
+  }
 
   let {
     address = $bindable(""),
     latitude = $bindable<number | null>(null),
     longitude = $bindable<number | null>(null),
+    autoLocate = true,
+    prefill = undefined as Prefill | undefined,
   } = $props();
 
   // --- Map States ---
@@ -14,6 +20,8 @@
   let marker: any = null;
   let L: any = null;
   let isGeocoding = $state(false);
+  let isLocating = $state(false);
+  let locationError = $state("");
   let geocodeTimeout: ReturnType<typeof setTimeout>;
 
   let suggestions = $state<any[]>([]);
@@ -76,11 +84,86 @@
       longitude = e.latlng.lng;
       await reverseGeocode(e.latlng.lat, e.latlng.lng);
     });
+
+    // Priority: cadre's registered RT code > GPS auto-locate > nothing
+    if (prefill?.subdistrictCode) {
+      await applyPrefillCode(prefill.subdistrictCode);
+    } else if (autoLocate && !latitude && !longitude) {
+      requestCurrentLocation();
+    }
   });
 
   onDestroy(() => {
     if (map) map.remove();
   });
+
+  /**
+   * Kemendagri 10-digit wilayah code format: PP.KK.KKK.KKK
+   *   - 2 digits: provinsi
+   *   - 2 digits: kota/kabupaten
+   *   - 3 digits: kecamatan
+   *   - 3 digits: kelurahan/desa
+   * The emsifa wilayah API keys districts/villages by the FULL cumulative
+   * code up to that segment (not just that segment's own digits), so we
+   * slice cumulatively rather than splitting into four separate parts.
+   */
+  async function applyPrefillCode(code: string) {
+    if (!code || code.length < 10) return;
+
+    const provId = code.slice(0, 2);
+    const regId = code.slice(0, 4);
+    const distId = code.slice(0, 7);
+    const villId = code;
+
+    isGeocoding = true;
+    try {
+      selectedProv = provId;
+      await fetchRegencies();
+
+      selectedReg = regId;
+      await fetchDistricts();
+
+      selectedDist = distId;
+      await fetchVillages();
+
+      selectedVill = villId;
+      await handleVillageSelect();
+    } catch (e) {
+      console.error("Gagal mengisi wilayah otomatis dari data RT", e);
+    } finally {
+      isGeocoding = false;
+    }
+  }
+
+  function requestCurrentLocation() {
+    if (!navigator.geolocation) {
+      locationError = "Perangkat tidak mendukung GPS.";
+      return;
+    }
+
+    isLocating = true;
+    locationError = "";
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
+
+        if (map && marker) {
+          map.setView([latitude, longitude], 17);
+          marker.setLatLng([latitude, longitude]);
+        }
+
+        await reverseGeocode(latitude, longitude);
+        isLocating = false;
+      },
+      () => {
+        locationError = "Gagal mengambil lokasi. Pilih wilayah manual atau geser pin di peta.";
+        isLocating = false;
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  }
 
   // --- Cascading Dropdown Handlers ---
   async function fetchRegencies() {
@@ -193,7 +276,18 @@
 </script>
 
 <div class="flex flex-col gap-4">
-  <!-- Cascading Wilayah Dropdowns with limited suggestion list height wrapper -->
+  {#if isLocating}
+    <div class="flex items-center gap-2 rounded-2xl bg-brand/10 px-5 py-3 text-brand">
+      <CircleNotch weight="bold" class="size-4.5 animate-spin" />
+      <span class="text-[14px] font-medium">Mengambil lokasi Anda saat ini...</span>
+    </div>
+  {/if}
+
+  {#if locationError}
+    <p class="text-[13px] text-red-500">{locationError}</p>
+  {/if}
+
+  <!-- Cascading Wilayah Dropdowns -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
     <div class="relative">
       <select bind:value={selectedProv} onchange={fetchRegencies} class="w-full appearance-none rounded-2xl bg-light-darker pl-4 pr-10 py-3 text-[15px] outline-none focus:ring-2 focus:ring-brand/40 max-h-48">
@@ -241,7 +335,7 @@
     <textarea
       bind:value={address}
       oninput={handleAddressInput}
-      placeholder="Ketik alamat detail (Nama jalan, RT/RW, No Rumah)..."
+      placeholder="Alamat akan terisi otomatis, atau ketik detail (Nama jalan, RT/RW, No Rumah)..."
       rows="2"
       class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40 resize-y relative z-10"
     ></textarea>
@@ -271,13 +365,23 @@
   <!-- Leaflet Map -->
   <div bind:this={mapContainer} class="w-full h-64 rounded-3xl overflow-hidden bg-light-darker relative z-0 isolate border border-dark/5"></div>
 
+  <button
+    type="button"
+    onclick={requestCurrentLocation}
+    disabled={isLocating}
+    class="flex items-center justify-center gap-2 rounded-full bg-brand/10 text-brand px-5 py-3 text-[15px] font-medium hover:bg-brand/15 transition-colors disabled:opacity-60 self-start"
+  >
+    <MapPin weight="fill" class="size-4.5" />
+    Gunakan Lokasi Saya Sekarang
+  </button>
+
   <!-- Coordinates Note -->
   <div class="flex items-center gap-2 text-dark/50">
     <MapPin weight="fill" class="size-4.5 shrink-0" />
     <p class="text-[13px]">
       {latitude && longitude
         ? `Koordinat: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
-        : "Pilih kelurahan atau geser pin untuk menandai lokasi"}
+        : "Pilih kelurahan, geser pin, atau gunakan lokasi Anda untuk menandai posisi"}
     </p>
   </div>
 </div>

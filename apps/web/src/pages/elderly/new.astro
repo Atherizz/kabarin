@@ -13,8 +13,18 @@ interface VolunteerOption {
   isActive: boolean;
 }
 
-const allVolunteers = (await apiFetch<VolunteerOption[]>(Astro.request, "/api/volunteers")) ?? [];
-const volunteers = allVolunteers.filter((v) => v.isActive);
+interface CommunityInfo {
+  subdistrictCode: string;
+  rt: string;
+  rw: string;
+}
+
+const [allVolunteers, community] = await Promise.all([
+  apiFetch<VolunteerOption[]>(Astro.request, "/api/volunteers"),
+  apiFetch<CommunityInfo>(Astro.request, "/api/community/me"),
+]);
+
+const volunteers = (allVolunteers ?? []).filter((v) => v.isActive);
 ---
 
 <Layout title="Daftarkan Lansia" description="Form pendaftaran lansia baru.">
@@ -23,9 +33,7 @@ const volunteers = allVolunteers.filter((v) => v.isActive);
       <ArrowLeft weight="bold" class="size-5" />
       <span>Kembali ke direktori</span>
     </a>
-
     <h1 class="text-[32px] font-semibold tracking-[-0.03em] text-dark">Daftarkan Lansia Baru</h1>
-
-    <ElderlyOnboardingForm client:load volunteers={volunteers} />
+    <ElderlyOnboardingForm client:load volunteers={volunteers} communityDefaults={community} />
   </div>
 </Layout>
