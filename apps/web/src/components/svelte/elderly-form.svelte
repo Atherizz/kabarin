@@ -153,12 +153,11 @@
     <input bind:value={phone} type="tel" placeholder="Nomor WhatsApp (opsional jika pasif)"
       class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40" />
 
+    <!-- Removed invalid autoLocate and prefill props since LocationPicker handles state internally now -->
     <LocationPicker
       bind:address
       bind:latitude
       bind:longitude
-      autoLocate={false}
-      prefill={communityDefaults ? { subdistrictCode: communityDefaults.subdistrictCode } : undefined}
     />
 
     <div class="grid grid-cols-2 gap-4">
@@ -169,5 +168,141 @@
     </div>
   </section>
 
-  <!-- rest unchanged -->
+  <!-- Mode Pemantauan -->
+  <section class="flex flex-col gap-4">
+    <h2 class="text-[20px] font-semibold text-dark">Mode Pemantauan</h2>
+
+    <div class="grid grid-cols-2 gap-3">
+      <button type="button" onclick={() => (monitoringMode = "active")}
+        class={`rounded-3xl px-5 py-4 text-left transition-colors ${monitoringMode === "active" ? "bg-brand text-white" : "bg-light-darker text-dark"}`}>
+        <p class="font-semibold text-[15px]">Aktif</p>
+        <p class="text-[13px] opacity-70 mt-0.5">Lansia pegang WhatsApp sendiri</p>
+      </button>
+      <button type="button" onclick={() => (monitoringMode = "passive")}
+        class={`rounded-3xl px-5 py-4 text-left transition-colors ${monitoringMode === "passive" ? "bg-brand text-white" : "bg-light-darker text-dark"}`}>
+        <p class="font-semibold text-[15px]">Pasif</p>
+        <p class="text-[13px] opacity-70 mt-0.5">Homebound / tanpa HP</p>
+      </button>
+    </div>
+
+    <select bind:value={mobilityStatus}
+      class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40">
+      <option value="independent">Mandiri</option>
+      <option value="needs_assistance">Butuh Bantuan</option>
+      <option value="homebound">Homebound</option>
+    </select>
+
+    <div>
+      <label for="preferred-checkin-time" class="text-[14px] text-dark/50 mb-1.5 block">
+        Jam Sapaan Harian
+      </label>
+      <input
+        id="preferred-checkin-time"
+        bind:value={preferredCheckinTime}
+        type="time"
+        class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40"
+      />
+    </div>
+  </section>
+
+  <!-- Riwayat Medis -->
+  <section class="flex flex-col gap-4">
+    <div class="flex items-center justify-between">
+      <h2 class="text-[20px] font-semibold text-dark">Riwayat Medis & Obat</h2>
+    </div>
+
+    <textarea bind:value={medicalHistory} placeholder="Diagnosa / riwayat penyakit (e.g. Hipertensi, Riwayat Stroke)" rows="2"
+      class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40 resize-y"></textarea>
+
+    <p class="text-[13px] text-accent">
+      📷 Pindai Resep Otomatis (Smart OCR) akan tersedia di sini — sementara isi manual di bawah.
+    </p>
+
+    {#each medications as med, i}
+      <div class="rounded-3xl bg-light-darker p-5 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <p class="text-[14px] font-medium text-dark/60">Obat #{i + 1}</p>
+          <button type="button" onclick={() => removeMedication(i)} class="text-red-500">
+            <Trash weight="bold" class="size-4.5" />
+          </button>
+        </div>
+        <input bind:value={med.medicationName} type="text" placeholder="Nama obat"
+          class="w-full rounded-2xl bg-light px-4 py-2.5 text-[15px] outline-none" />
+        <div class="grid grid-cols-2 gap-3">
+          <input bind:value={med.dosage} type="text" placeholder="Dosis (e.g. 1 tablet)"
+            class="w-full rounded-2xl bg-light px-4 py-2.5 text-[15px] outline-none" />
+          <input bind:value={med.reminderTime} type="time"
+            class="w-full rounded-2xl bg-light px-4 py-2.5 text-[15px] outline-none" />
+        </div>
+      </div>
+    {/each}
+
+    <button type="button" onclick={addMedication}
+      class="flex items-center justify-center gap-2 rounded-full bg-light-darker px-5 py-3 text-[15px] font-medium text-dark/60 hover:bg-light-darker/70 transition-colors">
+      <Plus weight="bold" class="size-5" />
+      Tambah Obat
+    </button>
+  </section>
+
+  <!-- Kontak Keluarga -->
+  <section class="flex flex-col gap-4">
+    <h2 class="text-[20px] font-semibold text-dark">Kontak Keluarga</h2>
+
+    {#each family as member, i}
+      <div class="rounded-3xl bg-light-darker p-5 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <p class="text-[14px] font-medium text-dark/60">Kontak #{i + 1}</p>
+          {#if family.length > 1}
+            <button type="button" onclick={() => removeFamily(i)} class="text-red-500">
+              <Trash weight="bold" class="size-4.5" />
+            </button>
+          {/if}
+        </div>
+        <input bind:value={member.name} type="text" placeholder="Nama anak/kerabat"
+          class="w-full rounded-2xl bg-light px-4 py-2.5 text-[15px] outline-none" />
+        <div class="grid grid-cols-2 gap-3">
+          <input bind:value={member.phone} type="tel" placeholder="Nomor WhatsApp"
+            class="w-full rounded-2xl bg-light px-4 py-2.5 text-[15px] outline-none" />
+          <input bind:value={member.relationship} type="text" placeholder="Hubungan (Anak, dsb)"
+            class="w-full rounded-2xl bg-light px-4 py-2.5 text-[15px] outline-none" />
+        </div>
+      </div>
+    {/each}
+
+    <button type="button" onclick={addFamily}
+      class="flex items-center justify-center gap-2 rounded-full bg-light-darker px-5 py-3 text-[15px] font-medium text-dark/60 hover:bg-light-darker/70 transition-colors">
+      <Plus weight="bold" class="size-5" />
+      Tambah Kontak
+    </button>
+  </section>
+
+  <!-- Penugasan Relawan -->
+  <section class="flex flex-col gap-4">
+    <h2 class="text-[20px] font-semibold text-dark">Penugasan Relawan</h2>
+
+    <select bind:value={primaryVolunteerId}
+      class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40">
+      <option value="">Pilih Relawan Utama (opsional)</option>
+      {#each volunteers as v}
+        <option value={v.id} disabled={v.assignedElderlyCount >= v.maxCapacity}>
+          {v.name} — {v.address} ({v.assignedElderlyCount}/{v.maxCapacity} binaan{v.assignedElderlyCount >= v.maxCapacity ? ", penuh" : ""})
+        </option>
+      {/each}
+    </select>
+
+    <select bind:value={secondaryVolunteerId}
+      class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40">
+      <option value="">Pilih Relawan Cadangan (opsional)</option>
+      {#each volunteers as v}
+        <option value={v.id} disabled={v.assignedElderlyCount >= v.maxCapacity}>
+          {v.name} — {v.address} ({v.assignedElderlyCount}/{v.maxCapacity} binaan{v.assignedElderlyCount >= v.maxCapacity ? ", penuh" : ""})
+        </option>
+      {/each}
+    </select>
+  </section>
+
+  <button type="submit" disabled={isSubmitting}
+    class="w-full rounded-full bg-brand text-white px-6 py-4 text-[16px] font-semibold hover:bg-brand/90 transition-colors disabled:opacity-60">
+    {isSubmitting ? "Mendaftarkan..." : "Daftarkan Lansia"}
+  </button>
 </form>
