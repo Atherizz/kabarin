@@ -11,6 +11,8 @@ const DEFAULT_LID_MAPPINGS: Record<string, string> = {
   "240200357777615": "085648907716",
   // Lansia Manual (untuk simulasi input via web)
   "142069381210117": "085235342960",
+  // Mbah Sutrisno (Teman Presenter)
+  "135197316137086": "087847512517",
 };
 
 for (const [lid, phone] of Object.entries(DEFAULT_LID_MAPPINGS)) {
