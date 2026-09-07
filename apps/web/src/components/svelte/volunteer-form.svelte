@@ -2,30 +2,34 @@
   import { apiPost } from "../../lib/api-post";
   import LocationPicker from "./location-picker.svelte";
 
+  interface CommunityInfo {
+    subdistrictCode: string;
+    rt: string;
+    rw: string;
+  }
+
+  let { communityDefaults = null as CommunityInfo | null } = $props();
+
   let name = $state("");
   let email = $state("");
   let phone = $state("");
   let address = $state("");
-  let rt = $state("");
-  let rw = $state("");
+  let rt = $state(communityDefaults?.rt ?? "");
+  let rw = $state(communityDefaults?.rw ?? "");
   let latitude = $state<number | null>(null);
   let longitude = $state<number | null>(null);
   let maxCapacity = $state<number>(5);
-
   let isSubmitting = $state(false);
   let errorMessage = $state("");
 
   async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
     errorMessage = "";
-
     if (!name || !email || !phone || !address || !rt || !rw) {
       errorMessage = "Lengkapi data identitas dan kontak relawan terlebih dahulu.";
       return;
     }
-
     isSubmitting = true;
-
     const payload = {
       name,
       email,
@@ -37,16 +41,13 @@
       longitude: longitude ?? undefined,
       maxCapacity,
     };
-  
+
     const result = await apiPost<{ id: string }>("/api/volunteers", payload);
-
     isSubmitting = false;
-
     if (!result.ok) {
       errorMessage = result.error ?? "Gagal mendaftarkan relawan.";
       return;
     }
-
     window.location.href = "/volunteers";
   }
 </script>
@@ -58,7 +59,6 @@
 
   <section class="flex flex-col gap-4">
     <h2 class="text-[20px] font-semibold text-dark">Informasi Akun & Kontak</h2>
-
     <input
       bind:value={name}
       type="text"
@@ -66,7 +66,6 @@
       required
       class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40"
     />
-
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <input
         bind:value={email}
@@ -83,7 +82,6 @@
         class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40"
       />
     </div>
-
     <p class="text-[13px] text-dark/50 ml-2">
       *Sistem akan otomatis membuatkan akun web untuk relawan. Password sementara (Kabarin2026!) akan dikirim melalui WhatsApp.
     </p>
@@ -91,9 +89,13 @@
 
   <section class="flex flex-col gap-4">
     <h2 class="text-[20px] font-semibold text-dark">Domisili & Kapasitas</h2>
-
-    <LocationPicker bind:address bind:latitude bind:longitude />
-
+    <LocationPicker
+      bind:address
+      bind:latitude
+      bind:longitude
+      autoLocate={false}
+      prefill={communityDefaults ? { subdistrictCode: communityDefaults.subdistrictCode } : undefined}
+    />
     <div class="grid grid-cols-2 gap-4">
       <input
         bind:value={rt}
@@ -110,10 +112,10 @@
         class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40"
       />
     </div>
-
     <div>
-      <label class="text-[14px] text-dark/50 mb-1.5 ml-2 block">Batas Maksimal Binaan Lansia</label>
+      <label for="max-capacity" class="text-[14px] text-dark/50 mb-1.5 ml-2 block">Batas Maksimal Binaan Lansia</label>
       <input
+        id="max-capacity"
         bind:value={maxCapacity}
         type="number"
         min="1"

@@ -85,7 +85,6 @@
       await reverseGeocode(e.latlng.lat, e.latlng.lng);
     });
 
-    // Priority: cadre's registered RT code > GPS auto-locate > nothing
     if (prefill?.subdistrictCode) {
       await applyPrefillCode(prefill.subdistrictCode);
     } else if (autoLocate && !latitude && !longitude) {
@@ -98,14 +97,14 @@
   });
 
   /**
-   * Kemendagri 10-digit wilayah code format: PP.KK.KKK.KKK
-   *   - 2 digits: provinsi
-   *   - 2 digits: kota/kabupaten
-   *   - 3 digits: kecamatan
-   *   - 3 digits: kelurahan/desa
-   * The emsifa wilayah API keys districts/villages by the FULL cumulative
-   * code up to that segment (not just that segment's own digits), so we
-   * slice cumulatively rather than splitting into four separate parts.
+   * emsifa's wilayah API keys provinces/regencies/districts/villages by
+   * PLAIN, cumulative, DOT-FREE digit strings — confirmed empirically:
+   * province = first 2 digits, regency = first 4 digits (both matched
+   * correctly against our stored 10-digit subdistrictCode with no
+   * separators, e.g. "3573051007"). Kecamatan is a 3-digit segment
+   * (not 2), so its cumulative id is the first 7 digits; kelurahan/desa
+   * is the full 10-digit code. No dot conversion needed — the codes
+   * already match our stored format as-is.
    */
   async function applyPrefillCode(code: string) {
     if (!code || code.length < 10) return;
@@ -165,7 +164,7 @@
     );
   }
 
-  // --- Cascading Dropdown Handlers ---
+  // --- Cascading Dropdown Fetchers ---
   async function fetchRegencies() {
     regencies = []; districts = []; villages = [];
     selectedReg = ""; selectedDist = ""; selectedVill = "";
