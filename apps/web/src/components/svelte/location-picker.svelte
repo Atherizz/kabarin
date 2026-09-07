@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { MapPin, MagnifyingGlass, CaretDown, CircleNotch } from "phosphor-svelte";
+  import "leaflet/dist/leaflet.css";
 
   interface Prefill {
     subdistrictCode?: string;
@@ -53,7 +54,6 @@
     }
 
     L = (await import("leaflet")).default;
-    await import("leaflet/dist/leaflet.css");
 
     delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
