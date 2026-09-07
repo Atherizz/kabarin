@@ -77,19 +77,58 @@ export async function handleInboundMessage(
     candidatePhones.add(`0${rawDigits}`);
   }
 
+  // Auto-resolve via Baileys remoteJidAlt / participantAlt metadata
+  const altJid =
+    (msg.key as any).remoteJidAlt ||
+    (msg.key as any).participantAlt ||
+    msg.key.participant;
+  if (altJid) {
+    const altDigits = cleanDigits(altJid);
+    if (altDigits && altDigits !== rawDigits) {
+      candidatePhones.add(altDigits);
+      if (altDigits.startsWith("62")) {
+        candidatePhones.add(`0${altDigits.slice(2)}`);
+      } else if (altDigits.startsWith("0")) {
+        candidatePhones.add(`62${altDigits.slice(1)}`);
+      } else if (altDigits.startsWith("8")) {
+        candidatePhones.add(`62${altDigits}`);
+        candidatePhones.add(`0${altDigits}`);
+      }
+      if (remoteJid.endsWith("@lid")) {
+        await registerLidMapping(remoteJid, altDigits, db);
+        console.log(`[inbound] Auto-resolved LID ${remoteJid} -> ${altDigits} via Baileys remoteJidAlt`);
+      }
+    }
+  }
+
   // Attempt LID-to-PN resolution via Baileys internal signal repository
   if (remoteJid.endsWith("@lid")) {
     try {
-      const resolved = await (sock as any).signalRepository?.lidToJid?.(remoteJid);
-      if (resolved) {
-        const resDigits = cleanDigits(resolved);
-        candidatePhones.add(resDigits);
-        if (resDigits.startsWith("62")) {
-          candidatePhones.add(`0${resDigits.slice(2)}`);
-        } else if (resDigits.startsWith("0")) {
-          candidatePhones.add(`62${resDigits.slice(1)}`);
+      const lidMappings = await (sock as any).signalRepository?.lidMapping?.getPNsForLIDs?.([remoteJid]);
+      if (lidMappings && lidMappings.length > 0 && lidMappings[0]?.pn) {
+        const resDigits = cleanDigits(lidMappings[0].pn);
+        if (resDigits) {
+          candidatePhones.add(resDigits);
+          if (resDigits.startsWith("62")) {
+            candidatePhones.add(`0${resDigits.slice(2)}`);
+          } else if (resDigits.startsWith("0")) {
+            candidatePhones.add(`62${resDigits.slice(1)}`);
+          }
+          await registerLidMapping(remoteJid, resDigits, db);
+          console.log(`[inbound] Resolved LID ${remoteJid} -> ${resDigits} via Baileys lidMapping`);
         }
-        console.log(`[inbound] Resolved LID ${remoteJid} -> ${resolved}`);
+      } else {
+        const resolved = await (sock as any).signalRepository?.lidToJid?.(remoteJid);
+        if (resolved) {
+          const resDigits = cleanDigits(resolved);
+          candidatePhones.add(resDigits);
+          if (resDigits.startsWith("62")) {
+            candidatePhones.add(`0${resDigits.slice(2)}`);
+          } else if (resDigits.startsWith("0")) {
+            candidatePhones.add(`62${resDigits.slice(1)}`);
+          }
+          console.log(`[inbound] Resolved LID ${remoteJid} -> ${resolved}`);
+        }
       }
     } catch {}
   }

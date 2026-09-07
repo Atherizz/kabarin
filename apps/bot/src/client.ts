@@ -60,6 +60,7 @@ export async function createWhatsAppClient(
 
     if (connection === "close") {
       const error = lastDisconnect?.error as Boom | undefined;
+      const statusCode = error?.output?.statusCode;
       const isReplaced = statusCode === DisconnectReason.connectionReplaced;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut && !isReplaced;
 
