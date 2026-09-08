@@ -5,6 +5,7 @@ import RiskScoreCard from "../../../components/svelte/risk-score-card.svelte";
 import { apiFetch } from "../../../lib/api-fetch";
 import type { Elderly, EscalationLog, CheckinSession } from "@kabarin/types";
 import { ArrowLeft, MapPin, Phone, Pill, Users, Clock, ChartLineUp, PencilSimple } from "phosphor-svelte";
+
 const { id } = Astro.params;
 
 interface RiskScoreResponse {
@@ -119,9 +120,17 @@ const monitoringLabel = {
 
     <!-- Obat -->
     <section class="flex flex-col gap-4">
-      <div class="flex items-center gap-2.5">
-        <Pill weight="fill" class="size-5 text-brand" />
-        <h2 class="text-[20px] font-semibold text-dark">Jadwal Obat</h2>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <Pill weight="fill" class="size-5 text-brand" />
+          <h2 class="text-[20px] font-semibold text-dark">Jadwal Obat</h2>
+        </div>
+        <a 
+          href={`/elderly/${id}/medications`}
+          class="flex items-center gap-1.5 rounded-full bg-brand/10 px-4 py-2 text-[13px] font-semibold text-brand hover:bg-brand/20 transition-colors"
+        >
+          Kelola Obat
+        </a>
       </div>
 
       {elderlyData.medications && elderlyData.medications.length > 0 ? (

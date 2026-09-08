@@ -2,6 +2,7 @@
   import { apiPost } from "../../lib/api-post";
   import { Plus, Trash } from "phosphor-svelte";
   import LocationPicker from "./location-picker.svelte";
+  import OcrScanner from "./ocr-scanner.svelte";
 
   interface VolunteerOption {
     id: string;
@@ -61,6 +62,10 @@
 
   let isSubmitting = $state(false);
   let errorMessage = $state("");
+
+  function handleOcrExtracted(newMeds: Medication[]) {
+    medications = [...medications, ...newMeds];
+  }
 
   function addMedication() {
     medications = [
@@ -157,7 +162,7 @@
       bind:address
       bind:latitude
       bind:longitude
-      autoLocate={false} 
+      autoLocate={false}
       prefill={communityDefaults ? { subdistrictCode: communityDefaults.subdistrictCode } : undefined}
     />
 
@@ -215,9 +220,7 @@
     <textarea bind:value={medicalHistory} placeholder="Diagnosa / riwayat penyakit (e.g. Hipertensi, Riwayat Stroke)" rows="2"
       class="w-full rounded-3xl bg-light-darker px-5 py-3.5 text-[16px] outline-none focus:ring-2 focus:ring-brand/40 resize-y"></textarea>
 
-    <p class="text-[13px] text-accent">
-      📷 Pindai Resep Otomatis (Smart OCR) akan tersedia di sini — sementara isi manual di bawah.
-    </p>
+    <OcrScanner onExtracted={handleOcrExtracted} />
 
     {#each medications as med, i}
       <div class="rounded-3xl bg-light-darker p-5 flex flex-col gap-3">
