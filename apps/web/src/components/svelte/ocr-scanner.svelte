@@ -62,7 +62,7 @@
 
     status = "scanning";
 
-    const ocrResult = await runMedicationOcr(uploadResult.imageUrl);
+    const ocrResult = await runMedicationOcr(uploadResult.imageUrl, elderlyId);
 
     if (!ocrResult.ok || !ocrResult.medications) {
       status = "error";
