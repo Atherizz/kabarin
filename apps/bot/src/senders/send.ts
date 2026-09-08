@@ -14,7 +14,9 @@ export function formatPhone(phone: string): string {
 }
 
 export function cleanDigits(phoneOrJid: string): string {
-  return phoneOrJid.split("@")[0].replace(/[^0-9]/g, "");
+  const withoutServer = phoneOrJid.split("@")[0] || "";
+  const userPart = withoutServer.split(":")[0] || "";
+  return userPart.replace(/[^0-9]/g, "");
 }
 
 export function sleep(ms: number): Promise<void> {
